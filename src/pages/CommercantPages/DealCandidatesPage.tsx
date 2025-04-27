@@ -12,6 +12,11 @@ export default function DealCandidatesPage() {
   const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
+  interface Candidature {
+    influenceurId: string;
+    status: string;
+    // Ajoute d'autres propriétés si nécessaire
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,7 +32,7 @@ export default function DealCandidatesPage() {
           const candidatureList = dealData.candidatures || [];
 
           const allCandidates = await Promise.all(
-            candidatureList.map(async (candidature) => {
+            candidatureList.map(async (candidature: Candidature) => {
               const userId = candidature.influenceurId;
               const userSnap = await getDoc(doc(db, "users", userId));
 

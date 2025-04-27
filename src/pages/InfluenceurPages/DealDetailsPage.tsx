@@ -37,7 +37,7 @@ export default function DealDetailsPage() {
 
     await sendNotification({
       toUserId: deal.createdBy,
-      fromUserId: auth.currentUser.uid,
+      fromUserId: auth.currentUser!.uid,
       message: `L'influenceur a marqué le deal comme terminé.`,
       relatedDealId: dealId!,
       targetRoute: `/deals/${dealId}/candidatures/${candidatureId}/review`,
@@ -50,7 +50,7 @@ export default function DealDetailsPage() {
   const handleReviewSubmit = async () => {
     const reviewRef = doc(db, "deals", dealId!, "candidatures", candidatureId!, "review");
     await setDoc(reviewRef, {
-      author: auth.currentUser.uid,
+      author: auth.currentUser!.uid,
       text: review,
       createdAt: new Date().toISOString()
     });

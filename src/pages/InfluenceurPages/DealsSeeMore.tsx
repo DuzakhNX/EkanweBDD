@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronRight, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import fillplus from "../../assets/fillplus.png";
@@ -13,6 +13,15 @@ export default function DealSeeMore() {
   const [deal, setDeal] = useState<any>(null);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [loading, setLoading] = useState(true);
+  interface Deal {
+    influenceurId: string;
+    title: string;
+    description: string;
+    interest: string; // Cela pourrait être un type enum si tu veux restreindre les valeurs possibles
+    imageUrl?: string;
+    candidatures?: { influenceurId: string; status: string }[]; // Liste des candidatures avec les informations sur l'influenceur
+    merchantId: string;
+  }
 
   useEffect(() => {
     const fetchDeal = async () => {
@@ -57,7 +66,7 @@ export default function DealSeeMore() {
       const dealData = dealSnap.data();
       const candidatures = dealData?.candidatures || [];
 
-      if (candidatures.some(cand => cand.influenceurId === auth.currentUser.uid)) {
+      if (candidatures.some((cand: Deal) => cand.influenceurId === auth.currentUser!.uid)) {
         alert("Vous avez déjà postulé à ce deal.");
         return;
       }

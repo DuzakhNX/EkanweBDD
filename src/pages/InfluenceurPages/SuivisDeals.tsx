@@ -6,7 +6,7 @@ import menu from "../../assets/menu.png";
 import { ArrowRight } from "lucide-react";
 import BottomNavbar from "./BottomNavbar";
 import { useNavigate } from "react-router-dom";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { getDoc, getDocs, query, where, collectionGroup } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 
 const Suivis = () => {

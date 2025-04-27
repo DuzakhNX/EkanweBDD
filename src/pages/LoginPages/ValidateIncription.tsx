@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import logo from "../../assets/ekanwe-logo.png";
 import validatelogo from "../../assets/validatepagelogo.png";
 import { useEffect } from "react";
@@ -6,7 +5,6 @@ import { auth } from "../../firebase/firebase";
 
 
 export default function ValidateInscription() {
-  const navigate = useNavigate();
   useEffect(() => {
     const interval = setInterval(() => {
       auth.currentUser?.reload().then(() => {

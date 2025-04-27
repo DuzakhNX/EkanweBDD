@@ -6,7 +6,7 @@ import { auth, db } from "../firebase/firebase";
 
 interface UserData {
   uid?: string;
-  role?: "influenceur" | "commerçant";
+  role?: string;
   email?: string;
   [key: string]: any;
 }
@@ -28,7 +28,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
         if (snap.exists()) {
-          const data = { uid: user.uid, email: user.email || "", ...snap.data() };
+          const data = { uid: user.uid, email: user.email || "", role: "", ...snap.data() };
           setUserData(data);
           localStorage.setItem("userRole", data.role || "");
         }

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
-import { usePrefillUserData } from "../../hooks/usePrefillUserData";
 
 export default function SocialConnectStep() {
   const navigate = useNavigate();

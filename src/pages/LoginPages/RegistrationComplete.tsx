@@ -1,13 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/ekanwe-logo.png";
 import { CheckCircle } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function RegistrationComplete() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const redirectUser = async () => {
@@ -35,7 +34,6 @@ export default function RegistrationComplete() {
       } catch (error) {
         console.error("Erreur lors de la redirection :", error);
       } finally {
-        setLoading(false);
       }
     };
 

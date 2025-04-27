@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
@@ -48,8 +48,8 @@ export default function Deals() {
   };
 
   const filteredDeals = selectedFilter === "All"
-  ? deals
-  : deals.filter((d) => d.interest === selectedFilter);
+    ? deals
+    : deals.filter((d) => d.interest === selectedFilter);
 
   const sortedByPopularity = [...filteredDeals].sort((a, b) => (b.candidatures?.length || 0) - (a.candidatures?.length || 0));
   const popularDeals = sortedByPopularity.slice(0, 5);
@@ -81,9 +81,8 @@ export default function Deals() {
             <button
               key={item}
               onClick={() => setSelectedFilter(item)}
-              className={`border px-10 py-3 rounded-lg text-sm ${
-                selectedFilter === item ? "bg-[#1A2C24] text-white" : "border-[#14210F] text-[#14210F] bg-white/10"
-              }`}
+              className={`border px-10 py-3 rounded-lg text-sm ${selectedFilter === item ? "bg-[#1A2C24] text-white" : "border-[#14210F] text-[#14210F] bg-white/10"
+                }`}
             >
               {item}
             </button>
@@ -135,6 +134,15 @@ export default function Deals() {
 
 const DealCard = ({ deal, saved, onSave }: any) => {
   const navigate = useNavigate();
+  interface Cand {
+    influenceurId: string;
+    title: string;
+    description: string;
+    interest: string; // Cela pourrait être un type enum si tu veux restreindre les valeurs possibles
+    imageUrl?: string;
+    candidatures?: { influenceurId: string; status: string }[]; // Liste des candidatures avec les informations sur l'influenceur
+    merchantId: string;
+  }
 
   const handleApplyToDeal = async () => {
     const user = auth.currentUser;
@@ -155,11 +163,11 @@ const DealCard = ({ deal, saved, onSave }: any) => {
       const dealData = dealSnap.data();
       const candidatures = dealData?.candidatures || [];
 
-      if (candidatures.some(cand => cand.influenceurId === user.uid)) {
+      if (candidatures.some((cand: Cand) => cand.influenceurId === user.uid)) {
         alert("Vous avez déjà postulé à ce deal.");
         return;
       }
-  
+
       const newCandidature = {
         influenceurId: user.uid,
         status: "pending",
@@ -187,21 +195,26 @@ const DealCard = ({ deal, saved, onSave }: any) => {
 
   const handleNavigation = async () => {
     const dealRef = doc(db, "deals", deal.id);
-      const dealSnap = await getDoc(dealRef);
+    const dealSnap = await getDoc(dealRef);
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Vous devez être connecté pour postuler.");
+      return;
+    }
 
-      if (!dealSnap.exists()) {
-        alert("Deal introuvable.");
-        return;
-      }
+    if (!dealSnap.exists()) {
+      alert("Deal introuvable.");
+      return;
+    }
 
-      const dealData = dealSnap.data();
-      const candidatures = dealData?.candidatures || [];
+    const dealData = dealSnap.data();
+    const candidatures = dealData?.candidatures || [];
 
-      if (candidatures.some(cand => cand.influenceurId === user.uid)) {
-        navigate(`/dealdetails/${deal.id}`);
-      } else {
-        navigate(`/dealSeeMore/${deal.id}`)
-      }
+    if (candidatures.some((cand: Cand) => cand.influenceurId === user.uid)) {
+      navigate(`/dealdetails/${deal.id}`);
+    } else {
+      navigate(`/dealSeeMore/${deal.id}`)
+    }
   }
 
   return (

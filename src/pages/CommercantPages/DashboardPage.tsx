@@ -8,7 +8,6 @@ import {
   Share2,
   TrendingUp,
   TrendingDown,
-  ChevronRight,
   MoreHorizontal,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";

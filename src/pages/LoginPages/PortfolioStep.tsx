@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import logo from "../../assets/ekanwe-logo.png";
-import emailjs from "emailjs-com";
-
 
 export default function PortfolioStep() {
   const navigate = useNavigate();

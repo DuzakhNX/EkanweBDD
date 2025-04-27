@@ -3,7 +3,6 @@ import { Camera } from "lucide-react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
-import BottomNavbar from "./BottomNavbar";
 import sign from "../../assets/ekanwesign.png";
 import Navbar from "./Navbar";
 

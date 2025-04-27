@@ -3,7 +3,6 @@ import { auth, db } from "../../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getDocs, query, where, writeBatch, doc } from "firebase/firestore";
-import { sendNotification } from "../../hooks/sendNotifications";
 import Navbar from "./Navbar";
 
 export default function MerchantDetailPage() {
@@ -16,7 +15,6 @@ export default function MerchantDetailPage() {
   const [imageBase64, setImageBase64] = useState<string>("");
   const [error, setError] = useState("");
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const availableInterests = [
     "Mode", "Cuisine", "Voyage", "Beauté", "Sport", "Technologie", "Gaming",
@@ -52,8 +50,6 @@ export default function MerchantDetailPage() {
       return;
     }
 
-    setLoading(true);
-
     try {
       const dealRef = await addDoc(collection(db, "deals"), {
         description,
@@ -88,11 +84,9 @@ export default function MerchantDetailPage() {
 
       await batch.commit();
 
-      setLoading(false);
       navigate("/dealinfluenceur");
     } catch (error) {
       console.error("Erreur lors de la création du deal :", error);
-      setLoading(false);
       setError("Erreur lors de la création du deal, veuillez réessayer !");
     }
   };
@@ -160,7 +154,6 @@ export default function MerchantDetailPage() {
                 value={selectedInterest ?? ""}
                 onChange={(e) => setSelectedInterest(e.target.value)}
                 className="w-full border border-gray-300 bg-white rounded-md p-2 text-sm"
-                rows="2"
               >
                 <option value="">Sélectionnez un intérêt</option>
                 {availableInterests.map((interest) => (
