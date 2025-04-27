@@ -1,0 +1,296 @@
+import { ArrowLeft, MapPin } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import fillplus from "../../assets/fillplus.png";
+import Navbar from "./Navbar";
+import { useEffect, useState } from "react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase/firebase";
+import { sendNotification } from "../../hooks/sendNotifications";
+
+export default function DealCandidatesPage() {
+  const navigate = useNavigate();
+  const { dealId } = useParams();
+  const [deal, setDeal] = useState<any>(null);
+  const [candidates, setCandidates] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!dealId) return;
+        const dealRef = doc(db, "deals", dealId);
+        const dealSnap = await getDoc(dealRef);
+
+        if (dealSnap.exists()) {
+          const dealData = dealSnap.data();
+          setDeal(dealData);
+
+          const candidatureList = dealData.candidatures || [];
+
+          const allCandidates = await Promise.all(
+            candidatureList.map(async (candidature) => {
+              const userId = candidature.influenceurId;
+              const userSnap = await getDoc(doc(db, "users", userId));
+
+              if (!userSnap.exists()) {
+                console.warn(`Utilisateur ${userId} introuvable`);
+                return null;
+              }
+
+              return {
+                influenceurId: userId,
+                userInfo: userSnap.data(),
+                status: candidature.status || "pending",
+              };
+            })
+          );
+
+          setCandidates(allCandidates.filter(Boolean));
+        } else {
+          console.error("Le deal n'existe pas !");
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données :", error);
+      }
+    };
+
+    fetchData();
+  }, [dealId]);
+
+
+  const renderStars = (rating: number) => {
+    return Array(5)
+      .fill(null)
+      .map((_, i) => (
+        <span key={i} className={`text-lg ${i < rating ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
+      ));
+  };
+
+  const updateStatus = async (influenceurId: string, status: string) => {
+    const dealRef = doc(db, "deals", dealId!);
+
+    try {
+      const dealDoc = await getDoc(dealRef);
+      if (dealDoc.exists()) {
+        const dealData = dealDoc.data();
+        if (dealData && dealData.candidatures) {
+          const updatedCandidatures = dealData.candidatures.map((candidature: any) =>
+            candidature.influenceurId === influenceurId
+              ? { ...candidature, status }
+              : candidature
+          );
+
+          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+
+          await sendNotification({
+            toUserId: influenceurId,
+            message: `Votre candidature a été ${status === "accepted" ? "acceptée" : "refusée"}.`,
+            relatedDealId: dealId!,
+            targetRoute: "/dealInfluenceur",
+            fromUserId: auth.currentUser?.uid || "",
+            type: "status_update",
+          });
+
+          setCandidates((prev) =>
+            prev.map((c) =>
+              c.influenceurId === influenceurId ? { ...c, status } : c
+            )
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error);
+    }
+  };
+
+  const cancelContract = async (influenceurId: string) => {
+    const dealRef = doc(db, "deals", dealId!);
+    try {
+      const dealDoc = await getDoc(dealRef);
+      if (dealDoc.exists()) {
+        const dealData = dealDoc.data();
+        if (dealData && dealData.candidatures) {
+          const updatedCandidatures = dealData.candidatures.filter(
+            (candidature: any) => candidature.influenceurId !== influenceurId
+          );
+
+          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+
+          await sendNotification({
+            toUserId: influenceurId,
+            message: `Votre contrat a été résilié.`,
+            relatedDealId: dealId!,
+            targetRoute: "/dealInfluenceur",
+            fromUserId: auth.currentUser?.uid || "",
+            type: "contract_cancelled",
+          });
+
+          setCandidates((prev) => prev.filter((c) => c.influenceurId !== influenceurId));
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la résiliation :", error);
+    }
+  };
+
+  const canceledContract = async (influenceurId: string) => {
+    const dealRef = doc(db, "deals", dealId!);
+    try {
+      const dealDoc = await getDoc(dealRef);
+      if (dealDoc.exists()) {
+        const dealData = dealDoc.data();
+        if (dealData && dealData.candidatures) {
+          const updatedCandidatures = dealData.candidatures.filter(
+            (candidature: any) => candidature.influenceurId !== influenceurId
+          );
+  
+          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+  
+          await sendNotification({
+            toUserId: influenceurId,
+            message: `Votre candidature a été refusée.`,
+            relatedDealId: dealId!,
+            targetRoute: "/dealInfluenceur",
+            fromUserId: auth.currentUser?.uid || "",
+            type: "candidature_refused",
+          });
+  
+          setCandidates((prev) => prev.filter((c) => c.influenceurId !== influenceurId));
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression :", error);
+    }
+  };
+  
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <div className="bg-white py-3 px-4 flex items-center border-b">
+        <button onClick={() => navigate(-1)} className="flex items-center text-[#FF6B2E]">
+          <ArrowLeft className="h-6 w-6 mr-1" />
+          <span className="text-xl font-medium">Retour</span>
+        </button>
+      </div>
+
+      {deal && (
+        <>
+          <div className="relative">
+            <img
+              src={deal.imageUrl || "https://via.placeholder.com/300"}
+              alt="Deal"
+              className="w-full h-48 object-cover"
+            />
+            <button className="absolute bottom-2 right-2 rounded-full p-1">
+              <img src={fillplus} alt="Edit" className="h-6 w-6" />
+            </button>
+          </div>
+
+          <div className="p-4 bg-white border-b">
+            <h1 className="text-3xl font-bold text-[#1A2C24] mb-1">{deal.title}</h1>
+            <div className="flex items-center text-sm text-[#FF6B2E]">
+              <MapPin className="w-5 h-5 mr-1" />
+              {deal.location || "Non défini"}
+            </div>
+          </div>
+
+          <div className="bg-white">
+            <div className="p-4 border-b">
+              <h2 className="font-bold mb-2 text-xl text-[#1A2C24]">Description du Deal</h2>
+              <p className="text-[#1A2C24] text-sm">
+                {deal.description || "Aucune description fournie."}
+              </p>
+            </div>
+
+            <div className="p-4 border-b">
+              <h2 className="font-bold mb-2 text-xl text-[#1A2C24]">Candidats</h2>
+
+              {candidates.length === 0 ? (
+                <p className="text-gray-500 text-sm mt-4">Aucun candidat pour ce deal pour l'instant.</p>
+              ) : (
+                <div className="space-y-3">
+                  {candidates.map((cand) => (
+                    <div
+                      key={cand.influenceurId}
+                      className="p-3 rounded-lg border border-black bg-gray-100 cursor-pointer"
+                      onClick={() => navigate(`/profilPublic/${cand.influenceurId}`, { state: { userId: cand.influenceurId } })}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-16 h-16 rounded overflow-hidden mr-3">
+                            <img
+                              src={cand.userInfo?.photoURL || "https://via.placeholder.com/100"}
+                              alt={cand.userInfo?.pseudonyme || "Influenceur"}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <p className="font-medium text-[#1A2C24]">
+                              {cand.userInfo?.pseudonyme || "Utilisateur"}
+                            </p>
+                            <div className="flex mt-1">{renderStars(cand.userInfo?.rating || 3)}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          {cand.status === "pending" && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateStatus(cand.influenceurId, "accepted");
+                                }}
+                                className="bg-[#1A2C24] text-white text-xs px-3 py-1 rounded"
+                              >
+                                ACCEPTER
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  canceledContract(cand.influenceurId);
+                                }}
+                                className="text-[#1A2C24] border border-[#1A2C24] text-xs px-3 py-1 rounded"
+                              >
+                                REFUSER
+                              </button>
+                            </>
+                          )}
+                          {cand.status === "accepted" && (
+                            <>
+                              <span className="bg-gray-300 px-3 py-1 text-xs rounded">EN COURS</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  cancelContract(cand.influenceurId);
+                                }}
+                                className="text-red-500 text-xs underline"
+                              >
+                                RÉSILIER
+                              </button>
+                            </>
+                          )}
+                          {cand.status === "refused" && (
+                            <span className="text-red-500 text-xs font-bold">REFUSÉ</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="w-full mt-auto">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex-1 py-3 bg-[#1A2C24] text-white font-bold text-center w-full"
+        >
+          RETOUR
+        </button>
+      </div>
+      <Navbar />
+    </div>
+  );
+}
