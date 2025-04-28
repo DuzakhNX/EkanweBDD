@@ -25,11 +25,11 @@ export default function BottomNavbar() {
           className={`w-6 h-6 ${pathname === "/suivideals" ? "filter-orange" : ""}`}
         />
       </button>
-      <button onClick={() => navigate("/suivideals")}>
+      <button onClick={() => navigate("/discussion")}>
         <img
           src={chat}
           alt="Chat"
-          className={`w-6 h-6 ${pathname === "/suivideals" ? "filter-orange" : ""}`}
+          className={`w-6 h-6 ${pathname === "/discussion" ? "filter-orange" : ""}`}
         />
       </button>
       <button onClick={() => navigate("/savedealspage")}>

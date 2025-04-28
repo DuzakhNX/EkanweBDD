@@ -32,11 +32,11 @@ export default function Navbar() {
           className={`w-6 h-6 ${pathname === "/dashboardpage" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
-      <button onClick={() => navigate("/dashboardpage")}>
+      <button onClick={() => navigate("/discussion")}>
         <img
           src={chat}
           alt="dashboard"
-          className={`w-6 h-6 ${pathname === "/dashboardpage" ? "filter-[#FF6B2E]" : ""}`}
+          className={`w-6 h-6 ${pathname === "/discussion" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
       <button onClick={() => navigate("/profilinfluenceur")}>
