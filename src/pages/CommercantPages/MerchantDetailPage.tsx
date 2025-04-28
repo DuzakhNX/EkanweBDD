@@ -3,7 +3,6 @@ import { auth, db } from "../../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getDocs, query, where, writeBatch, doc } from "firebase/firestore";
-import Navbar from "./Navbar";
 
 export default function MerchantDetailPage() {
   const navigate = useNavigate();
@@ -223,7 +222,6 @@ export default function MerchantDetailPage() {
           </button>
         </div>
       </div>
-      <Navbar />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
@@ -45,28 +45,30 @@ export default function DealsPage() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) return navigate("/login");
-
-        const dealsSnap = await getDocs(query(collection(db, "deals"), where("merchantId", "==", user.uid)));
-        const dealsData = dealsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setDeals(dealsData);
-
-        const influencersSnap = await getDocs(query(collection(db, "users"), where("role", "==", "influenceur")));
-        const influencersData = influencersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setInfluencers(influencersData);
-
-      } catch (error) {
-        console.error("Erreur de récupération des données:", error);
-      } finally {
-        setLoading(false);
-      }
+    const user = auth.currentUser;
+    if (!user) return navigate("/login");
+  
+    const dealsQuery = query(collection(db, "deals"), where("merchantId", "==", user.uid));
+    const influencersQuery = query(collection(db, "users"), where("role", "==", "influenceur"));
+  
+    const unsubscribeDeals = onSnapshot(dealsQuery, (snapshot) => {
+      const dealsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDeals(dealsData);
+    });
+  
+    const unsubscribeInfluencers = onSnapshot(influencersQuery, (snapshot) => {
+      const influencersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setInfluencers(influencersData);
+    });
+  
+    setLoading(false);
+  
+    return () => {
+      unsubscribeDeals();
+      unsubscribeInfluencers();
     };
-
-    fetchData();
   }, []);
+  
 
   if (loading) {
     return (

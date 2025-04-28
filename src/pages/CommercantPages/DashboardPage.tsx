@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collectionGroup, getDocs } from "firebase/firestore";
+import { collectionGroup, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import Navbar from "./Navbar";
 import {
@@ -29,19 +29,20 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      const snapshot = await getDocs(collectionGroup(db, "review"));
+    const unsubscribe = onSnapshot(collectionGroup(db, "review"), (snapshot) => {
       const currentUser = auth.currentUser;
-
+      if (!currentUser) return;
+  
       const filtered = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((review: any) => review.toUserId === currentUser?.uid);
-
+        .filter((review: any) => review.toUserId === currentUser.uid);
+  
       setReviews(filtered);
-    };
-
-    fetchReviews();
+    });
+  
+    return () => unsubscribe();
   }, []);
+  
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (

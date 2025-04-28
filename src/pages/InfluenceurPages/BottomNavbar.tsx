@@ -3,6 +3,7 @@ import home from "../../assets/home.png";
 import startistique from "../../assets/startistique.png";
 import navigationsave from "../../assets/navigationsave.png";
 import profile from "../../assets/profile.png";
+import chat from "../../assets/chat.png";
 
 export default function BottomNavbar() {
   const navigate = useNavigate();
@@ -21,6 +22,13 @@ export default function BottomNavbar() {
         <img
           src={startistique}
           alt="Stats"
+          className={`w-6 h-6 ${pathname === "/suivideals" ? "filter-orange" : ""}`}
+        />
+      </button>
+      <button onClick={() => navigate("/suivideals")}>
+        <img
+          src={chat}
+          alt="Chat"
           className={`w-6 h-6 ${pathname === "/suivideals" ? "filter-orange" : ""}`}
         />
       </button>

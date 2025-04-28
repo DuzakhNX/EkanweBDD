@@ -30,6 +30,9 @@ import WelcomeInfluenceur from './pages/EkanwePages/WelcomeInfluenceur';
 import CreatorTypeInfluenceur from './pages/EkanwePages/CreatorTypeInfluenceur';
 import ConceptInfluenceur from './pages/EkanwePages/ConceptInfluenceur';
 import PublicProfil from './pages/CommercantPages/ProfilPublic';
+import EvaluationPage from './pages/InfluenceurPages/Review';
+import ChatPage from './pages/EkanwePages/ChatPage';
+import ConversationsPage from './pages/InfluenceurPages/Discussion';
 
 function App() {
   return (
@@ -49,12 +52,15 @@ function App() {
         <Route path='/validateinscription' element={<ValidateInscription/>} />
         <Route path='/deals' element={<Deals/>} />
         <Route path='/dealseemore/:dealId' element={<DealSeeMore/>} />
+        <Route path='/review/:dealId' element={<EvaluationPage/>} />
         <Route path='/suivideals' element={<Suivis/>} />
-        <Route path='/dealdetailspage' element={<DealDetailsPage/>} />
+        <Route path='/dealdetailspage/:dealId' element={<DealDetailsPage/>} />
         <Route path='/savedealspage' element={<SaveDealsPage/>} />
         <Route path='/profile' element={<Profile/>} />
         <Route path='/notification' element={<NotificationPage/>} />
         <Route path="/profilPublic/:userId" element={<PublicProfil/>} />
+        <Route path="/chat/:chatId" element={<ChatPage/>} />
+        <Route path="/discussion" element={<ConversationsPage/>} />
 
         <Route path="/welcomeinfluenceur" element={<WelcomeInfluenceur />} />
         <Route path="/dealInfluenceur" element={<DealsPage />} />

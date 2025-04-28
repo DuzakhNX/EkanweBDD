@@ -2,60 +2,87 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { auth, db } from "../../firebase/firebase";
-import { doc, getDoc, updateDoc, collection, getDocs, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
 
 export default function DealDetailsPage() {
   const navigate = useNavigate();
-  const { dealId, candidatureId } = useParams();
+  const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
-  const [status, setStatus] = useState("sent");
+  const [status, setStatus] = useState("pending");
   const [timeline, setTimeline] = useState<any[]>([]);
-  const [review, setReview] = useState("");
 
   useEffect(() => {
+    if (!dealId) return;
+  
     const fetchData = async () => {
-      const dealDoc = await getDoc(doc(db, "deals", dealId!));
-      if (dealDoc.exists()) setDeal(dealDoc.data());
-
-      const candidatureRef = doc(db, "deals", dealId!, "candidatures", candidatureId!);
-      const candidatureSnap = await getDoc(candidatureRef);
-      if (candidatureSnap.exists()) {
-        setStatus(candidatureSnap.data().status);
+      try {
+        const dealRef = doc(db, "deals", dealId);
+        const dealSnap = await getDoc(dealRef);
+  
+        if (dealSnap.exists()) {
+          const dealData = dealSnap.data();
+          setDeal({ id: dealSnap.id, ...dealData });
+  
+          const currentUserId = auth.currentUser?.uid;
+          if (currentUserId && dealData?.candidatures) {
+            const candidature = dealData.candidatures.find(
+              (c: any) => c.influenceurId === currentUserId
+            );
+            if (candidature) {
+              setStatus(candidature.status);
+            }
+          }
+        }
+  
+        const eventsSnap = await getDocs(collection(db, "deals", dealId, "events"));
+        setTimeline(eventsSnap.docs.map((doc) => doc.data()));
+      } catch (error) {
+        console.error("Erreur lors du fetch:", error);
       }
-
-      const timelineSnap = await getDocs(collection(doc(db, "deals", dealId!), "events"));
-      setTimeline(timelineSnap.docs.map(doc => doc.data()));
     };
+  
     fetchData();
-  }, [dealId, candidatureId]);
+  }, [dealId]);
+  
 
   const handleMarkAsDone = async () => {
-    const candidatureRef = doc(db, "deals", dealId!, "candidatures", candidatureId!);
-    await updateDoc(candidatureRef, { status: "completed", progress: "completed" });
-
-    await sendNotification({
-      toUserId: deal.createdBy,
-      fromUserId: auth.currentUser!.uid,
-      message: `L'influenceur a marqué le deal comme terminé.`,
-      relatedDealId: dealId!,
-      targetRoute: `/deals/${dealId}/candidatures/${candidatureId}/review`,
-      type: "deal_completed"
-    });
-
-    setStatus("completed");
-  };
-
-  const handleReviewSubmit = async () => {
-    const reviewRef = doc(db, "deals", dealId!, "candidatures", candidatureId!, "review");
-    await setDoc(reviewRef, {
-      author: auth.currentUser!.uid,
-      text: review,
-      createdAt: new Date().toISOString()
-    });
-    alert("Review envoyée !");
-    setReview("");
+    try {
+      const dealRef = doc(db, "deals", dealId!);
+      const dealSnap = await getDoc(dealRef);
+  
+      if (!dealSnap.exists()) throw new Error("Deal introuvable");
+  
+      const dealData = dealSnap.data();
+      const currentUserId = auth.currentUser?.uid;
+  
+      if (!currentUserId) throw new Error("Utilisateur non connecté");
+  
+      const updatedCandidatures = dealData?.candidatures?.map((cand: any) => {
+        if (cand.influenceurId === currentUserId) {
+          return { ...cand, status: "completed", progress: "completed" };
+        }
+        return cand;
+      });
+  
+      await updateDoc(dealRef, {
+        candidatures: updatedCandidatures,
+      });
+  
+      await sendNotification({
+        toUserId: dealData.merchantId,
+        fromUserId: currentUserId,
+        message: `L'influenceur a marqué le deal comme terminé.`,
+        relatedDealId: dealId!,
+        targetRoute: `/dealinfluenceur`,
+        type: "deal_completed",
+      });
+  
+      setStatus("completed");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du deal :", error);
+    }
   };
 
   const getCurrentStep = () => {
@@ -109,25 +136,6 @@ export default function DealDetailsPage() {
           </button>
         )}
       </div>
-
-      {status === "completed" && (
-        <div className="px-4 mb-6">
-          <h3 className="font-bold text-xl mb-2">Laisser un avis</h3>
-          <textarea
-            className="w-full p-2 border border-gray-300 rounded"
-            rows={4}
-            value={review}
-            onChange={(e) => setReview(e.target.value)}
-            placeholder="Partage ton retour sur le commerçant..."
-          />
-          <button
-            onClick={handleReviewSubmit}
-            className="mt-2 bg-[#1A2C24] text-white py-2 px-4 rounded-lg"
-          >
-            Soumettre
-          </button>
-        </div>
-      )}
 
       <div className="px-4 mb-20">
         <h3 className="font-semibold text-xl text-[#1A2C24]">Timeline</h3>

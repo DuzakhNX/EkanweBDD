@@ -3,6 +3,7 @@ import home from "../../assets/home.png";
 import startistique from "../../assets/startistique.png";
 import dashboard from "../../assets/dashboard.png";
 import profile from "../../assets/profile.png";
+import chat from "../../assets/chat.png"
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -27,6 +28,13 @@ export default function Navbar() {
       <button onClick={() => navigate("/dashboardpage")}>
         <img
           src={dashboard}
+          alt="dashboard"
+          className={`w-6 h-6 ${pathname === "/dashboardpage" ? "filter-[#FF6B2E]" : ""}`}
+        />
+      </button>
+      <button onClick={() => navigate("/dashboardpage")}>
+        <img
+          src={chat}
           alt="dashboard"
           className={`w-6 h-6 ${pathname === "/dashboardpage" ? "filter-[#FF6B2E]" : ""}`}
         />

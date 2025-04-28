@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, updateDoc, doc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import sign from "../../assets/ekanwesign.png";
 import loupe from "../../assets/loupe.png";
@@ -19,34 +19,62 @@ export default function NotifyPage() {
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const notifRef = collection(db, "users", user.uid, "notifications");
-      const notifSnap = await getDocs(query(notifRef, orderBy("createdAt", "desc")));
-
-      const notifList = notifSnap.docs.map((doc) => ({
+    const user = auth.currentUser;
+    if (!user) return;
+  
+    const notifRef = query(
+      collection(db, "users", user.uid, "notifications"),
+      orderBy("createdAt", "desc")
+    );
+  
+    const unsubscribe = onSnapshot(notifRef, (snapshot) => {
+      const notifList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as NotificationType[];
-
+  
       setNotifications(notifList);
-    };
-
-    fetchNotifications();
+    });
+  
+    return () => unsubscribe();
   }, []);
+  
 
-  const handleNotificationClick = (notif: NotificationType) => {
-    if (notif.targetRoute) {
-      navigate(notif.targetRoute);
+  const handleNotificationClick = async (notif: NotificationType) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Marquer la notification comme lue
+    try {
+      const notifDocRef = doc(db, "users", user.uid, "notifications", notif.id);
+      await updateDoc(notifDocRef, { read: true });
+
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+      );
+
+      if (notif.targetRoute) {
+        navigate(notif.targetRoute);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la notification :", error);
     }
   };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-32 pt-5">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-3xl font-bold">Notifications</h1>
+        <div className="relative">
+          <h1 className="text-3xl font-bold">Notifications</h1>
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-4 bg-red-500 text-white rounded-full text-xs px-2">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+
         <div className="flex items-center space-x-4">
           <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
         </div>
@@ -74,7 +102,9 @@ export default function NotifyPage() {
             <div
               key={notif.id}
               onClick={() => handleNotificationClick(notif)}
-              className="bg-white p-4 rounded-lg shadow-lg mb-4 cursor-pointer hover:bg-gray-100 transition"
+              className={`p-4 rounded-lg shadow-lg mb-4 cursor-pointer transition ${
+                notif.read ? "bg-white" : "bg-orange-100"
+              }`}
             >
               <p className="text-sm font-semibold">{notif.message}</p>
             </div>

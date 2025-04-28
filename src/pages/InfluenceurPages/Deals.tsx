@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { collection, getDocs, query } from "firebase/firestore";
+import { collection, onSnapshot, query } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
@@ -21,19 +21,18 @@ export default function Deals() {
   const otherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchDeals = async () => {
-      const q = query(collection(db, "deals"));
-      const snapshot = await getDocs(q);
+    const q = query(collection(db, "deals"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const allDeals = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data()
       }));
-
       setDeals(allDeals);
-    };
-
-    fetchDeals();
+    });
+  
+    return () => unsubscribe();
   }, []);
+  
 
   const scroll = (ref: React.RefObject<HTMLDivElement>, direction: "left" | "right") => {
     if (ref.current) {
@@ -211,7 +210,7 @@ const DealCard = ({ deal, saved, onSave }: any) => {
     const candidatures = dealData?.candidatures || [];
 
     if (candidatures.some((cand: Cand) => cand.influenceurId === user.uid)) {
-      navigate(`/dealdetails/${deal.id}`);
+      navigate(`/dealdetailspage/${deal.id}`);
     } else {
       navigate(`/dealSeeMore/${deal.id}`)
     }

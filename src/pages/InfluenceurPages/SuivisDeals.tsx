@@ -6,7 +6,7 @@ import menu from "../../assets/menu.png";
 import { ArrowRight } from "lucide-react";
 import BottomNavbar from "./BottomNavbar";
 import { useNavigate } from "react-router-dom";
-import { getDoc, getDocs, query, where, collectionGroup } from "firebase/firestore";
+import { getDoc, onSnapshot, query, where, collectionGroup } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 
 const Suivis = () => {
@@ -16,13 +16,12 @@ const Suivis = () => {
   const [candidatures, setCandidatures] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchCandidatures = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const q = query(collectionGroup(db, "candidatures"), where("influenceurId", "==", user.uid));
-      const snapshot = await getDocs(q);
-
+    const user = auth.currentUser;
+    if (!user) return;
+  
+    const q = query(collectionGroup(db, "candidatures"), where("influenceurId", "==", user.uid));
+  
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const all = await Promise.all(
         snapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
@@ -37,12 +36,13 @@ const Suivis = () => {
           };
         })
       );
-
+  
       setCandidatures(all);
-    };
-
-    fetchCandidatures();
+    });
+  
+    return () => unsubscribe();
   }, []);
+  
 
   const getProgressStyles = (status: string) => {
     const stages = ["sent", "accepted", "completed"];
