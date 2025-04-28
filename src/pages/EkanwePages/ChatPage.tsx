@@ -1,68 +1,66 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import sign from "../../assets/ekanwesign.png";
-import { db, auth } from "../../firebase/firebase";
-import {
-  doc,
-  onSnapshot,
-  updateDoc,
-  arrayUnion,
-} from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import EmojiPicker from "emoji-picker-react";
+import { format } from "timeago.js";
+
+interface Message {
+  id: number;
+  text: string;
+  isSent: boolean;
+  timestamp: Date;
+  img?: string;
+}
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const { chatId } = useParams();
   const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState<any[]>([]);
-  const currentUser = auth.currentUser;
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!chatId) return;
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    const chatRef = doc(db, "chats", chatId);
+  const handleSend = () => {
+    if (!newMessage.trim() && !imagePreview) return;
 
-    const unsub = onSnapshot(chatRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setMessages(data.messages || []);
-      }
-    });
-
-    return () => unsub();
-  }, [chatId]);
-
-  const handleSend = async () => {
-    if (!newMessage.trim()) return;
-    if (!chatId || !currentUser) return;
-
-    const chatRef = doc(db, "chats", chatId);
-    const userChatsRef = doc(db, "userchats", currentUser.uid);
-
-    const message = {
+    const newMsg: Message = {
       id: Date.now(),
-      senderId: currentUser.uid,
       text: newMessage,
-      createdAt: new Date().toISOString(),
+      isSent: true,
+      timestamp: new Date(),
+      img: imagePreview || undefined,
     };
 
-    try {
-      await updateDoc(chatRef, {
-        messages: arrayUnion(message),
-      });
+    setMessages(prev => [...prev, newMsg]);
+    setNewMessage("");
+    setImagePreview(null);
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
+  };
 
-      await updateDoc(userChatsRef, {
-        chats: arrayUnion({
-          chatId: chatId,
-          lastMessage: newMessage,
-          receiverId: "",
-          updatedAt: Date.now(),
-        }),
-      });
+  const handleEmojiClick = (emojiData: any) => {
+    setNewMessage(prev => prev + emojiData.emoji);
+  };
 
-      setNewMessage("");
-    } catch (err) {
-      console.error("Erreur d'envoi de message :", err);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const cancelImage = () => {
+    setImagePreview(null);
   };
 
   return (
@@ -77,7 +75,7 @@ export default function ChatPage() {
           </button>
           <div className="flex items-center">
             <div className="w-10 h-10 bg-gray-300 rounded-full mr-3"></div>
-            <h1 className="text-xl font-semibold">Discussion</h1>
+            <h1 className="text-xl font-semibold">Nom du contact</h1>
           </div>
         </div>
         <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
@@ -88,39 +86,86 @@ export default function ChatPage() {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.senderId === currentUser?.uid ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.isSent ? 'justify-end' : 'justify-start'}`}
           >
             <div
               className={`max-w-[70%] p-3 rounded-lg ${
-                message.senderId === currentUser?.uid
+                message.isSent
                   ? 'bg-[#1A2C24] text-white rounded-br-none'
                   : 'bg-white rounded-bl-none'
               }`}
             >
+              {message.img && (
+                <img
+                  src={message.img}
+                  alt="Envoyé"
+                  className="mb-2 rounded-lg max-h-60 object-cover"
+                />
+              )}
               <p className="text-sm">{message.text}</p>
-              <p className={`text-xs ${message.senderId === currentUser?.uid ? 'text-gray-300' : 'text-gray-500'} text-right`}>
-                {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <p className={`text-xs ${message.isSent ? 'text-gray-300' : 'text-gray-500'} text-right`}>
+                {format(message.timestamp)}
               </p>
             </div>
           </div>
         ))}
+        <div ref={endRef} />
       </div>
 
+      {/* IMAGE PREVIEW */}
+      {imagePreview && (
+        <div className="px-4 mb-2">
+          <div className="relative w-32">
+            <img
+              src={imagePreview}
+              alt="Aperçu"
+              className="rounded-lg shadow-lg"
+            />
+            <button
+              onClick={cancelImage}
+              className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-full"
+            >
+              ✖
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ENVOI */}
       <div className="p-4 bg-white/10 border-t border-gray-200">
         <div className="flex items-center space-x-2">
+          <label className="cursor-pointer">
+            📎
+            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
+          </label>
+
           <input
             type="text"
+            ref={inputRef}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Écrivez votre message..."
             className="flex-1 bg-white/10 border border-black rounded-lg px-4 py-2 outline-none"
           />
+
+          <button
+            onClick={() => setShowEmojiPicker(prev => !prev)}
+            className="text-2xl"
+          >
+            😊
+          </button>
+
           <button
             onClick={handleSend}
             className="bg-[#1A2C24] text-white px-4 py-2 rounded-lg"
           >
             Envoyer
           </button>
+        </div>
+        <div className={`transition-all duration-300 ${showEmojiPicker ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+          {showEmojiPicker && (
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          )}
         </div>
       </div>
     </div>

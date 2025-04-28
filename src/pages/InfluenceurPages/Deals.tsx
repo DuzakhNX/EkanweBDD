@@ -137,9 +137,9 @@ const DealCard = ({ deal, saved, onSave }: any) => {
     influenceurId: string;
     title: string;
     description: string;
-    interest: string; // Cela pourrait être un type enum si tu veux restreindre les valeurs possibles
+    interest: string;
     imageUrl?: string;
-    candidatures?: { influenceurId: string; status: string }[]; // Liste des candidatures avec les informations sur l'influenceur
+    candidatures?: { influenceurId: string; status: string }[];
     merchantId: string;
   }
 
