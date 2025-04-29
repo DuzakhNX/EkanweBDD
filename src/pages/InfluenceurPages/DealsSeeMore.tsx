@@ -91,74 +91,72 @@ export default function DealsSeeMorePageInfluenceur() {
         });
       }
 
-      const merchantId = deal?.merchantId;
-      const influenceurId = auth.currentUser.uid;
-      const chatId = [merchantId, influenceurId].sort().join("");
-
-      const chatRef = doc(db, "chats", chatId);
+      const combinedId = [auth.currentUser.uid, deal.merchantId].sort().join("");
+      const chatRef = doc(db, "chats", combinedId);
       const chatSnap = await getDoc(chatRef);
 
+      const firstMessage = {
+        senderId: auth.currentUser.uid,
+        text: `Hello, je suis intéressé par le deal "${deal.title}". Pouvez-vous m'en dire plus ?`,
+        createdAt: new Date(),
+      };
+
       if (!chatSnap.exists()) {
-        await updateDoc(chatRef, {
-          messages: [
-            {
-              senderId: influenceurId,
-              text: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
-              createdAt: new Date(),
-            },
-          ],
-        }).catch(async (err) => {
-          if (err.code === "not-found") {
-            await setDoc(chatRef, {
-              messages: [
-                {
-                  senderId: influenceurId,
-                  text: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
-                  createdAt: new Date(),
-                },
-              ],
-            });
+        await updateDoc(doc(db, "chats", combinedId), {
+          messages: [firstMessage],
+        }).catch(async (error) => {
+          if (error.code === "not-found") {
+            await setDoc(chatRef, { messages: [firstMessage] });
+          } else {
+            throw error;
           }
         });
-
-        const userChatRefInfluenceur = doc(db, "userchats", influenceurId);
-        const userChatRefMerchant = doc(db, "userchats", merchantId);
-
-        const newChatData = {
-          chatId,
-          lastMessage: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
-          updatedAt: Date.now(),
-          receiverId: merchantId,
-          read: true,
-        };
-
-        const newChatDataForMerchant = {
-          chatId,
-          lastMessage: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
-          updatedAt: Date.now(),
-          receiverId: influenceurId,
-          read: false,
-        };
-
-        await Promise.all([
-          updateDoc(userChatRefInfluenceur, { chats: arrayUnion(newChatData) }).catch(async (err) => {
-            if (err.code === "not-found") {
-              await setDoc(userChatRefInfluenceur, { chats: [newChatData] });
-            }
-          }),
-          updateDoc(userChatRefMerchant, { chats: arrayUnion(newChatDataForMerchant) }).catch(async (err) => {
-            if (err.code === "not-found") {
-              await setDoc(userChatRefMerchant, { chats: [newChatDataForMerchant] });
-            }
-          }),
-        ]);
+      } else {
+        await updateDoc(chatRef, {
+          messages: arrayUnion(firstMessage),
+        });
       }
 
-      setAlreadyApplied(true);
-      alert("Votre candidature a été envoyée !");
+      const senderChatsRef = doc(db, "userchats", auth.currentUser.uid);
+      const receiverChatsRef = doc(db, "userchats", deal.merchantId);
+
+      const senderChatsSnap = await getDoc(senderChatsRef);
+      const receiverChatsSnap = await getDoc(receiverChatsRef);
+
+      const updateChatsList = (chatsList: any[]) => {
+        const index = chatsList.findIndex((c) => c.chatId === combinedId);
+        if (index !== -1) {
+          chatsList[index].lastMessage = firstMessage.text;
+          chatsList[index].updatedAt = Date.now();
+          chatsList[index].read = true;
+        } else {
+          chatsList.push({
+            chatId: combinedId,
+            lastMessage: firstMessage.text,
+            receiverId: deal.merchantId,
+            updatedAt: Date.now(),
+            read: true,
+          });
+        }
+        return chatsList;
+      };
+
+      if (senderChatsSnap.exists()) {
+        await updateDoc(senderChatsRef, {
+          chats: updateChatsList(senderChatsSnap.data().chats),
+        });
+      }
+
+      if (receiverChatsSnap.exists()) {
+        await updateDoc(receiverChatsRef, {
+          chats: updateChatsList(receiverChatsSnap.data().chats),
+        });
+      }
+
+      alert("Votre candidature a été envoyée avec succès !");
     } catch (error) {
-      console.error("Erreur lors de la candidature:", error);
-      alert("Erreur lors de la candidature.");
+      console.error("Erreur lors de la candidature :", error);
+      alert("Erreur lors de la candidature. Veuillez réessayer.");
     }
   };
 
