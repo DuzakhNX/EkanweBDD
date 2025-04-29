@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import fillplus from "../../assets/fillplus.png";
 import { auth, db } from "../../firebase/firebase";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
 import { Loader2 } from "lucide-react";
 
@@ -70,7 +70,7 @@ export default function DealsSeeMorePageInfluenceur() {
         alert("Vous avez déjà postulé à ce deal.");
         return;
       }
-  
+
       const newCandidature = {
         influenceurId: auth.currentUser.uid,
         status: "Envoyé",
@@ -91,6 +91,69 @@ export default function DealsSeeMorePageInfluenceur() {
         });
       }
 
+      const merchantId = deal?.merchantId;
+      const influenceurId = auth.currentUser.uid;
+      const chatId = [merchantId, influenceurId].sort().join("");
+
+      const chatRef = doc(db, "chats", chatId);
+      const chatSnap = await getDoc(chatRef);
+
+      if (!chatSnap.exists()) {
+        await updateDoc(chatRef, {
+          messages: [
+            {
+              senderId: influenceurId,
+              text: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
+              createdAt: new Date(),
+            },
+          ],
+        }).catch(async (err) => {
+          if (err.code === "not-found") {
+            await setDoc(chatRef, {
+              messages: [
+                {
+                  senderId: influenceurId,
+                  text: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
+                  createdAt: new Date(),
+                },
+              ],
+            });
+          }
+        });
+
+        const userChatRefInfluenceur = doc(db, "userchats", influenceurId);
+        const userChatRefMerchant = doc(db, "userchats", merchantId);
+
+        const newChatData = {
+          chatId,
+          lastMessage: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
+          updatedAt: Date.now(),
+          receiverId: merchantId,
+          read: true,
+        };
+
+        const newChatDataForMerchant = {
+          chatId,
+          lastMessage: `Hello, je suis intéressé par le deal ${deal.title}. Pouvez-vous m'en dire plus ?`,
+          updatedAt: Date.now(),
+          receiverId: influenceurId,
+          read: false,
+        };
+
+        await Promise.all([
+          updateDoc(userChatRefInfluenceur, { chats: arrayUnion(newChatData) }).catch(async (err) => {
+            if (err.code === "not-found") {
+              await setDoc(userChatRefInfluenceur, { chats: [newChatData] });
+            }
+          }),
+          updateDoc(userChatRefMerchant, { chats: arrayUnion(newChatDataForMerchant) }).catch(async (err) => {
+            if (err.code === "not-found") {
+              await setDoc(userChatRefMerchant, { chats: [newChatDataForMerchant] });
+            }
+          }),
+        ]);
+      }
+
       setAlreadyApplied(true);
       alert("Votre candidature a été envoyée !");
     } catch (error) {
@@ -98,6 +161,7 @@ export default function DealsSeeMorePageInfluenceur() {
       alert("Erreur lors de la candidature.");
     }
   };
+
 
   if (loading) {
     return (

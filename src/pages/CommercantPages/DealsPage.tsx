@@ -153,7 +153,6 @@ export default function DealsPageCommercant() {
                           <img src={savedItems[index] ? fullsave : save} alt="Save" className="w-6 h-6" />
                         </button>
                       </div>
-                      <p className="text-xs text-white mb-5">{deal.id}</p>
                       <p className="text-xs text-white mb-2">
                         <span className="font-bold">Description :</span> {deal.description || "-"}
                       </p>

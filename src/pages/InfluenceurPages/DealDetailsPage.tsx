@@ -126,15 +126,12 @@ export default function DealDetailsPageInfluenceur() {
         <ArrowLeft className="cursor-pointer" onClick={() => navigate(-1)} />
         <span className="ml-2">Deals</span>
       </div>
-
       <div className="w-full h-48">
         <img src={deal.imageUrl} alt="Commerçant" className="w-full h-full object-cover" />
       </div>
-
       <div className="px-4 py-2">
         <div className="flex justify-between mb-1 text-[#1A2C24] items-center text-2xl font-semibold">
           <span>{deal.title}</span>
-          <span className="text-[#FF6B2E] text-sm">{dealId}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-4">
           <MapPin className="w-4 h-4" />

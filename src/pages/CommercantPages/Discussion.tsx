@@ -5,22 +5,22 @@ import { db, auth } from "../../firebase/firebase";
 import sign from "../../assets/ekanwesign.png";
 import loupe from "../../assets/loupe.png";
 import menu from "../../assets/menu.png";
-import Navbar from "./Navbar";
 import AddUser from "../EkanwePages/AddUser";
+import Navbar from "./Navbar";
 
 interface ChatItem {
     chatId: string;
     lastMessage: string;
     receiverId: string;
     updatedAt: number;
+    read: boolean;
     user?: {
         pseudonyme: string;
         photoURL?: string;
-        blocked?: string[];
     };
 }
 
-export default function DiscussionPageCommercant() {
+export default function DiscussionPageInfluenceur() {
     const navigate = useNavigate();
     const [chats, setChats] = useState<ChatItem[]>([]);
     const [input, setInput] = useState("");
@@ -47,7 +47,6 @@ export default function DiscussionPageCommercant() {
             });
 
             const chatData = await Promise.all(promises);
-
             setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt));
         });
 
@@ -56,22 +55,17 @@ export default function DiscussionPageCommercant() {
 
     const handleSelect = async (chat: ChatItem) => {
         if (!currentUser) return;
-
         const userChatsRef = doc(db, "userchats", currentUser.uid);
-
         try {
             const updatedChats = chats.map((item) => {
                 const { user, ...rest } = item;
+                if (item.chatId === chat.chatId) {
+                    return { ...rest, read: true };
+                }
                 return rest;
             });
-
-            const chatIndex = updatedChats.findIndex((item) => item.chatId === chat.chatId);
-            if (chatIndex !== -1) {
-                updatedChats[chatIndex].lastMessage = "";
-            }
-
             await updateDoc(userChatsRef, { chats: updatedChats });
-            navigate(`/chat/${chat.chatId}`);
+            navigate(`/chat/${chat.chatId}`, { state: { pseudonyme: chat.user?.pseudonyme, photoURL: chat.user?.photoURL } });
         } catch (error) {
             console.error("Erreur lors de la mise à jour du chat :", error);
         }
@@ -140,9 +134,16 @@ export default function DiscussionPageCommercant() {
                                             {new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-600 truncate">
-                                        {chat.lastMessage || "Commencez la conversation..."}
-                                    </p>
+                                    <div className="flex justify-between items-center">
+                                        <p className={`text-sm truncate ${chat.read ? "text-gray-600" : "text-black font-bold"}`}>
+                                            {chat.lastMessage || "Commencez la conversation..."}
+                                        </p>
+                                        {!chat.read && (
+                                            <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-2">
+                                                1
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

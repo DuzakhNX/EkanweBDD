@@ -56,7 +56,7 @@ export default function ChatPage() {
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
         const userData = userSnap.data();
-        setUserRole(userData.role); // 👈 suppose que tu as un champ "role" dans ta collection users
+        setUserRole(userData.role);
       }
     };
 
@@ -85,12 +85,10 @@ export default function ChatPage() {
     };
 
     try {
-      // 1. Ajouter le message dans Firestore
       await updateDoc(chatRef, {
         messages: arrayUnion(newMsg),
       });
 
-      // 2. Mettre à jour "userchats" pour les 2 utilisateurs
       const userChatsRefSender = doc(db, "userchats", senderId);
       const userChatsRefReceiver = doc(db, "userchats", receiverId);
 
@@ -120,7 +118,6 @@ export default function ChatPage() {
         });
       }
 
-      // 3. Envoyer une notification à l'autre utilisateur
       await sendNotification({
         toUserId: receiverId,
         fromUserId: senderId,
