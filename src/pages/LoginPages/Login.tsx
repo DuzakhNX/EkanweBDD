@@ -36,7 +36,7 @@ export default function LoginPage() {
         const role = data.role;
         if (role !== userData?.role) {
           alert('Vous n\'êtes pas un ' + role);
-        } else if (data.inscription === "Non terminé") {
+        } else if (data.inscription === "Non Terminé") {
           navigate("/register");
         } else if (role === "commerçant") {
           navigate("/dealscommercant");

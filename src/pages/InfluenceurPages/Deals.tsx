@@ -169,7 +169,7 @@ const DealCard = ({ deal, saved, onSave }: any) => {
 
       const newCandidature = {
         influenceurId: user.uid,
-        status: "pending",
+        status: "Envoyé",
       };
 
       await updateDoc(dealRef, {

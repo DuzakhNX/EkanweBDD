@@ -25,6 +25,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<"commercant" | "influenceur" | null>(null);
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +48,20 @@ export default function ChatPage() {
 
     return () => unsub();
   }, [chatId]);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      if (!auth.currentUser) return;
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setUserRole(userData.role); // 👈 suppose que tu as un champ "role" dans ta collection users
+      }
+    };
+
+    fetchRole();
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -149,7 +164,16 @@ export default function ChatPage() {
       {/* HEADER */}
       <div className="flex items-center justify-between px-4 py-4 bg-white/10 border-b border-gray-200">
         <div className="flex items-center">
-          <button onClick={() => navigate("/discussion")} className="mr-4">
+          <button
+            onClick={() => {
+              if (userRole === "commercant") {
+                navigate("/discussioncommercant");
+              } else {
+                navigate("/discussioninfluenceur");
+              }
+            }}
+            className="mr-4"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>

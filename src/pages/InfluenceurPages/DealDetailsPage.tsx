@@ -10,7 +10,7 @@ export default function DealDetailsPageInfluenceur() {
   const navigate = useNavigate();
   const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState("Envoyé");
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<{ image: string; likes: number; shares: number }[]>([]);
   const [hasReviewed, setHasReviewed] = useState(false);
@@ -64,7 +64,7 @@ export default function DealDetailsPageInfluenceur() {
 
       const updatedCandidatures = dealData?.candidatures?.map((cand: any) => {
         if (cand.influenceurId === currentUserId) {
-          return { ...cand, status: "approbation" };
+          return { ...cand, status: "Approbation" };
         }
         return cand;
       });
@@ -76,13 +76,13 @@ export default function DealDetailsPageInfluenceur() {
       await sendNotification({
         toUserId: dealData.merchantId,
         fromUserId: currentUserId,
-        message: `L'influenceur a terminé sa mission et attend votre validation.`,
+        message: `L'influenceur a Terminé sa mission et attend votre validation.`,
         relatedDealId: dealId!,
-        targetRoute: `/suividealsCommerçant`,
+        targetRoute: `/suividealscommercant`,
         type: "approval_request",
       });
 
-      setStatus("approbation");
+      setStatus("Approbation");
     } catch (error) {
       console.error("Erreur lors de la mise à jour du deal :", error);
     }
@@ -110,10 +110,10 @@ export default function DealDetailsPageInfluenceur() {
 
   const getCurrentStep = () => {
     switch (status) {
-      case "sent": return 1;
-      case "accepted": return 2;
-      case "approbation": return 3;
-      case "terminé": return 4;
+      case "Envoyé": return 1;
+      case "Accepté": return 2;
+      case "Approbation": return 3;
+      case "Terminé": return 4;
       default: return 1;
     }
   };
@@ -147,10 +147,10 @@ export default function DealDetailsPageInfluenceur() {
       </div>
 
       <div className="px-4 mb-6">
-        <ProgressRibbon currentStep={getCurrentStep()} />
+      <ProgressRibbon currentStep={getCurrentStep()} status={status} />
       </div>
 
-      {status === "accepted" && (
+      {status === "Accepté" && (
         <div className="px-4 mb-6">
           <label className="block mb-2 text-sm font-medium text-gray-700">Captures d'écran des actions réalisées :</label>
           <input
@@ -168,14 +168,14 @@ export default function DealDetailsPageInfluenceur() {
                   placeholder="Likes"
                   value={upload.likes}
                   onChange={(e) => handleUpdateLikes(index, "likes", +e.target.value)}
-                  className="border p-2 rounded w-1/2"
+                  className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
                 />
                 <input
                   type="number"
                   placeholder="Partages"
                   value={upload.shares}
                   onChange={(e) => handleUpdateLikes(index, "shares", +e.target.value)}
-                  className="border p-2 rounded w-1/2"
+                  className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
                 />
               </div>
             </div>
@@ -183,36 +183,40 @@ export default function DealDetailsPageInfluenceur() {
         </div>
       )}
 
-      {status === "accepted" && (
+      {status === "Refusé" ? (
+        <div className="px-4 mb-6">
+          <button
+            disabled
+            className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold"
+          >
+            Candidature Refusée
+          </button>
+        </div>
+      ) : status === "Accepté" ? (
         <div className="px-4 mb-6">
           <button
             onClick={handleMarkAsDone}
             className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-semibold"
           >
-            Marquer comme terminé
+            Marquer comme Terminé
           </button>
         </div>
-      )}
-
-      {status === "approbation" && (
+      ) : status === "Approbation" ? (
         <div className="px-4 mb-6">
           <button
             disabled
             className="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold"
           >
-            En attente d'approbation du commerçant
+            En attente d'Approbation du commerçant
           </button>
         </div>
-      )}
-
-      {status === "terminé" && (
+      ) : status === "Terminé" && (
         <div className="px-4 mb-6">
           <button
             onClick={() => !hasReviewed && navigate(`/reviewinfluenceur/${dealId}`)}
             disabled={hasReviewed}
-            className={`w-full ${
-              hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"
-            } text-white py-2 rounded-lg font-semibold`}
+            className={`w-full ${hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"
+              } text-white py-2 rounded-lg font-semibold`}
           >
             {hasReviewed ? "Déjà évalué" : "Noter le commerçant"}
           </button>
@@ -242,7 +246,15 @@ export default function DealDetailsPageInfluenceur() {
   );
 }
 
-const ProgressRibbon = ({ currentStep = 1 }: { currentStep: number }) => {
+const ProgressRibbon = ({ currentStep = 1, status }: { currentStep: number, status: string }) => {
+  if (status === "Refusé") {
+    return (
+      <div className="w-full bg-red-500 rounded-lg p-3 text-center">
+        <span className="text-white font-bold">Candidature Refusée</span>
+      </div>
+    );
+  }
+
   const steps = ["Envoyé", "Accepté", "Approbation", "Terminé"];
   return (
     <div className="w-full bg-[#1A2C24] rounded-lg p-3">

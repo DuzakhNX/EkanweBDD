@@ -21,7 +21,7 @@ export default function PortfolioStep() {
       await updateDoc(doc(db, "users", user.uid), {
         portfolioLink: finalLink,
         statutInscription: "en_attente",
-        inscription: "terminé"
+        inscription: "Terminé"
       });
 
       // await emailjs.send(

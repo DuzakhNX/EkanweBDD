@@ -52,8 +52,8 @@ const SuivisDealsPageInfluenceur = () => {
     const currentStageIndex = stages.indexOf(status);
 
     return {
-      sent: { text: "font-bold text-[#1A2C24]" },
-      accepted: { text: currentStageIndex >= 1 ? "font-bold text-[#1A2C24]" : "text-gray-500" },
+      Envoyé: { text: "font-bold text-[#1A2C24]" },
+      Accepté: { text: currentStageIndex >= 1 ? "font-bold text-[#1A2C24]" : "text-gray-500" },
       completed: { text: currentStageIndex >= 2 ? "font-bold text-[#1A2C24]" : "text-gray-500" },
       line1: currentStageIndex >= 1 ? "bg-[#1A2C24] h-0.5 w-10 mx-1" : "bg-gray-300 h-0.5 w-10 mx-1 border-dashed",
       line2: currentStageIndex >= 2 ? "bg-[#1A2C24] h-0.5 w-10 mx-1" : "bg-gray-300 h-0.5 w-10 mx-1 border-dashed",
@@ -128,9 +128,9 @@ const SuivisDealsPageInfluenceur = () => {
                 </div>
 
                 <div className="flex items-center mt-2">
-                  <span className={`text-xs ${progressStyles.sent.text}`}>Envoyé</span>
+                  <span className={`text-xs ${progressStyles.Envoyé.text}`}>Envoyé</span>
                   <div className={progressStyles.line1}></div>
-                  <span className={`text-xs ${progressStyles.accepted.text}`}>Accepté</span>
+                  <span className={`text-xs ${progressStyles.Accepté.text}`}>Accepté</span>
                   <div className={progressStyles.line2}></div>
                   <span className={`text-xs ${progressStyles.completed.text}`}>Effectué</span>
                 </div>

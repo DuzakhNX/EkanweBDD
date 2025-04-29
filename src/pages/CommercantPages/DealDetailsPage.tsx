@@ -50,7 +50,7 @@ export default function DealDetailPageCommercant() {
 
       const updatedCandidatures = dealData.candidatures.map((cand: any) => {
         if (cand.influenceurId === influenceurId) {
-          return { ...cand, status: "terminé" };
+          return { ...cand, status: "Terminé" };
         }
         return cand;
       });
@@ -66,9 +66,9 @@ export default function DealDetailPageCommercant() {
         type: "deal_approved",
       });
 
-      setCandidature((prev: any) => ({ ...prev, status: "terminé" }));
+      setCandidature((prev: any) => ({ ...prev, status: "Terminé" }));
     } catch (error) {
-      console.error("Erreur lors de l'approbation :", error);
+      console.error("Erreur lors de l'Approbation :", error);
     }
   };
 
@@ -142,7 +142,7 @@ export default function DealDetailPageCommercant() {
       )}
 
       {/* 📄 Review de l'influenceur */}
-      {candidature.status === "terminé" && candidature.review && (
+      {candidature.status === "Terminé" && candidature.review && (
         <div className="px-4 mb-6">
           <h2 className="text-lg font-semibold mb-2">Avis laissé :</h2>
           <p className="text-gray-700">"{candidature.review.text}"</p>
@@ -150,7 +150,7 @@ export default function DealDetailPageCommercant() {
       )}
 
       {/* ✅ Boutons Approbation / Résiliation */}
-      {candidature.status === "approbation" && (
+      {candidature.status === "Approbation" && (
         <div className="px-4 flex flex-col gap-4 mb-10">
           <button
             onClick={handleApprove}
@@ -173,10 +173,10 @@ export default function DealDetailPageCommercant() {
 const ProgressRibbon = ({ currentStatus }: { currentStatus: string }) => {
   const steps = ["Envoyé", "Accepté", "Approbation", "Terminé"];
   const currentStep = {
-    sent: 1,
-    accepted: 2,
-    approbation: 3,
-    terminé: 4,
+    Envoyé: 1,
+    Accepté: 2,
+    Approbation: 3,
+    Terminé: 4,
   }[currentStatus] || 1;
 
   return (

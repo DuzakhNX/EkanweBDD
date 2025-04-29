@@ -73,7 +73,7 @@ export default function DealsSeeMorePageInfluenceur() {
   
       const newCandidature = {
         influenceurId: auth.currentUser.uid,
-        status: "pending",
+        status: "Envoyé",
       };
 
       await updateDoc(dealRef, {

@@ -43,7 +43,7 @@ export default function DealCandidatesPageCommercant() {
               return {
                 influenceurId: userId,
                 userInfo: userSnap.data(),
-                status: candidature.status || "pending",
+                status: candidature.status || "Envoyé",
               };
             })
           );
@@ -87,9 +87,9 @@ export default function DealCandidatesPageCommercant() {
 
           await sendNotification({
             toUserId: influenceurId,
-            message: `Votre candidature a été ${status === "accepted" ? "acceptée" : "refusée"}.`,
+            message: `Votre candidature a été ${status === "Accepté" ? "acceptée" : "refusée"}.`,
             relatedDealId: dealId!,
-            targetRoute: "/dealInfluenceur",
+            targetRoute: "/dealdetailinfluenceur/dealId",
             fromUserId: auth.currentUser?.uid || "",
             type: "status_update",
           });
@@ -136,36 +136,44 @@ export default function DealCandidatesPageCommercant() {
     }
   };
 
-  const canceledContract = async (influenceurId: string) => {
+  const refuseCandidate = async (influenceurId: string) => {
     const dealRef = doc(db, "deals", dealId!);
+
     try {
       const dealDoc = await getDoc(dealRef);
       if (dealDoc.exists()) {
         const dealData = dealDoc.data();
         if (dealData && dealData.candidatures) {
-          const updatedCandidatures = dealData.candidatures.filter(
-            (candidature: any) => candidature.influenceurId !== influenceurId
+          const updatedCandidatures = dealData.candidatures.map((candidature: any) =>
+            candidature.influenceurId === influenceurId
+              ? { ...candidature, status: "Refusé" }
+              : candidature
           );
-  
+
           await updateDoc(dealRef, { candidatures: updatedCandidatures });
-  
+
           await sendNotification({
             toUserId: influenceurId,
             message: `Votre candidature a été refusée.`,
             relatedDealId: dealId!,
-            targetRoute: "/dealsinfluenceur",
+            targetRoute: `/dealdetailinfluenceur/${dealId}`,
             fromUserId: auth.currentUser?.uid || "",
             type: "candidature_refused",
           });
-  
-          setCandidates((prev) => prev.filter((c) => c.influenceurId !== influenceurId));
+
+          setCandidates((prev) =>
+            prev.map((c) =>
+              c.influenceurId === influenceurId ? { ...c, status: "Refusé" } : c
+            )
+          );
         }
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression :", error);
+      console.error("Erreur lors du refus de la candidature :", error);
     }
   };
-  
+
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -236,12 +244,12 @@ export default function DealCandidatesPageCommercant() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          {cand.status === "pending" && (
+                          {cand.status === "Envoyé" && (
                             <>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  updateStatus(cand.influenceurId, "accepted");
+                                  updateStatus(cand.influenceurId, "Accepté");
                                 }}
                                 className="bg-[#1A2C24] text-white text-xs px-3 py-1 rounded"
                               >
@@ -250,7 +258,7 @@ export default function DealCandidatesPageCommercant() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  canceledContract(cand.influenceurId);
+                                  refuseCandidate(cand.influenceurId);
                                 }}
                                 className="text-[#1A2C24] border border-[#1A2C24] text-xs px-3 py-1 rounded"
                               >
@@ -258,7 +266,7 @@ export default function DealCandidatesPageCommercant() {
                               </button>
                             </>
                           )}
-                          {cand.status === "accepted" && (
+                          {cand.status === "Accepté" && (
                             <>
                               <span className="bg-gray-300 px-3 py-1 text-xs rounded">EN COURS</span>
                               <button
@@ -272,7 +280,7 @@ export default function DealCandidatesPageCommercant() {
                               </button>
                             </>
                           )}
-                          {cand.status === "refused" && (
+                          {cand.status === "Refusé" && (
                             <span className="text-red-500 text-xs font-bold">REFUSÉ</span>
                           )}
                         </div>

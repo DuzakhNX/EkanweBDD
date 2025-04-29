@@ -39,7 +39,7 @@ export default function Register() {
         email: email,
         role: userData?.role || null,
         dateCreation: new Date(),
-        inscription: "Non terminé"
+        inscription: "Non Terminé"
       });
       /*nom,
 //       prenom,
