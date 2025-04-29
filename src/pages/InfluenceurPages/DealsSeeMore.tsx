@@ -87,7 +87,7 @@ export default function DealsSeeMorePageInfluenceur() {
           message: "Un influenceur a postulé à votre deal !",
           type: "application",
           relatedDealId: deal.id,
-          targetRoute: `/dealCandidates/${deal.id}`,
+          targetRoute: `/dealcandidatescommercant/${deal.id}`,
         });
       }
 
