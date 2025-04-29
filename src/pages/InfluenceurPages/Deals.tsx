@@ -210,9 +210,9 @@ const DealCard = ({ deal, saved, onSave }: any) => {
     const candidatures = dealData?.candidatures || [];
 
     if (candidatures.some((cand: Cand) => cand.influenceurId === user.uid)) {
-      navigate(`/dealdetailspage/${deal.id}`);
+      navigate(`/dealdetailinfluenceur/${deal.id}`);
     } else {
-      navigate(`/dealSeeMore/${deal.id}`)
+      navigate(`/dealsseemoreinfluenceur/${deal.id}`)
     }
   }
 

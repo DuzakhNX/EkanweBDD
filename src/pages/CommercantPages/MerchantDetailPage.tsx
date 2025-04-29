@@ -77,7 +77,7 @@ export default function MerchantDetailPageCommercant() {
           type: "new_deal",
           fromUserId: auth.currentUser?.uid!,
           relatedDealId: dealRef.id,
-          targetRoute: "/deals",
+          targetRoute: "/dealsseemoreinfluenceur/dealRef.id",
           read: false,
           createdAt: serverTimestamp(),
         });
