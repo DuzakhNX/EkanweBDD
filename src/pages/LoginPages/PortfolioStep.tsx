@@ -40,7 +40,7 @@ export default function PortfolioStep() {
       //   "rdc0pMNplfzEZez_4"
       // );
 
-      navigate("/registercomplete");
+      navigate("/registrationcomplete");
     } catch (error) {
       console.error("Erreur de soumission portfolio:", error);
       alert("Erreur pendant la soumission.");

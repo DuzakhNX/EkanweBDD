@@ -78,7 +78,7 @@ export default function InterestsStep() {
       await updateDoc(userRef, {
         interets: selectedTags
       });
-      navigate("/socialconnect");
+      navigate("/socialconnectstep");
     } catch (err) {
       console.error("Erreur d'enregistrement :", err);
       alert("Échec lors de l'enregistrement des centres d'intérêt.");

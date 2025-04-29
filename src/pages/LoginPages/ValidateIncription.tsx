@@ -9,7 +9,7 @@ export default function ValidateInscription() {
     const interval = setInterval(() => {
       auth.currentUser?.reload().then(() => {
         if (auth.currentUser?.emailVerified) {
-          window.location.href = "/registerstepone";
+          window.location.href = "/registrationstepone";
         }
       });
     }, 2000);

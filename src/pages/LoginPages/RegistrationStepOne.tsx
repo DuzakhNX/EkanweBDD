@@ -94,7 +94,7 @@ export default function RegistrationStepOne() {
         phone: formData.telephone,
         statutInscription: "en_attente"
       });
-      navigate("/interestsstep");
+      navigate("/intereststep");
     } catch (err) {
       console.error("Erreur de mise à jour :", err);
       alert("Une erreur est survenue");
