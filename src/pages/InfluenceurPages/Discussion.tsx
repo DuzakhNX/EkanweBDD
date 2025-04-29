@@ -16,11 +16,10 @@ interface ChatItem {
     user?: {
         pseudonyme: string;
         photoURL?: string;
-        blocked?: string[];
     };
 }
 
-export default function ConversationsPage() {
+export default function DiscussionPageInfluenceur() {
     const navigate = useNavigate();
     const [chats, setChats] = useState<ChatItem[]>([]);
     const [input, setInput] = useState("");
@@ -47,7 +46,6 @@ export default function ConversationsPage() {
             });
 
             const chatData = await Promise.all(promises);
-
             setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt));
         });
 
@@ -71,7 +69,9 @@ export default function ConversationsPage() {
             }
 
             await updateDoc(userChatsRef, { chats: updatedChats });
-            navigate(`/chat/${chat.chatId}`);
+
+            navigate(`/chat/${chat.chatId}`, { state: { pseudonyme: chat.user?.pseudonyme, photoURL: chat.user?.photoURL } });
+
         } catch (error) {
             console.error("Erreur lors de la mise à jour du chat :", error);
         }

@@ -39,9 +39,9 @@ export default function LoginPage() {
         } else if (data.inscription === "Non terminé") {
           navigate("/register");
         } else if (role === "commerçant") {
-          navigate("/dealInfluenceur");
+          navigate("/dealscommercant");
         } else if (role === "influenceur") {
-          navigate("/deals");
+          navigate("/dealsinfluenceur");
         } else {
           setError("Rôle inconnu. Veuillez contacter l'administrateur.");
         }

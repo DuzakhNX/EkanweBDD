@@ -21,7 +21,7 @@ export default function ConceptInfluenceur() {
         <div className="w-[95%] bg-[#1A2C24] rounded-2xl border-2 border-[#aec9b6] p-8 pb- text-white z-10 mb-8 relative">
             <h1 className="text-2xl font-bold mb-9">Concept</h1>
             <ul className="text-sm mb-11 list-disc list-inside space-y-2">
-                <li>Pas d’argent</li>
+                <li>Pas d'argent</li>
                 <li>Pas de barrière</li>
                 <li>Juste des collaborations gagnant-gagnant</li>
             </ul>
@@ -34,7 +34,7 @@ export default function ConceptInfluenceur() {
     <div className="flex items-center justify-between">
         <img src={logo} alt="Ekanwe" className="w-24" />
         <button
-            onClick={() => navigate('/loginOrconnect')}
+            onClick={() => navigate('/loginorsignup')}
             className="w-10 h-10 flex items-center justify-center bg-ekanwe-orange rounded-full text-white"
         >
             →

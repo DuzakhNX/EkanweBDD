@@ -14,7 +14,7 @@ interface NotificationType {
   read: boolean;
 }
 
-export default function NotifyPage() {
+export default function NotificationPageInfluenceur() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
 

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebase/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 
-const Suivis = () => {
+const SuivisDealsPageInfluenceur = () => {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("Tous");
   const filters = ["Tous", "Envoyé", "Accepté", "Refusé", "Terminé"];
@@ -69,7 +69,7 @@ const Suivis = () => {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-3xl font-bold">Suivi Deals</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notifypage")}>
+          <button onClick={() => navigate("/notificationinfluenceur")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
           <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
@@ -113,7 +113,7 @@ const Suivis = () => {
             <div
               key={index}
               className="flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer"
-              onClick={() => navigate(`/dealdetailspage/${candidature.dealInfo?.id}`)}
+              onClick={() => navigate(`/dealdetailsinfluenceur/${candidature.dealInfo?.id}`)}
             >
               <img
                 src={candidature.dealInfo?.imageUrl || "https://via.placeholder.com/150"}
@@ -148,4 +148,4 @@ const Suivis = () => {
   );
 };
 
-export default Suivis;
+export default SuivisDealsPageInfluenceur;

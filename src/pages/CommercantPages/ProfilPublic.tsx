@@ -6,7 +6,7 @@ import { Instagram, Music } from "lucide-react";
 import { getDocs } from "firebase/firestore";
 import Navbar from "./Navbar";
 
-export default function PublicProfil() {
+export default function ProfilPublicCommercant() {
     const navigate = useNavigate();
     const { userId } = useParams();
 

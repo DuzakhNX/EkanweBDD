@@ -12,7 +12,7 @@ import BottomNavbar from "./BottomNavbar";
 import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
 
-export default function Deals() {
+export default function DealsPageInfluenceur() {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [deals, setDeals] = useState<any[]>([]);
@@ -61,7 +61,7 @@ export default function Deals() {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-3xl font-bold">Deals</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notification")}>
+          <button onClick={() => navigate("/notificationinfluenceur")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
           <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />

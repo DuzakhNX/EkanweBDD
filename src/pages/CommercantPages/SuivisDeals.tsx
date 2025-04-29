@@ -9,7 +9,7 @@ import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
 import Navbar from "./Navbar";
 
-export default function MerchantDeals() {
+export default function SuivisDealsPageCommercant() {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("Tous");
   const [candidatures, setCandidatures] = useState<any[]>([]);
@@ -77,7 +77,7 @@ export default function MerchantDeals() {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-3xl font-bold">Suivi Candidatures</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notification")}>
+          <button onClick={() => navigate("/notificationcommercant")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
           <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />

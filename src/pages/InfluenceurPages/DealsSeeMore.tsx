@@ -7,7 +7,7 @@ import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
 import { Loader2 } from "lucide-react";
 
-export default function DealSeeMore() {
+export default function DealsSeeMorePageInfluenceur() {
   const navigate = useNavigate();
   const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
@@ -114,7 +114,7 @@ export default function DealSeeMore() {
   return (
     <div className="min-h-screen bg-gray-50 pt-10">
       <header className="bg-gray-50 px-4 py-3 flex items-center gap-4 shadow-sm">
-        <button onClick={() => navigate("/deals")}>
+        <button onClick={() => navigate("/dealsinfluenceur")}>
           <ArrowLeft className="w-8 h-8 text-[#FF6B2E]" />
         </button>
         <span className="text-[#FF6B2E] text-3xl font-bold">Deals</span>
@@ -178,7 +178,7 @@ export default function DealSeeMore() {
             <div className="flex gap-2 mt-6">
               <button
                 className="flex-1 py-3 text-white font-medium bg-[#1A2C24] rounded-lg"
-                onClick={() => navigate("/deals")}
+                onClick={() => navigate("/dealsinfluenceur")}
               >
                 RETOUR
               </button>

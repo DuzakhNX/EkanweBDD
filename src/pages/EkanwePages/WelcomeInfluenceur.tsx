@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/ekanwe-logo.png";
-import character from "../../assets/characterinfluenceur.png";
+import character from "../../assets/character.png";
 
-export default function WelcomeInfluenceur() {
+export default function WelcomeComercant() {
   const navigate = useNavigate();
 
   return (
@@ -21,7 +21,7 @@ export default function WelcomeInfluenceur() {
       <div className="w-[95%] bg-[#1A2C24] rounded-2xl border-2 border-[#aec9b6] p-8 pb-8 text-white z-10 mb-8 relative">
         <h1 className="text-2xl font-bold mb-9">Bienvenue !</h1>
         <p className="text-sm mb-11">
-          EKANWE, c’est le pouvoir du bouche-à-oreille numérique, au service des commerces de chez nous.
+          EKANWE, c'est le pouvoir du bouche-à-oreille numérique, au service des commerces de chez nous.
         </p>
 
         <div className="flex space-x-2 mb-9">
@@ -33,7 +33,7 @@ export default function WelcomeInfluenceur() {
         <div className="flex items-center justify-between">
           <img src={logo} alt="Ekanwe" className="w-24" />
           <button
-              onClick={() => navigate('/creator-typeinfluenceur')}
+              onClick={() => navigate('/creatorinfluenceur')}
               className="w-10 h-10 flex items-center justify-center bg-ekanwe-orange rounded-full text-white"
             >
               →

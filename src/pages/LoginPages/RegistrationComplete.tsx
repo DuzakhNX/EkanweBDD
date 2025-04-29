@@ -23,9 +23,9 @@ export default function RegistrationComplete() {
 
           setTimeout(() => {
             if (role === "influenceur") {
-              navigate("/deals");
+              navigate("/dealsinfluenceur");
             } else {
-              navigate("/dealinfluenceur");
+              navigate("/dealscommercant");
             }
           }, 5000);
         } else {

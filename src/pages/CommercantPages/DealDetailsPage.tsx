@@ -62,7 +62,7 @@ export default function DealDetailPageCommercant() {
         fromUserId: auth.currentUser?.uid!,
         message: `Votre prestation a été validée par le commerçant.`,
         relatedDealId: dealId,
-        targetRoute: `/dealinfluenceur`,
+        targetRoute: `/dealdetailinfluenceur/${dealId}`,
         type: "deal_approved",
       });
 
@@ -94,11 +94,10 @@ export default function DealDetailPageCommercant() {
         fromUserId: auth.currentUser?.uid!,
         message: `Votre prestation a été résiliée par le commerçant.`,
         relatedDealId: dealId,
-        targetRoute: `/dealinfluenceur`,
+        targetRoute: `/suivisdealsinfluenceur`,
         type: "deal_cancelled",
       });
-
-      navigate(-1); // Retourner à la page précédente
+      navigate(-1);
     } catch (error) {
       console.error("Erreur lors de la résiliation :", error);
     }

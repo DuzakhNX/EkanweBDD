@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/ekanwe-logo.png";
-import character from "../../assets/characterinfluenceur.png";
+import character from "../../assets/character.png";
 
-export default function CreatorTypeInfluenceur() {
+export default function CreatorType() {
   const navigate = useNavigate();
+/*bg-[#1D2B20]*/
   useEffect(() => {
   }, [navigate]);
 
@@ -23,10 +24,11 @@ export default function CreatorTypeInfluenceur() {
       />
 
       <div className="w-[95%] bg-[#1A2C24] rounded-2xl border-2 border-[#aec9b6] p-8 pb-8 text-white z-10 mb-8 relative">
-        <h1 className="text-2xl font-bold mb-9">Boostez votre visibilité</h1>
+        <h1 className="text-2xl font-bold mb-9">Créateurs de contenu</h1>
         <p className="text-sm mb-11">
-            Gagne en visibilité grâce aux créateurs de contenu de ta ville, sans sortir un franc. Juste un bon deal. 
+          Tu crées du contenu ? Collabore avec des commerces locaux et rejoins les créateurs en vogue
         </p>
+
         <div className="flex space-x-2 mb-9">
           <span className="flex-1 h-1 bg-gray-500 rounded-full"></span>
           <span className="flex-1 h-1 bg-white rounded-full"></span>

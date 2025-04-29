@@ -6,7 +6,7 @@ import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore"
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
 
-export default function DealDetailsPage() {
+export default function DealDetailsPageInfluenceur() {
   const navigate = useNavigate();
   const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
@@ -208,7 +208,7 @@ export default function DealDetailsPage() {
       {status === "terminé" && (
         <div className="px-4 mb-6">
           <button
-            onClick={() => !hasReviewed && navigate(`/review/${dealId}`)}
+            onClick={() => !hasReviewed && navigate(`/reviewinfluenceur/${dealId}`)}
             disabled={hasReviewed}
             className={`w-full ${
               hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"

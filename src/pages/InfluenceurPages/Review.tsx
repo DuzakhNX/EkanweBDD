@@ -31,7 +31,7 @@ const ThankYouModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     );
 };
 
-export default function EvaluationPage() {
+export default function ReviewPageInfluenceur() {
     const navigate = useNavigate();
     const { dealId } = useParams();
     const [comment, setComment] = useState("");
@@ -115,7 +115,7 @@ export default function EvaluationPage() {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        navigate('/dealInfluenceur');
+        navigate('/dealinfluenceur');
     };
 
     const handleRatingChange = (index: number, newScore: number) => {

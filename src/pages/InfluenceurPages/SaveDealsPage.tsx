@@ -8,7 +8,7 @@ import BottomNavbar from "./BottomNavbar";
 import save from "../../assets/save.png";
 import fullsave from "../../assets/fullsave.png";
 
-export default function SaveDealsPage() {
+export default function SaveDealsPageInfluenceur() {
   const navigate = useNavigate();
   const popularRef = useRef(null);
   
@@ -16,18 +16,8 @@ export default function SaveDealsPage() {
   
   const SaveDeals = [
     {
-      title: "Commerçant",
-      image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse...",
-    },
-    {
-      title: "Restaurant",
-      image: "https://images.unsplash.com/photo-1556740749-887f6717d7e4",
-      description: "Excepteur sint occaecat cupidatat non proident, sunt in culpa...",
-    },
-    {
       title: "Boutique Sport",
-      image: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c",
+      image: "",
       description: "Matériel haut de gamme pour tous les passionnés de sport...",
     },
   ];

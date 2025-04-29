@@ -11,7 +11,7 @@ import fullsave from "../../assets/fullsave.png";
 import plus from "../../assets/plus.png";
 import Navbar from "./Navbar";
 
-export default function DealsPage() {
+export default function DealsPageCommercant() {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("Deals");
   const [savedItems, setSavedItems] = useState<Record<number, boolean>>({});
@@ -86,7 +86,7 @@ export default function DealsPage() {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-3xl font-bold">Deals</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notifypage")}> <img src={cloche} alt="Notify" className="w-6 h-6" /> </button>
+          <button onClick={() => navigate("/notificationcommercant")}> <img src={cloche} alt="Notify" className="w-6 h-6" /> </button>
           <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
         </div>
       </div>
@@ -116,7 +116,7 @@ export default function DealsPage() {
           <div className="px-4 py-2">
             <button
               className="w-full flex gap-2 items-center justify-between p-3 border border-black bg-[#FF6B2E] text-[#1A2C24] font-bold py-1 rounded-lg"
-              onClick={() => navigate("/merchantdetail")}
+              onClick={() => navigate("/merchantdetailcommercant")}
             >
               Faire un deal
               <img src={plus} alt="plus" className="w-4 h-4" />
@@ -166,7 +166,7 @@ export default function DealsPage() {
                     <div className="flex justify-between">
                       <button
                         className="text-white border border-white rounded-lg px-4 py-2 text-sm"
-                        onClick={() => navigate(`/dealCandidates/${deal.id}`)}
+                        onClick={() => navigate(`/dealcandidatescommercant/${deal.id}`)}
                       >
                         Voir plus
                       </button>
@@ -199,7 +199,7 @@ export default function DealsPage() {
                       src={influencer.photoURL || "/default-user.jpg"}
                       alt={influencer.username}
                       className="w-full h-full object-cover rounded-t-xl"
-                      onClick={() => navigate(`/profilPublic/${influencer.id}`)}
+                      onClick={() => navigate(`/profilpubliccommercant/${influencer.id}`)}
                     />
                   </div>
                   <div className="p-4">

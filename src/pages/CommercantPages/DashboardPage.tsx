@@ -16,7 +16,7 @@ import sign from "../../assets/ekanwesign.png";
 import save from "../../assets/save.png";
 import fullsave from "../../assets/fullsave.png";
 
-export default function DashboardPage() {
+export default function DashboardPageCommercant() {
   const navigate = useNavigate();
   const [reviews, setReviews] = useState<any[]>([]);
   const [savedItems, setSavedItems] = useState<Record<number, boolean>>({});
@@ -60,7 +60,7 @@ export default function DashboardPage() {
       <div className="bg-[#F5F5E7] mt-2 py-2 px-4 flex items-center mb-5 justify-between">
         <h1 className="text-3xl text-[#1A2C24] font-bold">Dashboard</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notifypage")}>
+          <button onClick={() => navigate("/notificationcommercant")}>
             <img src={cloche} alt="cloche" className="w-7 h-7" />
           </button>
           <img src={sign} alt="Ekanwe Sign" className="w-7 h-7" />
@@ -121,7 +121,7 @@ export default function DashboardPage() {
               </div>
             ))
           ) : (
-            <div className="text-sm text-gray-700">Aucun avis pour l’instant.</div>
+            <div className="text-sm text-gray-700">Aucun avis pour l'instant.</div>
           )}
         </div>
       </div>

@@ -7,7 +7,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import { sendNotification } from "../../hooks/sendNotifications";
 
-export default function DealCandidatesPage() {
+export default function DealCandidatesPageCommercant() {
   const navigate = useNavigate();
   const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
@@ -15,7 +15,6 @@ export default function DealCandidatesPage() {
   interface Candidature {
     influenceurId: string;
     status: string;
-    // Ajoute d'autres propriétés si nécessaire
   }
 
   useEffect(() => {
@@ -124,7 +123,7 @@ export default function DealCandidatesPage() {
             toUserId: influenceurId,
             message: `Votre contrat a été résilié.`,
             relatedDealId: dealId!,
-            targetRoute: "/dealInfluenceur",
+            targetRoute: "/dealsinfluenceur",
             fromUserId: auth.currentUser?.uid || "",
             type: "contract_cancelled",
           });
@@ -154,7 +153,7 @@ export default function DealCandidatesPage() {
             toUserId: influenceurId,
             message: `Votre candidature a été refusée.`,
             relatedDealId: dealId!,
-            targetRoute: "/dealInfluenceur",
+            targetRoute: "/dealsinfluenceur",
             fromUserId: auth.currentUser?.uid || "",
             type: "candidature_refused",
           });
@@ -217,7 +216,7 @@ export default function DealCandidatesPage() {
                     <div
                       key={cand.influenceurId}
                       className="p-3 rounded-lg border border-black bg-gray-100 cursor-pointer"
-                      onClick={() => navigate(`/profilPublic/${cand.influenceurId}`, { state: { userId: cand.influenceurId } })}
+                      onClick={() => navigate(`/profilpubliccommercant/${cand.influenceurId}`, { state: { userId: cand.influenceurId } })}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">

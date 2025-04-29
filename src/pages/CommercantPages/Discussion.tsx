@@ -20,7 +20,7 @@ interface ChatItem {
     };
 }
 
-export default function ConversationsPage() {
+export default function DiscussionPageCommercant() {
     const navigate = useNavigate();
     const [chats, setChats] = useState<ChatItem[]>([]);
     const [input, setInput] = useState("");

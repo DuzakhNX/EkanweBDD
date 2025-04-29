@@ -44,7 +44,7 @@ export default function SocialConnectStep() {
         tiktok: formData.tiktok,
         instagram: formData.instagram
       });
-      navigate("/portfolio");
+      navigate("/portfoliostep");
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
       alert("Une erreur est survenue.");

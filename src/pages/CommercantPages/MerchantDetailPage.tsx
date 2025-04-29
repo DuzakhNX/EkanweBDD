@@ -4,9 +4,10 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getDocs, query, where, writeBatch, doc } from "firebase/firestore";
 
-export default function MerchantDetailPage() {
+export default function MerchantDetailPageCommercant() {
   const navigate = useNavigate();
   const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
   const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
   const [typeOfContent, setTypeOfContent] = useState<string | null>(null);
   const [validUntil, setValidUntil] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export default function MerchantDetailPage() {
   };
 
   const handleExecute = async () => {
-    if (!selectedInterest || description.trim() === "" || !typeOfContent || !validUntil || !conditions || !imageBase64) {
+    if (!selectedInterest || description.trim() === "" || !typeOfContent || !validUntil || !conditions || !imageBase64 || title.trim() === "") {
       setError("Veuillez remplir tous les champs !");
       return;
     }
@@ -52,6 +53,7 @@ export default function MerchantDetailPage() {
     try {
       const dealRef = await addDoc(collection(db, "deals"), {
         description,
+        title,
         interest: selectedInterest,
         typeOfContent,
         validUntil,
@@ -83,7 +85,7 @@ export default function MerchantDetailPage() {
 
       await batch.commit();
 
-      navigate("/dealinfluenceur");
+      navigate("/dealscommercant");
     } catch (error) {
       console.error("Erreur lors de la création du deal :", error);
       setError("Erreur lors de la création du deal, veuillez réessayer !");
@@ -131,6 +133,18 @@ export default function MerchantDetailPage() {
 
         <div className="p-4 bg-[#F5F5E7] text-[#1A2C24] border-b space-y-4">
           <div className="p-4 bg-[#F5F5E7] text-[#1A2C24] border-b">
+          <div className="mb-4">
+              <div className="flex justify-between items-center mb-1 bg-[#F5F5E7] text-[#1A2C24]">
+                <label className="font-medium">Titre</label>
+              </div>
+              <textarea
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full border border-[#F5F5E7] bg-white rounded-md p-2 text-sm"
+                rows={2}
+              />
+            </div>
+
             <div className="mb-4">
               <div className="flex justify-between items-center mb-1 bg-[#F5F5E7] text-[#1A2C24]">
                 <label className="font-medium">Description</label>

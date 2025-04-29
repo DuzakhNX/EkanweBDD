@@ -129,7 +129,7 @@ export default function Register() {
         <div className="flex justify-between mt-8">
           <button
             className="bg-transparent border border-white text-white px-6 py-2 rounded-lg text-sm"
-            onClick={() => navigate("/loginOrconnect")}
+            onClick={() => navigate("/loginorsignup")}
           >
             RETOUR
           </button>

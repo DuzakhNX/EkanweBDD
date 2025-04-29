@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import BottomNavbar from "./BottomNavbar";
 import sign from "../../assets/ekanwesign.png";
 
-export default function Profile() {
+export default function ProfilePageInfluenceur() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [pseudonyme, setPseudonyme] = useState("");
