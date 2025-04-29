@@ -11,39 +11,39 @@ export default function Navbar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 px-4 py-2 bg-gray-500 shadow-inner flex justify-between items-center">
-      <button onClick={() => navigate("/dealinfluenceur")}>
+      <button onClick={() => navigate("/dealscommercant")}>
         <img
           src={home}
           alt="Home"
-          className={`w-12 h-12 ${pathname === "/dealinfluenceur" ? "filter-[#FF6B2E]" : ""}`}
+          className={`w-12 h-12 ${pathname === "/dealscommercant" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
-      <button onClick={() => navigate("/dealinfluenceur")}>
+      <button onClick={() => navigate("/suividealscommercant")}>
         <img
           src={startistique}
           alt="Stats"
-          className={`w-6 h-6 ${pathname === "/dealCandidates" ? "filter-[#FF6B2E]" : ""}`}
+          className={`w-6 h-6 ${pathname === "/suividealscommercant" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
-      <button onClick={() => navigate("/dashboardpage")}>
+      <button onClick={() => navigate("/dashboard")}>
         <img
           src={dashboard}
           alt="dashboard"
-          className={`w-6 h-6 ${pathname === "/dashboardpage" ? "filter-[#FF6B2E]" : ""}`}
+          className={`w-6 h-6 ${pathname === "/dashboard" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
-      <button onClick={() => navigate("/discussion")}>
+      <button onClick={() => navigate("/discussioncommercant")}>
         <img
           src={chat}
-          alt="dashboard"
-          className={`w-6 h-6 ${pathname === "/discussion" ? "filter-[#FF6B2E]" : ""}`}
+          alt="discussion"
+          className={`w-6 h-6 ${pathname === "/discussioncommercant" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
-      <button onClick={() => navigate("/profilinfluenceur")}>
+      <button onClick={() => navigate("/profilecommercant")}>
         <img
           src={profile}
-          alt="Profile"
-          className={`w-6 h-6 ${pathname === "/profilinfluenceur" ? "filter-[#FF6B2E]" : ""}`}
+          alt="Profil"
+          className={`w-6 h-6 ${pathname === "/profilecommercant" ? "filter-[#FF6B2E]" : ""}`}
         />
       </button>
     </nav>
