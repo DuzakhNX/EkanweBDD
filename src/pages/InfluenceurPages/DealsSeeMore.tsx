@@ -17,9 +17,9 @@ export default function DealsSeeMorePageInfluenceur() {
     influenceurId: string;
     title: string;
     description: string;
-    interest: string; // Cela pourrait être un type enum si tu veux restreindre les valeurs possibles
+    interest: string;
     imageUrl?: string;
-    candidatures?: { influenceurId: string; status: string }[]; // Liste des candidatures avec les informations sur l'influenceur
+    candidatures?: { influenceurId: string; status: string }[];
     merchantId: string;
   }
 
@@ -52,10 +52,14 @@ export default function DealsSeeMorePageInfluenceur() {
   }, [dealId]);
 
   const handleCandidature = async () => {
-    if (!auth.currentUser || alreadyApplied || !dealId) return;
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Vous devez être connecté pour postuler.");
+      return;
+    }
 
     try {
-      const dealRef = doc(db, "deals", dealId);
+      const dealRef = doc(db, "deals", deal.id);
       const dealSnap = await getDoc(dealRef);
 
       if (!dealSnap.exists()) {
@@ -66,13 +70,13 @@ export default function DealsSeeMorePageInfluenceur() {
       const dealData = dealSnap.data();
       const candidatures = dealData?.candidatures || [];
 
-      if (candidatures.some((cand: Deal) => cand.influenceurId === auth.currentUser!.uid)) {
+      if (candidatures.some((cand: Deal) => cand.influenceurId === user.uid)) {
         alert("Vous avez déjà postulé à ce deal.");
         return;
       }
 
       const newCandidature = {
-        influenceurId: auth.currentUser.uid,
+        influenceurId: user.uid,
         status: "Envoyé",
       };
 
@@ -80,78 +84,68 @@ export default function DealsSeeMorePageInfluenceur() {
         candidatures: arrayUnion(newCandidature),
       });
 
-      if (deal?.merchantId) {
-        await sendNotification({
-          toUserId: deal.merchantId,
-          fromUserId: auth.currentUser.uid,
-          message: "Un influenceur a postulé à votre deal !",
-          type: "application",
-          relatedDealId: deal.id,
-          targetRoute: `/dealcandidatescommercant/${deal.id}`,
-        });
-      }
+      await sendNotification({
+        toUserId: deal.merchantId,
+        fromUserId: user.uid,
+        message: "Un influenceur a postulé à votre deal !",
+        type: "application",
+        relatedDealId: deal.id,
+        targetRoute: `/dealcandidatescommercant/${deal.id}`,
+      });
 
-      const combinedId = [auth.currentUser.uid, deal.merchantId].sort().join("");
+      const combinedId = [user.uid, deal.merchantId].sort().join("");
       const chatRef = doc(db, "chats", combinedId);
       const chatSnap = await getDoc(chatRef);
 
       const firstMessage = {
-        senderId: auth.currentUser.uid,
+        senderId: user.uid,
         text: `Hello, je suis intéressé par le deal "${deal.title}". Pouvez-vous m'en dire plus ?`,
         createdAt: new Date(),
       };
 
       if (!chatSnap.exists()) {
-        await updateDoc(doc(db, "chats", combinedId), {
-          messages: [firstMessage],
-        }).catch(async (error) => {
-          if (error.code === "not-found") {
-            await setDoc(chatRef, { messages: [firstMessage] });
-          } else {
-            throw error;
-          }
-        });
+        await setDoc(chatRef, { messages: [firstMessage] });
       } else {
         await updateDoc(chatRef, {
           messages: arrayUnion(firstMessage),
         });
       }
 
-      const senderChatsRef = doc(db, "userchats", auth.currentUser.uid);
-      const receiverChatsRef = doc(db, "userchats", deal.merchantId);
+      const updateUserChats = async (uid: string, receiverId: string, isSender: boolean) => {
+        const userChatsRef = doc(db, "userchats", uid);
+        const userChatsSnap = await getDoc(userChatsRef);
 
-      const senderChatsSnap = await getDoc(senderChatsRef);
-      const receiverChatsSnap = await getDoc(receiverChatsRef);
+        const chatEntry = {
+          chatId: combinedId,
+          lastMessage: firstMessage.text,
+          receiverId: receiverId,
+          updatedAt: Date.now(),
+          read: isSender,
+        };
 
-      const updateChatsList = (chatsList: any[]) => {
-        const index = chatsList.findIndex((c) => c.chatId === combinedId);
-        if (index !== -1) {
-          chatsList[index].lastMessage = firstMessage.text;
-          chatsList[index].updatedAt = Date.now();
-          chatsList[index].read = true;
+        if (userChatsSnap.exists()) {
+          const data = userChatsSnap.data();
+          const existingChats = data.chats || [];
+          const index = existingChats.findIndex((c: any) => c.chatId === combinedId);
+
+          if (index !== -1) {
+            existingChats[index] = chatEntry;
+          } else {
+            existingChats.push(chatEntry);
+          }
+
+          await updateDoc(userChatsRef, {
+            chats: existingChats,
+          });
         } else {
-          chatsList.push({
-            chatId: combinedId,
-            lastMessage: firstMessage.text,
-            receiverId: deal.merchantId,
-            updatedAt: Date.now(),
-            read: true,
+          await setDoc(userChatsRef, {
+            chats: [chatEntry],
           });
         }
-        return chatsList;
       };
 
-      if (senderChatsSnap.exists()) {
-        await updateDoc(senderChatsRef, {
-          chats: updateChatsList(senderChatsSnap.data().chats),
-        });
-      }
-
-      if (receiverChatsSnap.exists()) {
-        await updateDoc(receiverChatsRef, {
-          chats: updateChatsList(receiverChatsSnap.data().chats),
-        });
-      }
+      await updateUserChats(user.uid, deal.merchantId, true);
+      await updateUserChats(deal.merchantId, user.uid, false);
 
       alert("Votre candidature a été envoyée avec succès !");
     } catch (error) {
@@ -159,7 +153,6 @@ export default function DealsSeeMorePageInfluenceur() {
       alert("Erreur lors de la candidature. Veuillez réessayer.");
     }
   };
-
 
   if (loading) {
     return (

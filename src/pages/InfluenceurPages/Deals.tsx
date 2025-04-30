@@ -182,7 +182,7 @@ const DealCard = ({ deal, saved, onSave }: any) => {
         message: "Un influenceur a postulé à votre deal !",
         type: "application",
         relatedDealId: deal.id,
-        targetRoute: `/dealCandidates/${deal.id}`,
+        targetRoute: `/dealcandidatescommercant/${deal.id}`,
       });
 
       const combinedId = [user.uid, deal.merchantId].sort().join("");
@@ -196,56 +196,48 @@ const DealCard = ({ deal, saved, onSave }: any) => {
       };
 
       if (!chatSnap.exists()) {
-        await updateDoc(doc(db, "chats", combinedId), {
-          messages: [firstMessage],
-        }).catch(async (error) => {
-          if (error.code === "not-found") {
-            await setDoc(chatRef, { messages: [firstMessage] });
-          } else {
-            throw error;
-          }
-        });
+        await setDoc(chatRef, { messages: [firstMessage] });
       } else {
         await updateDoc(chatRef, {
           messages: arrayUnion(firstMessage),
         });
       }
 
-      const senderChatsRef = doc(db, "userchats", user.uid);
-      const receiverChatsRef = doc(db, "userchats", deal.merchantId);
+      const updateUserChats = async (uid: string, receiverId: string, isSender: boolean) => {
+        const userChatsRef = doc(db, "userchats", uid);
+        const userChatsSnap = await getDoc(userChatsRef);
 
-      const senderChatsSnap = await getDoc(senderChatsRef);
-      const receiverChatsSnap = await getDoc(receiverChatsRef);
+        const chatEntry = {
+          chatId: combinedId,
+          lastMessage: firstMessage.text,
+          receiverId: receiverId,
+          updatedAt: Date.now(),
+          read: isSender,
+        };
 
-      const updateChatsList = (chatsList: any[]) => {
-        const index = chatsList.findIndex((c) => c.chatId === combinedId);
-        if (index !== -1) {
-          chatsList[index].lastMessage = firstMessage.text;
-          chatsList[index].updatedAt = Date.now();
-          chatsList[index].read = true;
+        if (userChatsSnap.exists()) {
+          const data = userChatsSnap.data();
+          const existingChats = data.chats || [];
+          const index = existingChats.findIndex((c: any) => c.chatId === combinedId);
+
+          if (index !== -1) {
+            existingChats[index] = chatEntry;
+          } else {
+            existingChats.push(chatEntry);
+          }
+
+          await updateDoc(userChatsRef, {
+            chats: existingChats,
+          });
         } else {
-          chatsList.push({
-            chatId: combinedId,
-            lastMessage: firstMessage.text,
-            receiverId: deal.merchantId,
-            updatedAt: Date.now(),
-            read: true,
+          await setDoc(userChatsRef, {
+            chats: [chatEntry],
           });
         }
-        return chatsList;
       };
 
-      if (senderChatsSnap.exists()) {
-        await updateDoc(senderChatsRef, {
-          chats: updateChatsList(senderChatsSnap.data().chats),
-        });
-      }
-
-      if (receiverChatsSnap.exists()) {
-        await updateDoc(receiverChatsRef, {
-          chats: updateChatsList(receiverChatsSnap.data().chats),
-        });
-      }
+      await updateUserChats(user.uid, deal.merchantId, true);
+      await updateUserChats(deal.merchantId, user.uid, false);
 
       alert("Votre candidature a été envoyée avec succès !");
     } catch (error) {

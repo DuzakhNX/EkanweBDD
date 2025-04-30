@@ -12,7 +12,7 @@ export default function ValidateInscription() {
           window.location.href = "/registrationstepone";
         }
       });
-    }, 2000);
+    }, 500);
   
     return () => clearInterval(interval);
   }, []);
