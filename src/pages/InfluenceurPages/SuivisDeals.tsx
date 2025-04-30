@@ -73,7 +73,7 @@ const SuivisDealsPageInfluenceur = () => {
           <button onClick={() => navigate("/notificationinfluenceur")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")}/>
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")} />
         </div>
       </div>
 
@@ -94,8 +94,8 @@ const SuivisDealsPageInfluenceur = () => {
               key={item}
               onClick={() => setSelectedFilter(item)}
               className={`border px-7 py-3 rounded-lg text-base ${selectedFilter === item
-                  ? "bg-[#1A2C24] text-white"
-                  : "border-[#14210F] text-[#14210F] bg-white/10"
+                ? "bg-[#1A2C24] text-white"
+                : "border-[#14210F] text-[#14210F] bg-white/10"
                 }`}
             >
               {item === "Tous" ? "Tous" : item.charAt(0).toUpperCase() + item.slice(1)}

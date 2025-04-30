@@ -202,9 +202,8 @@ export default function DealsSeeMorePageInfluenceur() {
               <button
                 disabled={alreadyApplied}
                 onClick={handleCandidature}
-                className={`flex-1 py-3 text-white font-medium rounded-lg ${
-                  alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E]"
-                }`}
+                className={`flex-1 py-3 text-white font-medium rounded-lg ${alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E]"
+                  }`}
               >
                 {alreadyApplied ? "Candidature envoyée" : "EXÉCUTER"}
               </button>

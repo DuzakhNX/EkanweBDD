@@ -5,7 +5,7 @@ import character from "../../assets/character.png";
 
 export default function CreatorType() {
   const navigate = useNavigate();
-/*bg-[#1D2B20]*/
+  /*bg-[#1D2B20]*/
   useEffect(() => {
   }, [navigate]);
 
@@ -38,11 +38,11 @@ export default function CreatorType() {
         <div className="flex items-center justify-between">
           <img src={logo} alt="Ekanwe" className="w-24" />
           <button
-              onClick={() => navigate('/conceptinfluenceur')}
-              className="w-10 h-10 flex items-center justify-center bg-ekanwe-orange rounded-full text-white"
-            >
-              →
-            </button>
+            onClick={() => navigate('/conceptinfluenceur')}
+            className="w-10 h-10 flex items-center justify-center bg-ekanwe-orange rounded-full text-white"
+          >
+            →
+          </button>
         </div>
       </div>
     </div>

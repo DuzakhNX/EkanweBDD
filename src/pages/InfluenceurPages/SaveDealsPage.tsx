@@ -11,9 +11,9 @@ import fullsave from "../../assets/fullsave.png";
 export default function SaveDealsPageInfluenceur() {
   const navigate = useNavigate();
   const popularRef = useRef(null);
-  
+
   const [savedStates, setSavedStates] = useState([true, true, true]);
-  
+
   const SaveDeals = [
     {
       title: "Boutique Sport",
@@ -22,7 +22,7 @@ export default function SaveDealsPageInfluenceur() {
     },
   ];
 
-  const toggleSaveState = (index:number) => {
+  const toggleSaveState = (index: number) => {
     setSavedStates(prevStates => {
       const newStates = [...prevStates];
       newStates[index] = !newStates[index];
@@ -41,7 +41,7 @@ export default function SaveDealsPageInfluenceur() {
           <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
         </div>
       </div>
-      
+
       <div className="px-4 mb-4">
         <div className="flex items-center bg-white/10 border border-black rounded-lg px-3 py-2">
           <div className="text-xl mr-3">
@@ -57,11 +57,11 @@ export default function SaveDealsPageInfluenceur() {
           </div>
         </div>
       </div>
-      
+
       <div className="flex items-center px-4 justify-between mb-2">
         <div className="flex space-x-4 text-2xl"></div>
       </div>
-      
+
       <div ref={popularRef} className="px-4 mb-6">
         {SaveDeals.map((deal, index) => (
           <div
@@ -74,14 +74,14 @@ export default function SaveDealsPageInfluenceur() {
                 alt={deal.title}
                 className="w-full p-4 rounded-lg h-40 object-cover"
               />
-              <button 
+              <button
                 className="absolute bottom-4 right-4 p-2 rounded-full"
                 onClick={() => toggleSaveState(index)}
               >
-                <img 
-                  src={savedStates[index] ? fullsave : save} 
-                  alt="save" 
-                  className="w-5 h-5" 
+                <img
+                  src={savedStates[index] ? fullsave : save}
+                  alt="save"
+                  className="w-5 h-5"
                 />
               </button>
             </div>
@@ -89,7 +89,7 @@ export default function SaveDealsPageInfluenceur() {
               <h3 className="text-lg text-white font-bold mb-1">{deal.title}</h3>
               <p className="text-sm text-white mb-3">{deal.description}</p>
               <div className="flex justify-between mt-8">
-                <button 
+                <button
                   className="text-white border border-white rounded-lg px-4 py-2 text-sm"
                   onClick={() => navigate("/dealSeeMore")}
                 >
@@ -103,7 +103,7 @@ export default function SaveDealsPageInfluenceur() {
           </div>
         ))}
       </div>
-      
+
       <div>
         <BottomNavbar />
       </div>

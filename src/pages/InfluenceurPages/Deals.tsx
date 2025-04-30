@@ -68,7 +68,7 @@ export default function DealsPageInfluenceur() {
               className={`border px-10 py-3 rounded-lg text-sm ${selectedFilter === item
                 ? "bg-[#1A2C24] text-white"
                 : "border-[#14210F] text-[#14210F] bg-white/10"
-              }`}
+                }`}
             >
               {item}
             </button>

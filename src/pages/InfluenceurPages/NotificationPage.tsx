@@ -21,24 +21,24 @@ export default function NotificationPageInfluenceur() {
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
-  
+
     const notifRef = query(
       collection(db, "users", user.uid, "notifications"),
       orderBy("createdAt", "desc")
     );
-  
+
     const unsubscribe = onSnapshot(notifRef, (snapshot) => {
       const notifList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as NotificationType[];
-  
+
       setNotifications(notifList);
     });
-  
+
     return () => unsubscribe();
   }, []);
-  
+
 
   const handleNotificationClick = async (notif: NotificationType) => {
     const user = auth.currentUser;
@@ -76,7 +76,7 @@ export default function NotificationPageInfluenceur() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")}/>
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")} />
         </div>
       </div>
 
@@ -102,9 +102,8 @@ export default function NotificationPageInfluenceur() {
             <div
               key={notif.id}
               onClick={() => handleNotificationClick(notif)}
-              className={`p-4 rounded-lg shadow-lg mb-4 cursor-pointer transition ${
-                notif.read ? "bg-white" : "bg-orange-100"
-              }`}
+              className={`p-4 rounded-lg shadow-lg mb-4 cursor-pointer transition ${notif.read ? "bg-white" : "bg-orange-100"
+                }`}
             >
               <p className="text-sm font-semibold">{notif.message}</p>
             </div>

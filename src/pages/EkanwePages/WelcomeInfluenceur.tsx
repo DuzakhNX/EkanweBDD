@@ -33,11 +33,11 @@ export default function WelcomeComercant() {
         <div className="flex items-center justify-between">
           <img src={logo} alt="Ekanwe" className="w-24" />
           <button
-              onClick={() => navigate('/creatorinfluenceur')}
-              className="w-10 h-10 flex items-center justify-center bg-ekanwe-orange rounded-full text-white"
-            >
-              →
-            </button>
+            onClick={() => navigate('/creatorinfluenceur')}
+            className="w-10 h-10 flex items-center justify-center bg-ekanwe-orange rounded-full text-white"
+          >
+            →
+          </button>
         </div>
       </div>
     </div>

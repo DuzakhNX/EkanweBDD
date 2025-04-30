@@ -162,9 +162,8 @@ export default function ProfilePageCommercant() {
         <button
           onClick={handleSave}
           disabled={loading}
-          className={`w-full py-3 rounded-lg font-bold text-lg mt-6 ${
-            loading ? "bg-gray-400 text-white" : "bg-[#1A2C24] text-white"
-          }`}
+          className={`w-full py-3 rounded-lg font-bold text-lg mt-6 ${loading ? "bg-gray-400 text-white" : "bg-[#1A2C24] text-white"
+            }`}
         >
           {loading ? "Sauvegarde..." : "Sauvegarder"}
         </button>
