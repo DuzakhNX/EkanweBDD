@@ -113,7 +113,7 @@ const SuivisDealsPageInfluenceur = () => {
             <div
               key={index}
               className="flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer"
-              onClick={() => navigate(`/dealdetailsinfluenceur/${candidature.dealInfo?.id}`)}
+              onClick={() => navigate(`/dealdetailsinfluenceur/${candidature.dealId}`)}
             >
               <img
                 src={candidature.dealInfo?.imageUrl || "https://via.placeholder.com/150"}
