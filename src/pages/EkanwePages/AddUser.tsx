@@ -12,6 +12,7 @@ import {
     getDoc,
     arrayUnion
 } from "firebase/firestore";
+import profile from "../../assets/profile.png"
 
 interface User {
     id: string;
