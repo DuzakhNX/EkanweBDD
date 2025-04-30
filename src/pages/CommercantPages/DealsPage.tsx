@@ -10,6 +10,7 @@ import save from "../../assets/save.png";
 import fullsave from "../../assets/fullsave.png";
 import plus from "../../assets/plus.png";
 import Navbar from "./Navbar";
+import profile from "../../assets/profile.png"
 
 export default function DealsPageCommercant() {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ export default function DealsPageCommercant() {
                     <div className="w-1/2 pr-2">
                       <div className="h-32 rounded-lg overflow-hidden">
                         <img
-                          src={deal.imageUrl || "/default-deal.jpg"}
+                          src={deal.imageUrl || profile}
                           alt={deal.title}
                           className="w-full h-full object-cover"
                         />
@@ -195,7 +196,7 @@ export default function DealsPageCommercant() {
                 <div key={influencer.id} className="min-w-[80%] bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
                   <div className="relative w-full h-40">
                     <img
-                      src={influencer.photoURL || "/default-user.jpg"}
+                      src={influencer.photoURL || profile}
                       alt={influencer.username}
                       className="w-full h-full object-cover rounded-t-xl"
                       onClick={() => navigate(`/profilpubliccommercant/${influencer.id}`)}

@@ -7,6 +7,7 @@ import loupe from "../../assets/loupe.png";
 import menu from "../../assets/menu.png";
 import AddUser from "../EkanwePages/AddUser";
 import Navbar from "./Navbar";
+import profile from "../../assets/profile.png"
 
 interface ChatItem {
     chatId: string;
@@ -122,7 +123,7 @@ export default function DiscussionPageInfluenceur() {
                             <div className="flex items-center">
                                 <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden mr-4">
                                     <img
-                                        src={chat.user?.photoURL || "https://via.placeholder.com/100"}
+                                        src={chat.user?.photoURL || profile}
                                         alt={chat.user?.pseudonyme}
                                         className="w-full h-full object-cover"
                                     />

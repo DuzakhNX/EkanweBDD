@@ -8,6 +8,7 @@ import BottomNavbar from "./BottomNavbar";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebase/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
+import profile from "../../assets/profile.png"
 
 const SuivisDealsPageInfluenceur = () => {
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ const SuivisDealsPageInfluenceur = () => {
               onClick={() => navigate(`/dealdetailsinfluenceur/${candidature.dealId}`)}
             >
               <img
-                src={candidature.dealInfo?.imageUrl || "https://via.placeholder.com/150"}
+                src={candidature.dealInfo?.imageUrl || profile}
                 alt={candidature.dealInfo?.title}
                 className="w-32 h-32 object-cover m-1 rounded-lg"
               />

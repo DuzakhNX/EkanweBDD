@@ -5,6 +5,7 @@ import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
+import profile from "../../assets/profile.png"
 
 export default function DealDetailsPageInfluenceur() {
   const navigate = useNavigate();
@@ -37,6 +38,9 @@ export default function DealDetailsPageInfluenceur() {
               if (candidature.review) {
                 setHasReviewed(true);
               }
+              if (candidature.proofs) {
+                setUploads(candidature.proofs);
+              }
             }
           }
         }
@@ -64,7 +68,7 @@ export default function DealDetailsPageInfluenceur() {
 
       const updatedCandidatures = dealData?.candidatures?.map((cand: any) => {
         if (cand.influenceurId === currentUserId) {
-          return { ...cand, status: "Approbation" };
+          return { ...cand, status: "Approbation", proofs: uploads };
         }
         return cand;
       });
@@ -76,9 +80,9 @@ export default function DealDetailsPageInfluenceur() {
       await sendNotification({
         toUserId: dealData.merchantId,
         fromUserId: currentUserId,
-        message: `L'influenceur a Terminé sa mission et attend votre validation.`,
+        message: "L'influenceur a Terminé sa mission et attend votre validation.",
         relatedDealId: dealId!,
-        targetRoute: `/suividealscommercant`,
+        targetRoute: "/suividealscommercant",
         type: "approval_request",
       });
 
@@ -126,36 +130,44 @@ export default function DealDetailsPageInfluenceur() {
         <ArrowLeft className="cursor-pointer" onClick={() => navigate(-1)} />
         <span className="ml-2">Deals</span>
       </div>
+
       <div className="w-full h-48">
-        <img src={deal.imageUrl} alt="Commerçant" className="w-full h-full object-cover" />
+        <img src={deal.imageUrl || profile} alt="Commerçant" className="w-full h-full object-cover" />
       </div>
+
       <div className="px-4 py-2">
         <div className="flex justify-between mb-1 text-[#1A2C24] items-center text-2xl font-semibold">
           <span>{deal.title}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-4">
+        <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
           <MapPin className="w-4 h-4" />
-          <button>{deal.location || "Localisation inconnue"}</button>
+          <span>{deal.location || "Localisation inconnue"}</span>
         </div>
-        <div className="text-sm text-gray-600 mt-2 mb-5">
-          <h3 className="font-semibold text-[#1A2C24] text-xl mb-2">Description</h3>
-          {deal.description}
+        <div className="text-sm text-gray-600 mb-2">
+          <h3 className="font-semibold text-[#1A2C24] text-lg">Description</h3>
+          <p>{deal.description}</p>
+        </div>
+        <div className="text-sm text-gray-600 mb-4">
+          <h3 className="font-semibold text-[#1A2C24] text-lg">Intérêts</h3>
+          <div className="flex flex-wrap gap-2">
+            {(deal.interest || []).map((item: string, idx: number) => (
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="px-4 mb-6">
-      <ProgressRibbon currentStep={getCurrentStep()} status={status} />
+        <ProgressRibbon currentStep={getCurrentStep()} status={status} />
       </div>
 
       {status === "Accepté" && (
         <div className="px-4 mb-6">
           <label className="block mb-2 text-sm font-medium text-gray-700">Captures d'écran des actions réalisées :</label>
-          <input
-            type="file"
-            multiple
-            onChange={handleImageUpload}
-            className="mb-4"
-          />
+          <input type="file" multiple onChange={handleImageUpload} className="mb-4" />
+
           {uploads.map((upload, index) => (
             <div key={index} className="mb-6">
               <img src={upload.image} alt={`Upload ${index}`} className="w-full h-48 object-cover mb-2 rounded-lg" />
@@ -182,10 +194,7 @@ export default function DealDetailsPageInfluenceur() {
 
       {status === "Refusé" ? (
         <div className="px-4 mb-6">
-          <button
-            disabled
-            className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold"
-          >
+          <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold">
             Candidature Refusée
           </button>
         </div>
@@ -200,10 +209,7 @@ export default function DealDetailsPageInfluenceur() {
         </div>
       ) : status === "Approbation" ? (
         <div className="px-4 mb-6">
-          <button
-            disabled
-            className="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold"
-          >
+          <button disabled className="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold">
             En attente d'Approbation du commerçant
           </button>
         </div>
@@ -212,8 +218,7 @@ export default function DealDetailsPageInfluenceur() {
           <button
             onClick={() => !hasReviewed && navigate(`/reviewinfluenceur/${dealId}`)}
             disabled={hasReviewed}
-            className={`w-full ${hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"
-              } text-white py-2 rounded-lg font-semibold`}
+            className={`w-full ${hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"} text-white py-2 rounded-lg font-semibold`}
           >
             {hasReviewed ? "Déjà évalué" : "Noter le commerçant"}
           </button>
@@ -258,16 +263,10 @@ const ProgressRibbon = ({ currentStep = 1, status }: { currentStep: number, stat
       <div className="flex items-center justify-between">
         {steps.map((step, index) => (
           <div key={index} className="flex items-center">
-            <span className={`text-[#FF6B2E] ${index < currentStep ? "font-bold" : "opacity-70"}`}>
-              {step}
-            </span>
+            <span className={`text-[#FF6B2E] ${index < currentStep ? "font-bold" : "opacity-70"}`}>{step}</span>
             {index < steps.length - 1 && (
               <div className="flex-1 mx-2 flex items-center">
-                {index < currentStep - 1 ? (
-                  <div className="h-0.5 bg-[#FF6B2E] w-12"></div>
-                ) : (
-                  <div className="h-0.5 bg-[#FF6B2E] opacity-30 w-12"></div>
-                )}
+                <div className={`h-0.5 ${index < currentStep - 1 ? "bg-[#FF6B2E]" : "bg-[#FF6B2E] opacity-30"} w-12`}></div>
               </div>
             )}
           </div>

@@ -8,6 +8,7 @@ import menu from "../../assets/menu.png";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
 import Navbar from "./Navbar";
+import profile from "../../assets/profile.png"
 
 export default function SuivisDealsPageCommercant() {
   const navigate = useNavigate();
@@ -120,9 +121,10 @@ export default function SuivisDealsPageCommercant() {
           <div
             key={index}
             className="flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer"
+            onClick= {() => navigate(`dealdetailcommercant/${candidature.dealId}/${candidature.influenceurId}`)}
           >
             <img
-              src={candidature.dealInfo?.imageUrl || "https://via.placeholder.com/150"}
+              src={candidature.dealInfo?.imageUrl || profile}
               alt={candidature.dealInfo?.title}
               className="w-32 h-32 object-cover m-1 rounded-lg"
             />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collectionGroup, onSnapshot } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import Navbar from "./Navbar";
 import {
@@ -20,6 +20,12 @@ export default function DashboardPageCommercant() {
   const navigate = useNavigate();
   const [reviews, setReviews] = useState<any[]>([]);
   const [savedItems, setSavedItems] = useState<Record<number, boolean>>({});
+  const [stats, setStats] = useState({
+    totalLikes: 0,
+    totalShares: 0,
+    totalCompletedDeals: 0,
+    averageRating: 0,
+  });
 
   const toggleSave = (index: number) => {
     setSavedItems((prev) => ({
@@ -29,20 +35,58 @@ export default function DashboardPageCommercant() {
   };
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collectionGroup(db, "review"), (snapshot) => {
+    const fetchStatsAndReviews = async () => {
       const currentUser = auth.currentUser;
       if (!currentUser) return;
-  
-      const filtered = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((review: any) => review.toUserId === currentUser.uid);
-  
-      setReviews(filtered);
-    });
-  
-    return () => unsubscribe();
+
+      const dealsSnap = await getDocs(collection(db, "deals"));
+      let allReviews: any[] = [];
+      let likes = 0;
+      let shares = 0;
+      let ratings: number[] = [];
+      let completedDeals = 0;
+
+      dealsSnap.forEach((deal) => {
+        const dealData = deal.data();
+        if (dealData.merchantId !== currentUser.uid) return;
+
+        const candidatures = dealData.candidatures || [];
+        candidatures.forEach((c: any) => {
+          if (c.status === "Terminé") completedDeals++;
+          if (c.proofs && Array.isArray(c.proofs)) {
+            c.proofs.forEach((proof: any) => {
+              likes += proof.likes || 0;
+              shares += proof.shares || 0;
+            });
+          }
+          if (c.review) {
+            allReviews.push({
+              fromUsername: c.review.fromUsername || "Influenceur",
+              rating: c.review.rating || 0,
+              comment: c.review.comment || "",
+              likes: c.proofs?.reduce((acc: number, p: any) => acc + (p.likes || 0), 0) || 0,
+              shares: c.proofs?.reduce((acc: number, p: any) => acc + (p.shares || 0), 0) || 0,
+            });
+            ratings.push(c.review.rating);
+          }
+        });
+      });
+
+      const avgRating = ratings.length > 0
+        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+        : 0;
+
+      setReviews(allReviews);
+      setStats({
+        totalLikes: likes,
+        totalShares: shares,
+        totalCompletedDeals: completedDeals,
+        averageRating: parseFloat(avgRating.toFixed(1)),
+      });
+    };
+
+    fetchStatsAndReviews();
   }, []);
-  
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -57,6 +101,7 @@ export default function DashboardPageCommercant() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F5E7] text-[#14210F]">
+      {/* Header */}
       <div className="bg-[#F5F5E7] mt-2 py-2 px-4 flex items-center mb-5 justify-between">
         <h1 className="text-3xl text-[#1A2C24] font-bold">Dashboard</h1>
         <div className="flex items-center space-x-4">
@@ -67,6 +112,27 @@ export default function DashboardPageCommercant() {
         </div>
       </div>
 
+      {/* Global Stats */}
+      <div className="px-4 mb-6 grid grid-cols-2 gap-4 text-white">
+        <div className="bg-[#1A2C24] p-4 rounded-lg shadow">
+          <p className="text-sm">Deals terminés</p>
+          <h2 className="text-2xl font-bold">{stats.totalCompletedDeals}</h2>
+        </div>
+        <div className="bg-[#1A2C24] p-4 rounded-lg shadow">
+          <p className="text-sm">Note Moyenne</p>
+          <h2 className="text-2xl font-bold">{stats.averageRating} / 5</h2>
+        </div>
+        <div className="bg-[#1A2C24] p-4 rounded-lg shadow">
+          <p className="text-sm">Total Likes</p>
+          <h2 className="text-2xl font-bold">{stats.totalLikes}</h2>
+        </div>
+        <div className="bg-[#1A2C24] p-4 rounded-lg shadow">
+          <p className="text-sm">Total Partages</p>
+          <h2 className="text-2xl font-bold">{stats.totalShares}</h2>
+        </div>
+      </div>
+
+      {/* Reviews Section */}
       <div className="px-4 mb-11">
         <div className="flex justify-between items-center mb-5">
           <h2 className="text-2xl text-[#1A2C24] font-bold">Avis des influenceurs</h2>
@@ -85,9 +151,9 @@ export default function DashboardPageCommercant() {
                 <div className="flex justify-between">
                   <div>
                     <h3 className="font-bold text-lg">
-                      {review.fromUsername || "Influenceur"}
+                      {review.fromUsername}
                     </h3>
-                    <p className="text-sm mt-1">{review.comment || "Aucun commentaire."}</p>
+                    <p className="text-sm mt-1">{review.comment}</p>
                     <div className="flex mt-2">{renderStars(review.rating)}</div>
                   </div>
                   <button
@@ -105,16 +171,16 @@ export default function DashboardPageCommercant() {
                 <div className="flex items-center justify-between bg-[#F5F5E7] text-[#14210F] px-3 py-2 text-xs mt-4 rounded-lg">
                   <div className="flex items-center">
                     <Heart className="h-4 w-4 mr-1" />
-                    <span className="font-medium">{review.likes || 0}</span>
+                    <span className="font-medium">{review.likes}</span>
                   </div>
                   <div className="flex items-center">
                     <Eye className="h-4 w-4 mr-1" />
-                    <span className="font-medium">{review.views || 0}</span>
+                    <span className="font-medium">+1000</span>
                     <TrendingUp className="h-3 w-3 ml-1 text-green-500" />
                   </div>
                   <div className="flex items-center">
                     <Share2 className="h-4 w-4 mr-1" />
-                    <span className="font-medium">{review.shares || 0}</span>
+                    <span className="font-medium">{review.shares}</span>
                     <TrendingDown className="h-3 w-3 ml-1 text-red-500" />
                   </div>
                 </div>

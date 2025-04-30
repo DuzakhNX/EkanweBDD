@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import { sendNotification } from "../../hooks/sendNotifications";
+import profile from "../../assets/profile.png"
 
 export default function DealCandidatesPageCommercant() {
   const navigate = useNavigate();
@@ -188,7 +189,7 @@ export default function DealCandidatesPageCommercant() {
         <>
           <div className="relative">
             <img
-              src={deal.imageUrl || "https://via.placeholder.com/300"}
+              src={deal.imageUrl || profile}
               alt="Deal"
               className="w-full h-48 object-cover"
             />
@@ -230,7 +231,7 @@ export default function DealCandidatesPageCommercant() {
                         <div className="flex items-center">
                           <div className="w-16 h-16 rounded overflow-hidden mr-3">
                             <img
-                              src={cand.userInfo?.photoURL || "https://via.placeholder.com/100"}
+                              src={cand.userInfo?.photoURL || profile}
                               alt={cand.userInfo?.pseudonyme || "Influenceur"}
                               className="w-full h-full object-cover"
                             />

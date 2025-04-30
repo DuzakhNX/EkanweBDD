@@ -6,6 +6,7 @@ import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
 import { Loader2 } from "lucide-react";
+import profile from "../../assets/profile.png"
 
 export default function DealsSeeMorePageInfluenceur() {
   const navigate = useNavigate();
@@ -179,7 +180,7 @@ export default function DealsSeeMorePageInfluenceur() {
         <div className="bg-gray-50 rounded-xl overflow-hidden shadow-md">
           <div className="relative">
             <img
-              src={deal.imageUrl || "https://via.placeholder.com/300x200?text=Deal"}
+              src={deal.imageUrl || profile}
               alt="Deal"
               className="w-full h-48 object-cover"
             />

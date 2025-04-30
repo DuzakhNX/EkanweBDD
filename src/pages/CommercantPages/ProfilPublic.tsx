@@ -4,6 +4,7 @@ import { db, auth } from "../../firebase/firebase";
 import { doc, getDoc, collection, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { Instagram, Music } from "lucide-react";
 import Navbar from "./Navbar";
+import profile from "../../assets/profile.png"
 
 export default function ProfilPublicInfluenceur() {
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ export default function ProfilPublicInfluenceur() {
   return (
     <div className="min-h-screen bg-[#F5F5E7] pb-32">
       <div className="p-4 flex items-center">
-        <button onClick={() => navigate(-1)} className="text-[#FF6B00] flex items-center text-lg">
+        <button onClick={() => navigate(-1)} className="text-orange-500 flex items-center text-lg">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
           </svg>
@@ -153,7 +154,7 @@ export default function ProfilPublicInfluenceur() {
       <div className="px-6 pt-4">
         <div className="flex flex-col items-center">
           <div className="w-28 h-28 rounded-full bg-gray-200 mb-4 overflow-hidden">
-            <img src={userData.photoURL || "https://via.placeholder.com/150"} alt="Profile" className="w-full h-full object-cover" />
+            <img src={userData.photoURL || profile} alt="Profile" className="w-full h-full object-cover" />
           </div>
 
           <h1 className="text-2xl font-semibold text-[#14210F] mb-1">
@@ -164,7 +165,7 @@ export default function ProfilPublicInfluenceur() {
 
           <div className="flex space-x-2 mb-2">
             {[...Array(5)].map((_, index) => (
-              <span key={index} className={`text-2xl ${index < (userData.rating || 3) ? 'text-[#FF6B00]' : 'text-gray-300'}`}>★</span>
+              <span key={index} className={`text-2xl ${index < (userData.rating || 3) ? 'text-orange-500' : 'text-gray-300'}`}>★</span>
             ))}
           </div>
 
@@ -173,7 +174,7 @@ export default function ProfilPublicInfluenceur() {
           {currentUser?.role === "commercant" && currentUser.uid !== userId && (
             <button
               onClick={handleContact}
-              className="mb-6 bg-[#FF6B00] text-white px-6 py-2 rounded-lg font-medium"
+              className="mb-6 bg-orange-500 text-white px-6 py-2 rounded-lg font-medium"
             >
               Contacter
             </button>
@@ -189,7 +190,7 @@ export default function ProfilPublicInfluenceur() {
             <li><strong>Téléphone :</strong> {userData.phone}</li>
             <li><strong>Date de naissance :</strong> {userData.dateNaissance}</li>
             {userData.interets?.length > 0 && (
-              <li><strong>Centres d’intérêt :</strong> {userData.interets.join(", ")}</li>
+              <li><strong>Centres d'intérêt :</strong> {userData.interets.join(", ")}</li>
             )}
           </ul>
         </div>
@@ -216,7 +217,7 @@ export default function ProfilPublicInfluenceur() {
               href={instagram.startsWith("http") ? instagram : `https://instagram.com/${instagram}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-[#FF6B00] underline text-sm"
+              className="flex items-center gap-2 text-orange-500 underline text-sm"
             >
               <Instagram className="h-5 w-5" />
               Instagram : {instagram}
@@ -227,7 +228,7 @@ export default function ProfilPublicInfluenceur() {
               href={tiktok.startsWith("http") ? tiktok : `https://tiktok.com/@${tiktok}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-[#FF6B00] underline text-sm"
+              className="flex items-center gap-2 text-orange-500 underline text-sm"
             >
               <Music className="h-5 w-5" />
               TikTok : {tiktok}

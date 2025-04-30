@@ -11,6 +11,7 @@ import fullsave from "../../assets/fullsave.png";
 import BottomNavbar from "./BottomNavbar";
 import { doc, updateDoc, setDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
+import profile from "../../assets/profile.png"
 
 export default function DealsPageInfluenceur() {
   const navigate = useNavigate();
@@ -274,7 +275,7 @@ const DealCard = ({ deal, saved, onSave }: any) => {
     <div className="min-w-full bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
       <div className="relative w-full h-40">
         <img
-          src={deal.imageUrl || "https://via.placeholder.com/300x200?text=Deal"}
+          src={deal.imageUrl || profile}
           alt={deal.title}
           className="w-full h-full object-cover rounded-t-xl"
         />

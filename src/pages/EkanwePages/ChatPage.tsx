@@ -6,6 +6,7 @@ import EmojiPicker from "emoji-picker-react";
 import { format } from "timeago.js";
 import sign from "../../assets/ekanwesign.png";
 import { sendNotification } from "../../hooks/sendNotifications";
+import profile from "../../assets/profile.png"
 
 interface Message {
   id: string;
@@ -177,7 +178,7 @@ export default function ChatPage() {
           </button>
           <div className="flex items-center">
             <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden mr-3">
-              <img src={photoURL || "https://via.placeholder.com/100"} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={photoURL || profile} alt="Avatar" className="w-full h-full object-cover" />
             </div>
             <h1 className="text-xl font-semibold">{pseudonyme || "Utilisateur"}</h1>
           </div>

@@ -117,7 +117,7 @@ export default function AddUser({ onUserAdded }: { onUserAdded: () => void }) {
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300">
                                 <img
-                                    src={user.photoURL || "https://via.placeholder.com/100"}
+                                    src={user.photoURL || profile}
                                     alt={user.pseudonyme}
                                     className="w-full h-full object-cover"
                                 />

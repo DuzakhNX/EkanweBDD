@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
+import profile from "../../assets/profile.png"
 
 export default function DealDetailPageCommercant() {
   const navigate = useNavigate();
@@ -28,7 +29,6 @@ export default function DealDetailPageCommercant() {
           );
           setCandidature(cand || null);
         }
-
       } catch (error) {
         console.error("Erreur lors du fetch:", error);
       }
@@ -83,16 +83,19 @@ export default function DealDetailPageCommercant() {
 
       const dealData = dealSnap.data();
 
-      const updatedCandidatures = dealData.candidatures.filter(
-        (cand: any) => cand.influenceurId !== influenceurId
-      );
+      const updatedCandidatures = dealData.candidatures.map((cand: any) => {
+        if (cand.influenceurId === influenceurId) {
+          return { ...cand, status: "Refusé" };
+        }
+        return cand;
+      });
 
       await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
       await sendNotification({
         toUserId: influenceurId,
         fromUserId: auth.currentUser?.uid!,
-        message: `Votre prestation a été résiliée par le commerçant.`,
+        message: `Votre prestation a été annulé par le commerçant.`,
         relatedDealId: dealId,
         targetRoute: `/suivisdealsinfluenceur`,
         type: "deal_cancelled",
@@ -113,7 +116,7 @@ export default function DealDetailPageCommercant() {
       </div>
 
       <div className="w-full h-48">
-        <img src={deal.imageUrl} alt="Deal" className="w-full h-full object-cover" />
+        <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-full object-cover" />
       </div>
 
       <div className="px-4 py-2">
@@ -126,15 +129,15 @@ export default function DealDetailPageCommercant() {
       </div>
 
       {/* 📷 Captures et Stats */}
-      {candidature.uploads && candidature.uploads.length > 0 && (
+      {candidature.proofs && candidature.proofs.length > 0 && (
         <div className="px-4 mb-6">
           <h2 className="text-lg font-semibold mb-4">Captures réalisées :</h2>
-          {candidature.uploads.map((upload: any, index: number) => (
+          {candidature.proofs.map((proof: any, index: number) => (
             <div key={index} className="mb-6">
-              <img src={upload.image} alt="Capture" className="w-full h-48 object-cover mb-2 rounded-lg" />
+              <img src={proof.image} alt="Capture" className="w-full h-48 object-cover mb-2 rounded-lg" />
               <div className="flex justify-between text-sm text-gray-700">
-                <span>Likes : {upload.likes}</span>
-                <span>Partages : {upload.shares}</span>
+                <span>Likes : {proof.likes}</span>
+                <span>Partages : {proof.shares}</span>
               </div>
             </div>
           ))}
