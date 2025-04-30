@@ -26,6 +26,7 @@ export default function DashboardPageCommercant() {
     totalCompletedDeals: 0,
     averageRating: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   const toggleSave = (index: number) => {
     setSavedItems((prev) => ({
@@ -83,6 +84,7 @@ export default function DashboardPageCommercant() {
         totalCompletedDeals: completedDeals,
         averageRating: parseFloat(avgRating.toFixed(1)),
       });
+      setLoading(false);
     };
 
     fetchStatsAndReviews();
@@ -99,6 +101,14 @@ export default function DashboardPageCommercant() {
     ));
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F5E7] text-[#14210F]">
       {/* Header */}
@@ -108,7 +118,11 @@ export default function DashboardPageCommercant() {
           <button onClick={() => navigate("/notificationcommercant")}>
             <img src={cloche} alt="cloche" className="w-7 h-7" />
           </button>
-          <img src={sign} alt="Ekanwe Sign" className="w-7 h-7" />
+          <button
+            onClick={() => navigate(auth.currentUser?.uid && localStorage.getItem("role") === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant")}
+          >
+            <img src={sign} alt="Ekanwe Sign" className="w-7 h-7" />
+          </button>
         </div>
       </div>
 
@@ -150,16 +164,11 @@ export default function DashboardPageCommercant() {
               >
                 <div className="flex justify-between">
                   <div>
-                    <h3 className="font-bold text-lg">
-                      {review.fromUsername}
-                    </h3>
+                    <h3 className="font-bold text-lg">{review.fromUsername}</h3>
                     <p className="text-sm mt-1">{review.comment}</p>
                     <div className="flex mt-2">{renderStars(review.rating)}</div>
                   </div>
-                  <button
-                    className="focus:outline-none"
-                    onClick={() => toggleSave(index)}
-                  >
+                  <button className="focus:outline-none" onClick={() => toggleSave(index)}>
                     <img
                       src={savedItems[index] ? fullsave : save}
                       alt="Save"
