@@ -9,31 +9,40 @@ import { useUserData } from "../../context/UserContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { userData } = useUserData();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmation: "",
   });
-  const { userData } = useUserData();
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async () => {
     const { email, password, confirmation } = formData;
+    setError("");
+
     if (!email || !password || !confirmation) {
-      alert("Tous les champs sont requis !");
+      setError("Tous les champs sont requis !");
       return;
     }
 
     if (password !== confirmation) {
-      alert("Les mots de passe ne correspondent pas.");
+      setError("Les mots de passe ne correspondent pas.");
       return;
     }
 
     try {
+      setLoading(true);
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const userRef = doc(db, "users", cred.user.uid);
-      const user = cred.user;
-  
-      await sendEmailVerification(user);
+      await sendEmailVerification(cred.user);
 
       await setDoc(userRef, {
         email: email,
@@ -41,33 +50,14 @@ export default function Register() {
         dateCreation: new Date(),
         inscription: "Non Terminé"
       });
-      /*nom,
-//       prenom,
-//       pseudonyme,
-//       dateNaissance,
-//       phone: phone || null,
-//       email: userRecord.email,
-//       centresInteret: centresInteret || [],
-//       social: {
-//         instagram: instagram || null,
-//         tiktok: tiktok || null
-//       },
-//       portfolio: portfolioUrls || [],
-//       statutInscription: "en_attente",
-//       role: role || "influenceur",
-//       dateCreation: admin.firestore.FieldValue.serverTimestamp(),
-//       verified: userRecord.emailVerified,
-//       password */
 
       navigate("/validateinscription");
     } catch (err) {
       console.error("Erreur d'inscription :", err);
-      alert("Une erreur est survenue : " + (err as any).message);
+      setError("Une erreur est survenue : " + (err as any).message);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
@@ -86,11 +76,17 @@ export default function Register() {
         </div>
 
         <div className="flex flex-col gap-4 mb-8">
-          <button className="flex items-center justify-center bg-white text-gray-800 px-4 py-2.5 rounded-md text-sm font-medium w-full">
+          <button
+            className="flex items-center justify-center bg-white text-gray-800 px-4 py-2.5 rounded-md text-sm font-medium w-full"
+            disabled
+          >
             <Mail className="w-5 h-5 mr-2 text-red-500" />
             Continuer avec Google
           </button>
-          <button className="flex items-center justify-center bg-[#1877F2] text-white px-4 py-2.5 rounded-md text-sm font-medium w-full">
+          <button
+            className="flex items-center justify-center bg-[#1877F2] text-white px-4 py-2.5 rounded-md text-sm font-medium w-full"
+            disabled
+          >
             <Facebook className="w-5 h-5 mr-2" />
             Continuer avec Facebook
           </button>
@@ -126,6 +122,10 @@ export default function Register() {
           />
         </form>
 
+        {error && (
+          <p className="text-red-400 text-sm mt-4 text-center">{error}</p>
+        )}
+
         <div className="flex justify-between mt-8">
           <button
             className="bg-transparent border border-white text-white px-6 py-2 rounded-lg text-sm"
@@ -134,10 +134,15 @@ export default function Register() {
             RETOUR
           </button>
           <button
-            className="bg-[#FF6B2E] text-white px-6 py-2 rounded-lg text-sm font-semibold"
+            className={`px-6 py-2 rounded-lg text-sm font-semibold ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#FF6B2E] text-white"
+            }`}
             onClick={handleSubmit}
+            disabled={loading}
           >
-            S'INSCRIRE
+            {loading ? "Chargement..." : "S'INSCRIRE"}
           </button>
         </div>
       </div>

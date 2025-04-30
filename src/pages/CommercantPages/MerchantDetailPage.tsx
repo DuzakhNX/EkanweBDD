@@ -1,7 +1,18 @@
 import { useState } from "react";
 import { auth, db } from "../../firebase/firebase";
-import { collection, addDoc, serverTimestamp, getDocs, query, where, writeBatch, doc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  getDocs,
+  query,
+  where,
+  writeBatch,
+  doc,
+  getDoc
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import sign from "../../assets/ekanwesign.png";
 
 export default function MerchantDetailPageCommercant() {
   const navigate = useNavigate();
@@ -14,6 +25,7 @@ export default function MerchantDetailPageCommercant() {
   const [imageBase64, setImageBase64] = useState<string>("");
   const [error, setError] = useState("");
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const availableInterests = [
     "Mode", "Cuisine", "Voyage", "Beauté", "Sport", "Technologie", "Gaming",
@@ -26,7 +38,11 @@ export default function MerchantDetailPageCommercant() {
     "Vidéo Youtube", "Publication Facebook", "Autre"
   ];
 
-  const toggleSelection = (value: string, selected: string[], setter: (v: string[]) => void) => {
+  const toggleSelection = (
+    value: string,
+    selected: string[],
+    setter: (v: string[]) => void
+  ) => {
     if (selected.includes(value)) {
       setter(selected.filter((item) => item !== value));
     } else {
@@ -50,14 +66,21 @@ export default function MerchantDetailPageCommercant() {
   };
 
   const handleExecute = async () => {
+    setError("");
     if (
-      selectedInterests.length === 0 || description.trim() === "" ||
-      selectedTypes.length === 0 || !validUntil || !conditions || !imageBase64 || title.trim() === ""
+      selectedInterests.length === 0 ||
+      description.trim() === "" ||
+      selectedTypes.length === 0 ||
+      !validUntil ||
+      !conditions ||
+      !imageBase64 ||
+      title.trim() === ""
     ) {
       setError("Veuillez remplir tous les champs !");
       return;
     }
 
+    setIsLoading(true);
     try {
       const dealRef = await addDoc(collection(db, "deals"), {
         description,
@@ -80,7 +103,9 @@ export default function MerchantDetailPageCommercant() {
       const batch = writeBatch(db);
 
       usersSnapshot.forEach((userDoc) => {
-        const newNotifRef = doc(collection(db, "users", userDoc.id, "notifications"));
+        const newNotifRef = doc(
+          collection(db, "users", userDoc.id, "notifications")
+        );
         batch.set(newNotifRef, {
           message: "Un nouveau deal est disponible !",
           type: "new_deal",
@@ -93,27 +118,37 @@ export default function MerchantDetailPageCommercant() {
       });
 
       await batch.commit();
-
       navigate("/dealscommercant");
     } catch (error) {
       console.error("Erreur lors de la création du deal :", error);
-      setError("Erreur lors de la création du deal, veuillez réessayer !");
+      setError("Une erreur est survenue. Veuillez réessayer.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F5E7] text-[#14210F]">
-      {/* Header */}
-      <div className="py-3 px-4 flex items-center border-b">
+      <div className="py-3 px-4 flex items-center justify-between border-b">
         <button onClick={handleGoBack} className="flex items-center text-orange-500">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
           </svg>
           Retour
         </button>
+        <img
+          src={sign}
+          alt="Ekanwe"
+          className="w-6 h-6"
+          onClick={async () => {
+            const userRef = doc(db, "users", auth.currentUser?.uid || "");
+            const snap = await getDoc(userRef);
+            const role = snap.data()?.role;
+            navigate(role === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant");
+          }}
+        />
       </div>
 
-      {/* Image */}
       <div className="relative">
         <img
           src={imageBase64 || "https://images.unsplash.com/photo-1414235077428-338989a2e8c0"}
@@ -128,7 +163,6 @@ export default function MerchantDetailPageCommercant() {
         </label>
       </div>
 
-      {/* Form */}
       <div className="p-4 space-y-4">
         <div>
           <label className="font-medium">Titre</label>
@@ -187,14 +221,17 @@ export default function MerchantDetailPageCommercant() {
         {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
 
-      {/* Boutons */}
       <div className="mt-auto">
         <div className="flex">
           <button onClick={handleGoBack} className="flex-1 py-4 bg-gray-800 text-white font-bold text-center">
             RETOUR
           </button>
-          <button onClick={handleExecute} className="flex-1 py-4 bg-orange-500 text-white font-bold text-center">
-            EXÉCUTER
+          <button
+            onClick={handleExecute}
+            disabled={isLoading}
+            className={`flex-1 py-4 font-bold text-center ${isLoading ? "bg-gray-400 text-white" : "bg-orange-500 text-white"}`}
+          >
+            {isLoading ? "Traitement..." : "EXÉCUTER"}
           </button>
         </div>
       </div>

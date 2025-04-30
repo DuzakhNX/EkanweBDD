@@ -73,7 +73,7 @@ const SuivisDealsPageInfluenceur = () => {
           <button onClick={() => navigate("/notificationinfluenceur")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")}/>
         </div>
       </div>
 

@@ -1,22 +1,25 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
+import sign from "../../assets/ekanwesign.png";
 
 export default function DealDetailPageCommercant() {
   const navigate = useNavigate();
   const { dealId, influenceurId } = useParams();
   const [deal, setDeal] = useState<any>(null);
   const [candidature, setCandidature] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [approving, setApproving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    if (!dealId || !influenceurId) return;
-
     const fetchData = async () => {
       try {
+        if (!dealId || !influenceurId) return;
         const dealRef = doc(db, "deals", dealId);
         const dealSnap = await getDoc(dealRef);
 
@@ -31,6 +34,8 @@ export default function DealDetailPageCommercant() {
         }
       } catch (error) {
         console.error("Erreur lors du fetch:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -39,7 +44,7 @@ export default function DealDetailPageCommercant() {
 
   const handleApprove = async () => {
     if (!dealId || !influenceurId || !candidature) return;
-
+    setApproving(true);
     try {
       const dealRef = doc(db, "deals", dealId);
       const dealSnap = await getDoc(dealRef);
@@ -48,12 +53,11 @@ export default function DealDetailPageCommercant() {
 
       const dealData = dealSnap.data();
 
-      const updatedCandidatures = dealData.candidatures.map((cand: any) => {
-        if (cand.influenceurId === influenceurId) {
-          return { ...cand, status: "Terminé" };
-        }
-        return cand;
-      });
+      const updatedCandidatures = dealData.candidatures.map((cand: any) =>
+        cand.influenceurId === influenceurId
+          ? { ...cand, status: "Terminé" }
+          : cand
+      );
 
       await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
@@ -69,12 +73,14 @@ export default function DealDetailPageCommercant() {
       setCandidature((prev: any) => ({ ...prev, status: "Terminé" }));
     } catch (error) {
       console.error("Erreur lors de l'Approbation :", error);
+    } finally {
+      setApproving(false);
     }
   };
 
   const handleCancel = async () => {
     if (!dealId || !influenceurId) return;
-
+    setCancelling(true);
     try {
       const dealRef = doc(db, "deals", dealId);
       const dealSnap = await getDoc(dealRef);
@@ -83,12 +89,11 @@ export default function DealDetailPageCommercant() {
 
       const dealData = dealSnap.data();
 
-      const updatedCandidatures = dealData.candidatures.map((cand: any) => {
-        if (cand.influenceurId === influenceurId) {
-          return { ...cand, status: "Refusé" };
-        }
-        return cand;
-      });
+      const updatedCandidatures = dealData.candidatures.map((cand: any) =>
+        cand.influenceurId === influenceurId
+          ? { ...cand, status: "Refusé" }
+          : cand
+      );
 
       await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
@@ -103,16 +108,35 @@ export default function DealDetailPageCommercant() {
       navigate(-1);
     } catch (error) {
       console.error("Erreur lors de la résiliation :", error);
+    } finally {
+      setCancelling(false);
     }
   };
 
-  if (!deal || !candidature) return <div className="p-4">Chargement...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+        <div className="animate-spin-slow">
+          <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
+        </div>
+        <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
+      </div>
+    );
+  }
+  if (!deal || !candidature) return <div className="p-4">Données introuvables</div>;
 
   return (
     <div className="bg-[#f7f6ed] min-h-screen flex flex-col">
-      <div className="flex items-center p-4 text-[#FF6B2E] text-lg font-medium">
-        <ArrowLeft className="cursor-pointer" onClick={() => navigate(-1)} />
-        <span className="ml-2">Retour</span>
+      <div className="flex items-center p-4 justify-between text-[#FF6B2E] text-lg font-medium">
+        <div className="flex items-center">
+          <ArrowLeft className="cursor-pointer" onClick={() => navigate(-1)} />
+          <span className="ml-2">Retour</span>
+        </div>
+        <img
+          src={sign}
+          className="w-6 h-6 cursor-pointer"
+          onClick={() => navigate("/dealscommercant")}
+        />
       </div>
 
       <div className="w-full h-48">
@@ -120,15 +144,43 @@ export default function DealDetailPageCommercant() {
       </div>
 
       <div className="px-4 py-2">
-        <h1 className="text-2xl font-bold text-[#1A2C24] mb-2">{deal.title}</h1>
-        <p className="text-sm text-gray-600 mb-4">{deal.description}</p>
+        <div className="flex justify-between mb-1 text-[#1A2C24] items-center text-2xl font-semibold">
+          <span>{deal.title}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
+          <MapPin className="w-4 h-4" />
+          <span>{deal.location || "Localisation inconnue"}</span>
+        </div>
+        <div className="text-sm text-gray-600 mb-2">
+          <h3 className="font-semibold text-[#1A2C24] text-lg">Description</h3>
+          <p>{deal.description}</p>
+        </div>
+        <div className="text-sm text-gray-600 mb-4">
+          <h3 className="font-semibold text-[#1A2C24] text-lg">Intérêts</h3>
+          <div className="flex flex-wrap gap-2">
+            {(deal.interests || []).map((item: string, idx: number) => (
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="text-sm text-gray-600 mb-4">
+          <h3 className="font-semibold text-[#1A2C24] text-lg">Type de contenu</h3>
+          <div className="flex flex-wrap gap-2">
+            {(deal.typeOfContent || []).map((item: string, idx: number) => (
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="px-4 mb-6">
         <ProgressRibbon currentStatus={candidature.status} />
       </div>
 
-      {/* 📷 Captures et Stats */}
       {candidature.proofs && candidature.proofs.length > 0 && (
         <div className="px-4 mb-6">
           <h2 className="text-lg font-semibold mb-4">Captures réalisées :</h2>
@@ -144,7 +196,6 @@ export default function DealDetailPageCommercant() {
         </div>
       )}
 
-      {/* 📄 Review de l'influenceur */}
       {candidature.status === "Terminé" && candidature.review && (
         <div className="px-4 mb-6">
           <h2 className="text-lg font-semibold mb-2">Avis laissé :</h2>
@@ -152,20 +203,21 @@ export default function DealDetailPageCommercant() {
         </div>
       )}
 
-      {/* ✅ Boutons Approbation / Résiliation */}
       {candidature.status === "Approbation" && (
         <div className="px-4 flex flex-col gap-4 mb-10">
           <button
             onClick={handleApprove}
-            className="w-full bg-[#1A2C24] text-white py-2 rounded-lg font-semibold"
+            disabled={approving}
+            className="w-full bg-[#1A2C24] text-white py-2 rounded-lg font-semibold disabled:opacity-50"
           >
-            Approuver
+            {approving ? "Approbation..." : "Approuver"}
           </button>
           <button
             onClick={handleCancel}
-            className="w-full border border-[#1A2C24] text-[#1A2C24] py-2 rounded-lg font-semibold"
+            disabled={cancelling}
+            className="w-full border border-[#1A2C24] text-[#1A2C24] py-2 rounded-lg font-semibold disabled:opacity-50"
           >
-            Résilier
+            {cancelling ? "Résiliation..." : "Résilier"}
           </button>
         </div>
       )}

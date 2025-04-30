@@ -137,7 +137,7 @@ export default function ReviewPageInfluenceur() {
           </button>
           <h1 className="text-3xl font-bold">Évaluation</h1>
         </div>
-        <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+        <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")}/>
       </div>
 
       {/* FORM */}

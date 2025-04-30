@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where, getDoc, doc } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
@@ -10,7 +10,7 @@ import save from "../../assets/save.png";
 import fullsave from "../../assets/fullsave.png";
 import plus from "../../assets/plus.png";
 import Navbar from "./Navbar";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
 
 export default function DealsPageCommercant() {
   const navigate = useNavigate();
@@ -45,31 +45,41 @@ export default function DealsPageCommercant() {
     ));
   };
 
+  const handleSignClick = async () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    const userRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const role = userSnap.data()?.role;
+      if (role === "influenceur") navigate("/dealsinfluenceur");
+      else navigate("/dealscommercant");
+    }
+  };
+
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return navigate("/login");
-  
+
     const dealsQuery = query(collection(db, "deals"), where("merchantId", "==", user.uid));
     const influencersQuery = query(collection(db, "users"), where("role", "==", "influenceur"));
-  
+
     const unsubscribeDeals = onSnapshot(dealsQuery, (snapshot) => {
       const dealsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setDeals(dealsData);
+      setLoading(false);
     });
-  
+
     const unsubscribeInfluencers = onSnapshot(influencersQuery, (snapshot) => {
       const influencersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setInfluencers(influencersData);
     });
-  
-    setLoading(false);
-  
+
     return () => {
       unsubscribeDeals();
       unsubscribeInfluencers();
     };
   }, []);
-  
 
   if (loading) {
     return (
@@ -87,8 +97,12 @@ export default function DealsPageCommercant() {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-3xl font-bold">Deals</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notificationcommercant")}> <img src={cloche} alt="Notify" className="w-6 h-6" /> </button>
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+          <button onClick={() => navigate("/notificationcommercant")}>
+            <img src={cloche} alt="Notify" className="w-6 h-6" />
+          </button>
+          <button onClick={handleSignClick}>
+            <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+          </button>
         </div>
       </div>
 

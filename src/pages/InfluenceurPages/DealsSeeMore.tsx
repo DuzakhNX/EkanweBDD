@@ -5,8 +5,8 @@ import fillplus from "../../assets/fillplus.png";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
-import { Loader2 } from "lucide-react";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
+import sign from "../../assets/ekanwesign.png";
 
 export default function DealsSeeMorePageInfluenceur() {
   const navigate = useNavigate();
@@ -14,15 +14,6 @@ export default function DealsSeeMorePageInfluenceur() {
   const [deal, setDeal] = useState<any>(null);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [loading, setLoading] = useState(true);
-  interface Deal {
-    influenceurId: string;
-    title: string;
-    description: string;
-    interest: string;
-    imageUrl?: string;
-    candidatures?: { influenceurId: string; status: string }[];
-    merchantId: string;
-  }
 
   useEffect(() => {
     const fetchDeal = async () => {
@@ -36,10 +27,10 @@ export default function DealsSeeMorePageInfluenceur() {
           const data = dealSnap.data();
           setDeal({ id: dealSnap.id, ...data });
 
-          if (auth.currentUser) {
-            const userId = auth.currentUser.uid;
-            const hasApplied = data.candidatures?.includes(userId) || false;
-            setAlreadyApplied(hasApplied);
+          const userId = auth.currentUser?.uid;
+          if (userId && data.candidatures) {
+            const applied = data.candidatures.some((c: any) => c.influenceurId === userId);
+            setAlreadyApplied(applied);
           }
         }
       } catch (error) {
@@ -55,25 +46,21 @@ export default function DealsSeeMorePageInfluenceur() {
   const handleCandidature = async () => {
     const user = auth.currentUser;
     if (!user) {
-      alert("Vous devez être connecté pour postuler.");
+      alert("Veuillez vous connecter pour postuler.");
       return;
     }
 
     try {
       const dealRef = doc(db, "deals", deal.id);
       const dealSnap = await getDoc(dealRef);
-
-      if (!dealSnap.exists()) {
-        alert("Deal introuvable.");
-        return;
-      }
+      if (!dealSnap.exists()) return alert("Deal introuvable.");
 
       const dealData = dealSnap.data();
       const candidatures = dealData?.candidatures || [];
 
-      if (candidatures.some((cand: Deal) => cand.influenceurId === user.uid)) {
-        alert("Vous avez déjà postulé à ce deal.");
-        return;
+      if (candidatures.some((cand: any) => cand.influenceurId === user.uid)) {
+        setAlreadyApplied(true);
+        return alert("Vous avez déjà postulé à ce deal.");
       }
 
       const newCandidature = {
@@ -81,9 +68,7 @@ export default function DealsSeeMorePageInfluenceur() {
         status: "Envoyé",
       };
 
-      await updateDoc(dealRef, {
-        candidatures: arrayUnion(newCandidature),
-      });
+      await updateDoc(dealRef, { candidatures: arrayUnion(newCandidature) });
 
       await sendNotification({
         toUserId: deal.merchantId,
@@ -94,10 +79,9 @@ export default function DealsSeeMorePageInfluenceur() {
         targetRoute: `/dealcandidatescommercant/${deal.id}`,
       });
 
-      const combinedId = [user.uid, deal.merchantId].sort().join("");
-      const chatRef = doc(db, "chats", combinedId);
+      const chatId = [user.uid, deal.merchantId].sort().join("");
+      const chatRef = doc(db, "chats", chatId);
       const chatSnap = await getDoc(chatRef);
-
       const firstMessage = {
         senderId: user.uid,
         text: `Hello, je suis intéressé par le deal "${deal.title}". Pouvez-vous m'en dire plus ?`,
@@ -107,58 +91,50 @@ export default function DealsSeeMorePageInfluenceur() {
       if (!chatSnap.exists()) {
         await setDoc(chatRef, { messages: [firstMessage] });
       } else {
-        await updateDoc(chatRef, {
-          messages: arrayUnion(firstMessage),
-        });
+        await updateDoc(chatRef, { messages: arrayUnion(firstMessage) });
       }
 
-      const updateUserChats = async (uid: string, receiverId: string, isSender: boolean) => {
-        const userChatsRef = doc(db, "userchats", uid);
-        const userChatsSnap = await getDoc(userChatsRef);
-
-        const chatEntry = {
-          chatId: combinedId,
+      const updateUserChats = async (uid: string, receiverId: string, read: boolean) => {
+        const ref = doc(db, "userchats", uid);
+        const snap = await getDoc(ref);
+        const entry = {
+          chatId,
           lastMessage: firstMessage.text,
-          receiverId: receiverId,
+          receiverId,
           updatedAt: Date.now(),
-          read: isSender,
+          read,
         };
 
-        if (userChatsSnap.exists()) {
-          const data = userChatsSnap.data();
-          const existingChats = data.chats || [];
-          const index = existingChats.findIndex((c: any) => c.chatId === combinedId);
-
-          if (index !== -1) {
-            existingChats[index] = chatEntry;
-          } else {
-            existingChats.push(chatEntry);
-          }
-
-          await updateDoc(userChatsRef, {
-            chats: existingChats,
-          });
+        if (snap.exists()) {
+          const data = snap.data();
+          const chats = data.chats || [];
+          const idx = chats.findIndex((c: any) => c.chatId === chatId);
+          if (idx !== -1) chats[idx] = entry;
+          else chats.push(entry);
+          await updateDoc(ref, { chats });
         } else {
-          await setDoc(userChatsRef, {
-            chats: [chatEntry],
-          });
+          await setDoc(ref, { chats: [entry] });
         }
       };
 
       await updateUserChats(user.uid, deal.merchantId, true);
       await updateUserChats(deal.merchantId, user.uid, false);
 
+      setAlreadyApplied(true);
       alert("Votre candidature a été envoyée avec succès !");
     } catch (error) {
       console.error("Erreur lors de la candidature :", error);
-      alert("Erreur lors de la candidature. Veuillez réessayer.");
+      alert("Une erreur est survenue.");
     }
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen justify-center items-center">
-        <Loader2 className="animate-spin w-12 h-12 text-orange-500" />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+        <div className="animate-spin-slow">
+          <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
+        </div>
+        <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
       </div>
     );
   }
@@ -170,20 +146,16 @@ export default function DealsSeeMorePageInfluenceur() {
   return (
     <div className="min-h-screen bg-gray-50 pt-10">
       <header className="bg-gray-50 px-4 py-3 flex items-center gap-4 shadow-sm">
-        <button onClick={() => navigate("/dealsinfluenceur")}>
+        <button onClick={() => navigate(-1)}>
           <ArrowLeft className="w-8 h-8 text-[#FF6B2E]" />
         </button>
         <span className="text-[#FF6B2E] text-3xl font-bold">Deals</span>
       </header>
 
       <main className="p-4">
-        <div className="bg-gray-50 rounded-xl overflow-hidden shadow-md">
+        <div className="bg-white rounded-xl overflow-hidden shadow-md">
           <div className="relative">
-            <img
-              src={deal.imageUrl || profile}
-              alt="Deal"
-              className="w-full h-48 object-cover"
-            />
+            <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-48 object-cover" />
             <div className="absolute bottom-2 right-2 bg-white rounded-full p-1">
               <img src={fillplus} alt="Edit" className="h-6 w-6" />
             </div>
@@ -208,27 +180,16 @@ export default function DealsSeeMorePageInfluenceur() {
             <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Intérêts</h3>
             <div className="flex gap-2 mb-4 flex-wrap">
               {deal.interest ? (
-                <span className="px-4 py-2 text-[#1A2C24] text-sm border border-black rounded-lg">
-                  {deal.interest}
-                </span>
+                <span className="px-4 py-2 text-[#1A2C24] text-sm border border-black rounded-lg">{deal.interest}</span>
               ) : (
                 <span className="text-gray-400 text-sm">Aucun intérêt défini</span>
               )}
             </div>
 
             <div className="divide-y divide-black rounded-lg overflow-hidden">
-              <div className="w-full flex items-center justify-between px-4 py-3 bg-gray-50">
-                <span className="text-[#1A2C24] text-xl font-bold">Type de Contenu</span>
-                <span className="text-sm text-[#1A2C24]">{deal.typeOfContent || "Non spécifié"}</span>
-              </div>
-              <div className="w-full flex items-center justify-between px-4 py-3 bg-gray-50">
-                <span className="text-[#1A2C24] text-xl font-bold">Date de Validité</span>
-                <span className="text-sm text-[#1A2C24]">{deal.validUntil || "Non spécifiée"}</span>
-              </div>
-              <div className="w-full flex items-center justify-between px-4 py-3 bg-gray-50">
-                <span className="text-[#1A2C24] text-xl font-bold">Conditions</span>
-                <span className="text-sm text-[#1A2C24]">{deal.conditions || "Aucune condition"}</span>
-              </div>
+              <InfoRow label="Type de Contenu" value={deal.typeOfContent || "Non spécifié"} />
+              <InfoRow label="Date de Validité" value={deal.validUntil || "Non spécifiée"} />
+              <InfoRow label="Conditions" value={deal.conditions || "Aucune condition"} />
             </div>
 
             <div className="flex gap-2 mt-6">
@@ -241,8 +202,9 @@ export default function DealsSeeMorePageInfluenceur() {
               <button
                 disabled={alreadyApplied}
                 onClick={handleCandidature}
-                className={`flex-1 py-3 text-white font-medium rounded-lg ${alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E]"
-                  }`}
+                className={`flex-1 py-3 text-white font-medium rounded-lg ${
+                  alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E]"
+                }`}
               >
                 {alreadyApplied ? "Candidature envoyée" : "EXÉCUTER"}
               </button>
@@ -253,3 +215,10 @@ export default function DealsSeeMorePageInfluenceur() {
     </div>
   );
 }
+
+const InfoRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="w-full flex items-center justify-between px-4 py-3 bg-gray-50">
+    <span className="text-[#1A2C24] text-xl font-bold">{label}</span>
+    <span className="text-sm text-[#1A2C24]">{value}</span>
+  </div>
+);

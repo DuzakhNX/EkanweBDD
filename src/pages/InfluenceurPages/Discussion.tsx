@@ -7,7 +7,7 @@ import loupe from "../../assets/loupe.png";
 import menu from "../../assets/menu.png";
 import BottomNavbar from "./BottomNavbar";
 import AddUser from "../EkanwePages/AddUser";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
 
 interface ChatItem {
     chatId: string;
@@ -18,7 +18,7 @@ interface ChatItem {
     user?: {
         pseudonyme: string;
         photoURL?: string;
-    };
+    } | null;
 }
 
 export default function DiscussionPageInfluenceur() {
@@ -27,23 +27,31 @@ export default function DiscussionPageInfluenceur() {
     const [input, setInput] = useState("");
     const [addMode, setAddMode] = useState(false);
 
-    const currentUser = auth.currentUser;
-
     useEffect(() => {
-        if (!currentUser) return;
+        const user = auth.currentUser;
+        if (!user) return;
 
-        const unsub = onSnapshot(doc(db, "userchats", currentUser.uid), async (snapshot) => {
+        const unsub = onSnapshot(doc(db, "userchats", user.uid), async (snapshot) => {
             const data = snapshot.data();
             if (!data?.chats) {
                 setChats([]);
                 return;
             }
 
-            const items = data.chats;
+            const items = data.chats as ChatItem[];
 
-            const promises = items.map(async (item: ChatItem) => {
+            const promises = items.map(async (item) => {
                 const userDoc = await getDoc(doc(db, "users", item.receiverId));
-                const user = userDoc.exists() ? userDoc.data() : null;
+                let user = null;
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    if (typeof data.pseudonyme === "string") {
+                        user = {
+                            pseudonyme: data.pseudonyme,
+                            photoURL: data.photoURL || undefined,
+                        };
+                    }
+                }
                 return { ...item, user };
             });
 
@@ -52,23 +60,29 @@ export default function DiscussionPageInfluenceur() {
         });
 
         return () => unsub();
-    }, [currentUser?.uid]);
+    }, []);
 
     const handleSelect = async (chat: ChatItem) => {
-        if (!currentUser) return;
-        const userChatsRef = doc(db, "userchats", currentUser.uid);
+        const user = auth.currentUser;
+        if (!user) return;
+
         try {
+            const userChatsRef = doc(db, "userchats", user.uid);
             const updatedChats = chats.map((item) => {
                 const { user, ...rest } = item;
-                if (item.chatId === chat.chatId) {
-                    return { ...rest, read: true };
-                }
-                return rest;
+                return item.chatId === chat.chatId ? { ...rest, read: true } : rest;
             });
+
             await updateDoc(userChatsRef, { chats: updatedChats });
-            navigate(`/chat/${chat.chatId}`, { state: { pseudonyme: chat.user?.pseudonyme, photoURL: chat.user?.photoURL } });
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour du chat :", error);
+
+            navigate(`/chat/${chat.chatId}`, {
+                state: {
+                    pseudonyme: chat.user?.pseudonyme,
+                    photoURL: chat.user?.photoURL,
+                },
+            });
+        } catch (err) {
+            console.error("Erreur lors de la mise à jour du chat :", err);
         }
     };
 
@@ -76,20 +90,15 @@ export default function DiscussionPageInfluenceur() {
         chat.user?.pseudonyme.toLowerCase().includes(input.toLowerCase())
     );
 
-    const handleUserAdded = () => {
-        setAddMode(false);
-    };
-
     return (
         <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-32 pt-5">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4">
                 <h1 className="text-3xl font-bold">Discussions</h1>
-                <div className="flex items-center space-x-4">
-                    <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
-                </div>
+                <img src={sign} alt="Ekanwe" className="w-6 h-6" />
             </div>
 
+            {/* Search & Add */}
             <div className="px-4 mb-4 flex items-center gap-2">
                 <div className="flex items-center bg-white/10 border border-black rounded-lg px-3 py-2 flex-1">
                     <img src={loupe} alt="loupe" className="w-6 h-6 mr-2" />
@@ -98,21 +107,22 @@ export default function DiscussionPageInfluenceur() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Rechercher une conversation"
-                        className="flex-grow bg-transparent text-2xs outline-none"
+                        className="flex-grow bg-transparent text-sm outline-none"
                     />
                     <img src={menu} alt="Menu" className="w-6 h-6 ml-2" />
                 </div>
                 <button
-                    onClick={() => setAddMode(!addMode)}
+                    onClick={() => setAddMode((prev) => !prev)}
                     className="bg-[#FF6B2E] text-white px-4 py-2 rounded-lg text-sm"
                 >
                     {addMode ? "Annuler" : "Ajouter"}
                 </button>
             </div>
 
+            {/* Chat List */}
             <div className="px-4">
                 {addMode ? (
-                    <AddUser onUserAdded={handleUserAdded} />
+                    <AddUser onUserAdded={() => setAddMode(false)} />
                 ) : filteredChats.length > 0 ? (
                     filteredChats.map((chat) => (
                         <div
@@ -124,7 +134,7 @@ export default function DiscussionPageInfluenceur() {
                                 <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden mr-4">
                                     <img
                                         src={chat.user?.photoURL || profile}
-                                        alt={chat.user?.pseudonyme}
+                                        alt={chat.user?.pseudonyme || "Profil"}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -132,11 +142,17 @@ export default function DiscussionPageInfluenceur() {
                                     <div className="flex justify-between items-center">
                                         <h3 className="font-semibold">{chat.user?.pseudonyme || "Utilisateur"}</h3>
                                         <span className="text-xs text-gray-500">
-                                            {new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(chat.updatedAt).toLocaleTimeString("fr-FR", {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            })}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <p className={`text-sm truncate ${chat.read ? "text-gray-600" : "text-black font-bold"}`}>
+                                        <p
+                                            className={`text-sm truncate ${chat.read ? "text-gray-600" : "text-black font-bold"
+                                                }`}
+                                        >
                                             {chat.lastMessage || "Commencez la conversation..."}
                                         </p>
                                         {!chat.read && (
@@ -150,8 +166,8 @@ export default function DiscussionPageInfluenceur() {
                         </div>
                     ))
                 ) : (
-                    <div className="bg-[#F5F5E7] mt-20 p-2 rounded-lg shadow-lg mb-4">
-                        <p className="text-sm text-center text-gray-600">Aucune conversation</p>
+                    <div className="mt-20 p-2 rounded-lg shadow-lg mb-4 text-center text-gray-600">
+                        <p className="text-sm">Aucune conversation</p>
                     </div>
                 )}
             </div>

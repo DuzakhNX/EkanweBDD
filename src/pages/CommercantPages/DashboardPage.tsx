@@ -103,8 +103,11 @@ export default function DashboardPageCommercant() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+        <div className="animate-spin-slow">
+          <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
+        </div>
+        <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
       </div>
     );
   }

@@ -103,7 +103,7 @@ export default function SocialConnectStep() {
           <div className="flex justify-between mt-8">
             <button
               className="border border-white text-white px-6 py-2 rounded-lg text-sm"
-              onClick={() => navigate("/interestsstep")}
+              onClick={() => navigate("/intereststep")}
             >
               RETOUR
             </button>

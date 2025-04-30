@@ -5,7 +5,7 @@ import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
 
 export default function DealDetailsPageInfluenceur() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function DealDetailsPageInfluenceur() {
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<{ image: string; likes: number; shares: number }[]>([]);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!dealId) return;
@@ -30,17 +31,11 @@ export default function DealDetailsPageInfluenceur() {
 
           const currentUserId = auth.currentUser?.uid;
           if (currentUserId && dealData?.candidatures) {
-            const candidature = dealData.candidatures.find(
-              (c: any) => c.influenceurId === currentUserId
-            );
+            const candidature = dealData.candidatures.find((c: any) => c.influenceurId === currentUserId);
             if (candidature) {
               setStatus(candidature.status);
-              if (candidature.review) {
-                setHasReviewed(true);
-              }
-              if (candidature.proofs) {
-                setUploads(candidature.proofs);
-              }
+              setHasReviewed(!!candidature.review);
+              setUploads(candidature.proofs || []);
             }
           }
         }
@@ -56,31 +51,28 @@ export default function DealDetailsPageInfluenceur() {
   }, [dealId]);
 
   const handleMarkAsDone = async () => {
+    if (loading || status !== "Accepté") return;
+    setLoading(true);
+
     try {
       const dealRef = doc(db, "deals", dealId!);
       const dealSnap = await getDoc(dealRef);
-
       if (!dealSnap.exists()) throw new Error("Deal introuvable");
 
       const dealData = dealSnap.data();
       const currentUserId = auth.currentUser?.uid;
       if (!currentUserId) throw new Error("Utilisateur non connecté");
 
-      const updatedCandidatures = dealData?.candidatures?.map((cand: any) => {
-        if (cand.influenceurId === currentUserId) {
-          return { ...cand, status: "Approbation", proofs: uploads };
-        }
-        return cand;
-      });
+      const updatedCandidatures = dealData?.candidatures?.map((cand: any) =>
+        cand.influenceurId === currentUserId ? { ...cand, status: "Approbation", proofs: uploads } : cand
+      );
 
-      await updateDoc(dealRef, {
-        candidatures: updatedCandidatures,
-      });
+      await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
       await sendNotification({
         toUserId: dealData.merchantId,
         fromUserId: currentUserId,
-        message: "L'influenceur a Terminé sa mission et attend votre validation.",
+        message: "L'influenceur a terminé sa mission et attend votre validation.",
         relatedDealId: dealId!,
         targetRoute: "/suividealscommercant",
         type: "approval_request",
@@ -89,6 +81,8 @@ export default function DealDetailsPageInfluenceur() {
       setStatus("Approbation");
     } catch (error) {
       console.error("Erreur lors de la mise à jour du deal :", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,13 +107,13 @@ export default function DealDetailsPageInfluenceur() {
   };
 
   const getCurrentStep = () => {
-    switch (status) {
-      case "Envoyé": return 1;
-      case "Accepté": return 2;
-      case "Approbation": return 3;
-      case "Terminé": return 4;
-      default: return 1;
-    }
+    const stepMap: any = {
+      "Envoyé": 1,
+      "Accepté": 2,
+      "Approbation": 3,
+      "Terminé": 4
+    };
+    return stepMap[status] || 1;
   };
 
   if (!deal) return <div className="p-4">Chargement...</div>;
@@ -150,10 +144,16 @@ export default function DealDetailsPageInfluenceur() {
         <div className="text-sm text-gray-600 mb-4">
           <h3 className="font-semibold text-[#1A2C24] text-lg">Intérêts</h3>
           <div className="flex flex-wrap gap-2">
-            {(deal.interest || []).map((item: string, idx: number) => (
-              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">
-                {item}
-              </span>
+            {(deal.interests || []).map((item: string, idx: number) => (
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
+            ))}
+          </div>
+        </div>
+        <div className="text-sm text-gray-600 mb-4">
+          <h3 className="font-semibold text-[#1A2C24] text-lg">Type de contenu</h3>
+          <div className="flex flex-wrap gap-2">
+            {(deal.typeOfContent || []).map((item: string, idx: number) => (
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
             ))}
           </div>
         </div>
@@ -167,7 +167,6 @@ export default function DealDetailsPageInfluenceur() {
         <div className="px-4 mb-6">
           <label className="block mb-2 text-sm font-medium text-gray-700">Captures d'écran des actions réalisées :</label>
           <input type="file" multiple onChange={handleImageUpload} className="mb-4" />
-
           {uploads.map((upload, index) => (
             <div key={index} className="mb-6">
               <img src={upload.image} alt={`Upload ${index}`} className="w-full h-48 object-cover mb-2 rounded-lg" />
@@ -189,31 +188,33 @@ export default function DealDetailsPageInfluenceur() {
               </div>
             </div>
           ))}
+          <button
+            onClick={handleMarkAsDone}
+            className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-semibold mt-2"
+            disabled={loading}
+          >
+            {loading ? "Envoi en cours..." : "Marquer comme Terminé"}
+          </button>
         </div>
       )}
 
-      {status === "Refusé" ? (
-        <div className="px-4 mb-6">
-          <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold">
-            Candidature Refusée
-          </button>
-        </div>
-      ) : status === "Accepté" ? (
-        <div className="px-4 mb-6">
-          <button
-            onClick={handleMarkAsDone}
-            className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-semibold"
-          >
-            Marquer comme Terminé
-          </button>
-        </div>
-      ) : status === "Approbation" ? (
+      {status === "Approbation" && (
         <div className="px-4 mb-6">
           <button disabled className="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold">
             En attente d'Approbation du commerçant
           </button>
         </div>
-      ) : status === "Terminé" && (
+      )}
+
+      {status === "Refusé" && (
+        <div className="px-4 mb-6">
+          <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold">
+            Candidature Refusée
+          </button>
+        </div>
+      )}
+
+      {status === "Terminé" && (
         <div className="px-4 mb-6">
           <button
             onClick={() => !hasReviewed && navigate(`/reviewinfluenceur/${dealId}`)}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, onSnapshot, query, doc, updateDoc, setDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
@@ -9,9 +9,8 @@ import menu from "../../assets/menu.png";
 import save from "../../assets/save.png";
 import fullsave from "../../assets/fullsave.png";
 import BottomNavbar from "./BottomNavbar";
-import { doc, updateDoc, setDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
 
 export default function DealsPageInfluenceur() {
   const navigate = useNavigate();
@@ -24,22 +23,11 @@ export default function DealsPageInfluenceur() {
   useEffect(() => {
     const q = query(collection(db, "deals"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const allDeals = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const allDeals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setDeals(allDeals);
     });
-
     return () => unsubscribe();
   }, []);
-
-
-  const scroll = (ref: React.RefObject<HTMLDivElement>, direction: "left" | "right") => {
-    if (ref.current) {
-      ref.current.scrollBy({ left: direction === "left" ? -370 : 370, behavior: "smooth" });
-    }
-  };
 
   const toggleSave = (dealId: string) => {
     setSavedDeals((prev) =>
@@ -47,15 +35,11 @@ export default function DealsPageInfluenceur() {
     );
   };
 
-  const filteredDeals = selectedFilter === "All"
-    ? deals
-    : deals.filter((d) => d.interest === selectedFilter);
-
+  const filters = ["All", ...Array.from(new Set(deals.map((d) => d.interest).filter(Boolean)))];
+  const filteredDeals = selectedFilter === "All" ? deals : deals.filter((d) => d.interest === selectedFilter);
   const sortedByPopularity = [...filteredDeals].sort((a, b) => (b.candidatures?.length || 0) - (a.candidatures?.length || 0));
   const popularDeals = sortedByPopularity.slice(0, 5);
   const otherDeals = sortedByPopularity.slice(5);
-
-  const filters = ["All", ...Array.from(new Set(deals.map((d) => d.interest)))];
 
   return (
     <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-32 pt-5">
@@ -81,8 +65,10 @@ export default function DealsPageInfluenceur() {
             <button
               key={item}
               onClick={() => setSelectedFilter(item)}
-              className={`border px-10 py-3 rounded-lg text-sm ${selectedFilter === item ? "bg-[#1A2C24] text-white" : "border-[#14210F] text-[#14210F] bg-white/10"
-                }`}
+              className={`border px-10 py-3 rounded-lg text-sm ${selectedFilter === item
+                ? "bg-[#1A2C24] text-white"
+                : "border-[#14210F] text-[#14210F] bg-white/10"
+              }`}
             >
               {item}
             </button>
@@ -90,92 +76,66 @@ export default function DealsPageInfluenceur() {
         </div>
       </div>
 
-      {/* POPULAIRES */}
-      <div className="flex items-center px-4 justify-between mb-2">
-        <h2 className="text-2xl font-bold">Populaire</h2>
-        <div className="flex space-x-4 text-2xl">
-          <button onClick={() => scroll(popularRef, "left")}>←</button>
-          <button onClick={() => scroll(popularRef, "right")}>→</button>
-        </div>
-      </div>
-      <div ref={popularRef} className="px-4 mb-6 flex space-x-4 overflow-x-auto scrollbar-hide">
-        {popularDeals.length > 0 ? (
-          popularDeals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} saved={savedDeals.includes(deal.id)} onSave={toggleSave} />
-          ))
-        ) : (
-          <p className="text-sm px-4 text-gray-500">Aucun deal populaire</p>
-        )}
-      </div>
+      {/* POPULAIRE */}
+      <Section title="Populaire" refProp={popularRef} deals={popularDeals} savedDeals={savedDeals} toggleSave={toggleSave} />
 
       {/* AUTRES */}
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-2xl font-bold">Autre deals</h2>
-          <div className="flex space-x-4 text-2xl">
-            <button onClick={() => scroll(otherRef, "left")}>←</button>
-            <button onClick={() => scroll(otherRef, "right")}>→</button>
-          </div>
-        </div>
-        <div ref={otherRef} className="flex space-x-4 overflow-x-auto scrollbar-hide">
-          {otherDeals.length > 0 ? (
-            otherDeals.map((deal) => (
-              <DealCard key={deal.id} deal={deal} saved={savedDeals.includes(deal.id)} onSave={toggleSave} />
-            ))
-          ) : (
-            <p className="text-sm px-4 text-gray-500">Aucun autre deal</p>
-          )}
-        </div>
-      </div>
+      <Section title="Autres deals" refProp={otherRef} deals={otherDeals} savedDeals={savedDeals} toggleSave={toggleSave} />
+
       <BottomNavbar />
     </div>
   );
 }
 
-const DealCard = ({ deal, saved, onSave }: any) => {
+function Section({ title, refProp, deals, savedDeals, toggleSave }: any) {
+  return (
+    <>
+      <div className="flex items-center px-4 justify-between mb-2">
+        <h2 className="text-2xl font-bold">{title}</h2>
+        <div className="flex space-x-4 text-2xl">
+          <button onClick={() => refProp.current?.scrollBy({ left: -370, behavior: "smooth" })}>←</button>
+          <button onClick={() => refProp.current?.scrollBy({ left: 370, behavior: "smooth" })}>→</button>
+        </div>
+      </div>
+      <div ref={refProp} className="px-4 mb-6 flex space-x-4 overflow-x-auto scrollbar-hide">
+        {deals.length > 0 ? (
+          deals.map((deal: any) => (
+            <DealCard key={deal.id} deal={deal} saved={savedDeals.includes(deal.id)} onSave={toggleSave} />
+          ))
+        ) : (
+          <p className="text-sm px-4 text-gray-500">Aucun deal disponible</p>
+        )}
+      </div>
+    </>
+  );
+}
+
+function DealCard({ deal, saved, onSave }: any) {
   const navigate = useNavigate();
-  interface Cand {
-    influenceurId: string;
-    title: string;
-    description: string;
-    interest: string;
-    imageUrl?: string;
-    candidatures?: { influenceurId: string; status: string }[];
-    merchantId: string;
-  }
+  const [loading, setLoading] = useState(false);
 
   const handleApplyToDeal = async () => {
     const user = auth.currentUser;
-    if (!user) {
-      alert("Vous devez être connecté pour postuler.");
-      return;
-    }
+    if (!user) return alert("Veuillez vous connecter pour postuler.");
+    setLoading(true);
 
     try {
       const dealRef = doc(db, "deals", deal.id);
       const dealSnap = await getDoc(dealRef);
 
-      if (!dealSnap.exists()) {
-        alert("Deal introuvable.");
-        return;
-      }
+      if (!dealSnap.exists()) throw new Error("Deal introuvable.");
 
       const dealData = dealSnap.data();
       const candidatures = dealData?.candidatures || [];
 
-      if (candidatures.some((cand: Cand) => cand.influenceurId === user.uid)) {
+      if (candidatures.some((cand: any) => cand.influenceurId === user.uid)) {
         alert("Vous avez déjà postulé à ce deal.");
+        setLoading(false);
         return;
       }
 
-      const newCandidature = {
-        influenceurId: user.uid,
-        status: "Envoyé",
-      };
-
-      await updateDoc(dealRef, {
-        candidatures: arrayUnion(newCandidature),
-      });
+      const newCandidature = { influenceurId: user.uid, status: "Envoyé" };
+      await updateDoc(dealRef, { candidatures: arrayUnion(newCandidature) });
 
       await sendNotification({
         toUserId: deal.merchantId,
@@ -186,99 +146,69 @@ const DealCard = ({ deal, saved, onSave }: any) => {
         targetRoute: `/dealcandidatescommercant/${deal.id}`,
       });
 
-      const combinedId = [user.uid, deal.merchantId].sort().join("");
-      const chatRef = doc(db, "chats", combinedId);
-      const chatSnap = await getDoc(chatRef);
-
-      const firstMessage = {
+      const chatId = [user.uid, deal.merchantId].sort().join("");
+      const message = {
         senderId: user.uid,
-        text: `Hello, je suis intéressé par le deal "${deal.title}". Pouvez-vous m'en dire plus ?`,
+        text: `Bonjour, je suis intéressé par le deal "${deal.title}".`,
         createdAt: new Date(),
       };
 
+      const chatRef = doc(db, "chats", chatId);
+      const chatSnap = await getDoc(chatRef);
+
       if (!chatSnap.exists()) {
-        await setDoc(chatRef, { messages: [firstMessage] });
+        await setDoc(chatRef, { messages: [message] });
       } else {
-        await updateDoc(chatRef, {
-          messages: arrayUnion(firstMessage),
-        });
+        await updateDoc(chatRef, { messages: arrayUnion(message) });
       }
 
-      const updateUserChats = async (uid: string, receiverId: string, isSender: boolean) => {
-        const userChatsRef = doc(db, "userchats", uid);
-        const userChatsSnap = await getDoc(userChatsRef);
+      const updateUserChats = async (uid: string, receiverId: string, read: boolean) => {
+        const ref = doc(db, "userchats", uid);
+        const snap = await getDoc(ref);
+        const newChat = { chatId, receiverId, lastMessage: message.text, updatedAt: Date.now(), read };
 
-        const chatEntry = {
-          chatId: combinedId,
-          lastMessage: firstMessage.text,
-          receiverId: receiverId,
-          updatedAt: Date.now(),
-          read: isSender,
-        };
-
-        if (userChatsSnap.exists()) {
-          const data = userChatsSnap.data();
-          const existingChats = data.chats || [];
-          const index = existingChats.findIndex((c: any) => c.chatId === combinedId);
-
-          if (index !== -1) {
-            existingChats[index] = chatEntry;
-          } else {
-            existingChats.push(chatEntry);
-          }
-
-          await updateDoc(userChatsRef, {
-            chats: existingChats,
-          });
+        if (snap.exists()) {
+          const data = snap.data();
+          const chats = data.chats || [];
+          const idx = chats.findIndex((c: any) => c.chatId === chatId);
+          if (idx !== -1) chats[idx] = newChat;
+          else chats.push(newChat);
+          await updateDoc(ref, { chats });
         } else {
-          await setDoc(userChatsRef, {
-            chats: [chatEntry],
-          });
+          await setDoc(ref, { chats: [newChat] });
         }
       };
 
       await updateUserChats(user.uid, deal.merchantId, true);
       await updateUserChats(deal.merchantId, user.uid, false);
 
-      alert("Votre candidature a été envoyée avec succès !");
-    } catch (error) {
-      console.error("Erreur lors de la candidature :", error);
-      alert("Erreur lors de la candidature. Veuillez réessayer.");
+      alert("Votre candidature a été envoyée !");
+    } catch (err) {
+      console.error("Erreur lors de la candidature :", err);
+      alert("Une erreur est survenue lors de la candidature.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleNavigation = async () => {
+    const user = auth.currentUser;
+    if (!user) return alert("Veuillez vous connecter.");
+
     const dealRef = doc(db, "deals", deal.id);
     const dealSnap = await getDoc(dealRef);
-    const user = auth.currentUser;
-    if (!user) {
-      alert("Vous devez être connecté pour postuler.");
-      return;
-    }
 
-    if (!dealSnap.exists()) {
-      alert("Deal introuvable.");
-      return;
-    }
+    if (!dealSnap.exists()) return alert("Deal introuvable.");
 
     const dealData = dealSnap.data();
-    const candidatures = dealData?.candidatures || [];
-
-    if (candidatures.some((cand: Cand) => cand.influenceurId === user.uid)) {
-      navigate(`/dealdetailinfluenceur/${deal.id}`);
-    } else {
-      navigate(`/dealsseemoreinfluenceur/${deal.id}`)
-    }
-  }
+    const hasApplied = dealData?.candidatures?.some((cand: any) => cand.influenceurId === user.uid);
+    navigate(hasApplied ? `/dealdetailinfluenceur/${deal.id}` : `/dealsseemoreinfluenceur/${deal.id}`);
+  };
 
   return (
     <div className="min-w-full bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
       <div className="relative w-full h-40">
-        <img
-          src={deal.imageUrl || profile}
-          alt={deal.title}
-          className="w-full h-full object-cover rounded-t-xl"
-        />
+        <img src={deal.imageUrl || profile} alt={deal.title} className="w-full h-full object-cover rounded-t-xl" />
         <button className="absolute bottom-2 right-2" onClick={() => onSave(deal.id)}>
           <img src={saved ? fullsave : save} alt="Save" className="w-6 h-6" />
         </button>
@@ -294,13 +224,14 @@ const DealCard = ({ deal, saved, onSave }: any) => {
             Voir plus
           </button>
           <button
+            disabled={loading}
             className="bg-[#FF6B2E] border border-white text-white px-4 py-2 rounded-lg text-sm font-semibold"
             onClick={handleApplyToDeal}
           >
-            Dealer
+            {loading ? "Envoi..." : "Dealer"}
           </button>
         </div>
       </div>
     </div>
   );
-};
+}

@@ -3,6 +3,7 @@ import { Camera } from "lucide-react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import sign from "../../assets/ekanwesign.png";
 import Navbar from "./Navbar";
 
@@ -18,6 +19,9 @@ export default function ProfilePageCommercant() {
   const [tiktok, setTiktok] = useState("");
   const [portfolioLink, setPortfolioLink] = useState("");
   const [bio, setBio] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<null | string>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -64,6 +68,9 @@ export default function ProfilePageCommercant() {
     const user = auth.currentUser;
     if (!user) return;
 
+    setLoading(true);
+    setMessage(null);
+
     try {
       await updateDoc(doc(db, "users", user.uid), {
         pseudonyme,
@@ -77,10 +84,13 @@ export default function ProfilePageCommercant() {
         bio,
         photoURL: profileImage || "",
       });
-      alert("Profil mis à jour avec succès !");
+
+      setMessage("Profil mis à jour avec succès !");
     } catch (error) {
       console.error("Erreur de mise à jour du profil :", error);
-      alert("Erreur lors de la sauvegarde.");
+      setMessage("Une erreur est survenue.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,7 +100,7 @@ export default function ProfilePageCommercant() {
       window.location.href = "/";
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error);
-      alert("Erreur de déconnexion.");
+      setMessage("Erreur de déconnexion.");
     }
   };
 
@@ -98,7 +108,17 @@ export default function ProfilePageCommercant() {
     <div className="min-h-screen bg-[#F5F5E7] flex flex-col">
       <div className="flex items-center bg-white justify-between px-4 py-6">
         <h1 className="text-3xl text-[#1A2C24] font-bold">Mon Profil</h1>
-        <img src={sign} alt="Ekanwe" className="w-6 h-6" />
+        <img
+          src={sign}
+          alt="Ekanwe"
+          className="w-6 h-6 cursor-pointer"
+          onClick={async () => {
+            const userRef = doc(db, "users", auth.currentUser?.uid || "");
+            const snap = await getDoc(userRef);
+            const role = snap.data()?.role;
+            navigate(role === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant");
+          }}
+        />
       </div>
 
       <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6 mt-auto space-y-6 flex-1">
@@ -136,11 +156,20 @@ export default function ProfilePageCommercant() {
           <TextAreaField label="Bio" value={bio} onChange={setBio} />
         </div>
 
+        {message && (
+          <p className={`text-sm mt-2 text-center ${message.includes("succès") ? "text-green-600" : "text-red-500"}`}>
+            {message}
+          </p>
+        )}
+
         <button
           onClick={handleSave}
-          className="w-full bg-[#1A2C24] text-white py-3 rounded-lg font-bold text-lg mt-6"
+          disabled={loading}
+          className={`w-full py-3 rounded-lg font-bold text-lg mt-6 ${
+            loading ? "bg-gray-400 text-white" : "bg-[#1A2C24] text-white"
+          }`}
         >
-          Sauvegarder
+          {loading ? "Sauvegarde..." : "Sauvegarder"}
         </button>
 
         <button

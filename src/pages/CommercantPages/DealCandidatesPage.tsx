@@ -6,13 +6,17 @@ import { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import { sendNotification } from "../../hooks/sendNotifications";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
+import sign from "../../assets/ekanwesign.png";
 
 export default function DealCandidatesPageCommercant() {
   const navigate = useNavigate();
   const { dealId } = useParams();
   const [deal, setDeal] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState<string | null>(null);
+
   interface Candidature {
     influenceurId: string;
     status: string;
@@ -36,10 +40,7 @@ export default function DealCandidatesPageCommercant() {
               const userId = candidature.influenceurId;
               const userSnap = await getDoc(doc(db, "users", userId));
 
-              if (!userSnap.exists()) {
-                console.warn(`Utilisateur ${userId} introuvable`);
-                return null;
-              }
+              if (!userSnap.exists()) return null;
 
               return {
                 influenceurId: userId,
@@ -50,175 +51,180 @@ export default function DealCandidatesPageCommercant() {
           );
 
           setCandidates(allCandidates.filter(Boolean));
-        } else {
-          console.error("Le deal n'existe pas !");
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des données :", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [dealId]);
 
-
   const renderStars = (rating: number) => {
-    return Array(5)
-      .fill(null)
-      .map((_, i) => (
-        <span key={i} className={`text-lg ${i < rating ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
-      ));
+    return Array(5).fill(null).map((_, i) => (
+      <span key={i} className={`text-lg ${i < rating ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
+    ));
   };
 
   const updateStatus = async (influenceurId: string, status: string) => {
+    setButtonLoading(influenceurId + status);
     const dealRef = doc(db, "deals", dealId!);
 
     try {
       const dealDoc = await getDoc(dealRef);
-      if (dealDoc.exists()) {
-        const dealData = dealDoc.data();
-        if (dealData && dealData.candidatures) {
-          const updatedCandidatures = dealData.candidatures.map((candidature: any) =>
-            candidature.influenceurId === influenceurId
-              ? { ...candidature, status }
-              : candidature
-          );
+      if (!dealDoc.exists()) return;
 
-          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+      const dealData = dealDoc.data();
+      const updatedCandidatures = dealData.candidatures.map((candidature: any) =>
+        candidature.influenceurId === influenceurId
+          ? { ...candidature, status }
+          : candidature
+      );
 
-          await sendNotification({
-            toUserId: influenceurId,
-            message: `Votre candidature a été ${status === "Accepté" ? "acceptée" : "refusée"}.`,
-            relatedDealId: dealId!,
-            targetRoute: "/dealdetailinfluenceur/dealId",
-            fromUserId: auth.currentUser?.uid || "",
-            type: "status_update",
-          });
+      await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
-          setCandidates((prev) =>
-            prev.map((c) =>
-              c.influenceurId === influenceurId ? { ...c, status } : c
-            )
-          );
-        }
-      }
+      await sendNotification({
+        toUserId: influenceurId,
+        message: `Votre candidature a été ${status === "Accepté" ? "acceptée" : "refusée"}.`,
+        relatedDealId: dealId!,
+        targetRoute: `/dealdetailinfluenceur/${dealId}`,
+        fromUserId: auth.currentUser?.uid || "",
+        type: "status_update",
+      });
+
+      setCandidates(prev => prev.map(c =>
+        c.influenceurId === influenceurId ? { ...c, status } : c
+      ));
     } catch (error) {
-      console.error("Erreur lors de la mise à jour :", error);
+      console.error("Erreur mise à jour statut :", error);
+    } finally {
+      setButtonLoading(null);
     }
   };
 
   const cancelContract = async (influenceurId: string) => {
+    setButtonLoading(influenceurId + "cancel");
     const dealRef = doc(db, "deals", dealId!);
+
     try {
       const dealDoc = await getDoc(dealRef);
-      if (dealDoc.exists()) {
-        const dealData = dealDoc.data();
-        if (dealData && dealData.candidatures) {
-          const updatedCandidatures = dealData.candidatures.filter(
-            (candidature: any) => candidature.influenceurId !== influenceurId
-          );
+      if (!dealDoc.exists()) return;
 
-          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+      const dealData = dealDoc.data();
+      const updatedCandidatures = dealData.candidatures.filter(
+        (candidature: any) => candidature.influenceurId !== influenceurId
+      );
 
-          await sendNotification({
-            toUserId: influenceurId,
-            message: `Votre contrat a été résilié.`,
-            relatedDealId: dealId!,
-            targetRoute: "/dealsinfluenceur",
-            fromUserId: auth.currentUser?.uid || "",
-            type: "contract_cancelled",
-          });
+      await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
-          setCandidates((prev) => prev.filter((c) => c.influenceurId !== influenceurId));
-        }
-      }
+      await sendNotification({
+        toUserId: influenceurId,
+        message: `Votre contrat a été résilié.`,
+        relatedDealId: dealId!,
+        targetRoute: "/dealsinfluenceur",
+        fromUserId: auth.currentUser?.uid || "",
+        type: "contract_cancelled",
+      });
+
+      setCandidates(prev => prev.filter(c => c.influenceurId !== influenceurId));
     } catch (error) {
-      console.error("Erreur lors de la résiliation :", error);
+      console.error("Erreur résiliation :", error);
+    } finally {
+      setButtonLoading(null);
     }
   };
 
   const refuseCandidate = async (influenceurId: string) => {
+    setButtonLoading(influenceurId + "refus");
     const dealRef = doc(db, "deals", dealId!);
 
     try {
       const dealDoc = await getDoc(dealRef);
-      if (dealDoc.exists()) {
-        const dealData = dealDoc.data();
-        if (dealData && dealData.candidatures) {
-          const updatedCandidatures = dealData.candidatures.map((candidature: any) =>
-            candidature.influenceurId === influenceurId
-              ? { ...candidature, status: "Refusé" }
-              : candidature
-          );
+      if (!dealDoc.exists()) return;
 
-          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+      const dealData = dealDoc.data();
+      const updatedCandidatures = dealData.candidatures.map((candidature: any) =>
+        candidature.influenceurId === influenceurId
+          ? { ...candidature, status: "Refusé" }
+          : candidature
+      );
 
-          await sendNotification({
-            toUserId: influenceurId,
-            message: `Votre candidature a été refusée.`,
-            relatedDealId: dealId!,
-            targetRoute: `/dealdetailinfluenceur/${dealId}`,
-            fromUserId: auth.currentUser?.uid || "",
-            type: "candidature_refused",
-          });
+      await updateDoc(dealRef, { candidatures: updatedCandidatures });
 
-          setCandidates((prev) =>
-            prev.map((c) =>
-              c.influenceurId === influenceurId ? { ...c, status: "Refusé" } : c
-            )
-          );
-        }
-      }
+      await sendNotification({
+        toUserId: influenceurId,
+        message: `Votre candidature a été refusée.`,
+        relatedDealId: dealId!,
+        targetRoute: `/dealdetailinfluenceur/${dealId}`,
+        fromUserId: auth.currentUser?.uid || "",
+        type: "candidature_refused",
+      });
+
+      setCandidates(prev => prev.map(c =>
+        c.influenceurId === influenceurId ? { ...c, status: "Refusé" } : c
+      ));
     } catch (error) {
-      console.error("Erreur lors du refus de la candidature :", error);
+      console.error("Erreur refus candidature :", error);
+    } finally {
+      setButtonLoading(null);
     }
   };
 
-
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <div className="bg-white py-3 px-4 flex items-center border-b">
+      <div className="bg-white py-3 px-4 flex items-center border-b justify-between">
         <button onClick={() => navigate(-1)} className="flex items-center text-[#FF6B2E]">
           <ArrowLeft className="h-6 w-6 mr-1" />
           <span className="text-xl font-medium">Retour</span>
         </button>
+        <img
+          src={sign}
+          onClick={() => navigate(auth.currentUser?.displayName === "commercant" ? "/dealscommercant" : "/dealsinfluenceur")}
+          className="h-6 w-6 cursor-pointer"
+          alt="ekanwe-logo"
+        />
       </div>
 
-      {deal && (
-        <>
-          <div className="relative">
-            <img
-              src={deal.imageUrl || profile}
-              alt="Deal"
-              className="w-full h-48 object-cover"
-            />
-            <button className="absolute bottom-2 right-2 rounded-full p-1">
-              <img src={fillplus} alt="Edit" className="h-6 w-6" />
-            </button>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+          <div className="animate-spin-slow">
+            <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
           </div>
-
-          <div className="p-4 bg-white border-b">
-            <h1 className="text-3xl font-bold text-[#1A2C24] mb-1">{deal.title}</h1>
-            <div className="flex items-center text-sm text-[#FF6B2E]">
-              <MapPin className="w-5 h-5 mr-1" />
-              {deal.location || "Non défini"}
+          <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
+        </div>
+      ) : (
+        deal && (
+          <>
+            <div className="relative">
+              <img
+                src={deal.imageUrl || profile}
+                alt="Deal"
+                className="w-full h-48 object-cover"
+              />
+              <button className="absolute bottom-2 right-2 rounded-full p-1">
+                <img src={fillplus} alt="Edit" className="h-6 w-6" />
+              </button>
             </div>
-          </div>
 
-          <div className="bg-white">
-            <div className="p-4 border-b">
+            <div className="p-4 bg-white border-b">
+              <h1 className="text-3xl font-bold text-[#1A2C24] mb-1">{deal.title}</h1>
+              <div className="flex items-center text-sm text-[#FF6B2E]">
+                <MapPin className="w-5 h-5 mr-1" />
+                {deal.location || "Non défini"}
+              </div>
+            </div>
+
+            <div className="p-4 bg-white border-b">
               <h2 className="font-bold mb-2 text-xl text-[#1A2C24]">Description du Deal</h2>
-              <p className="text-[#1A2C24] text-sm">
-                {deal.description || "Aucune description fournie."}
-              </p>
+              <p className="text-[#1A2C24] text-sm">{deal.description || "Aucune description fournie."}</p>
             </div>
 
-            <div className="p-4 border-b">
+            <div className="p-4 bg-white border-b">
               <h2 className="font-bold mb-2 text-xl text-[#1A2C24]">Candidats</h2>
-
               {candidates.length === 0 ? (
-                <p className="text-gray-500 text-sm mt-4">Aucun candidat pour ce deal pour l'instant.</p>
+                <p className="text-gray-500 text-sm">Aucun candidat pour ce deal pour l'instant.</p>
               ) : (
                 <div className="space-y-3">
                   {candidates.map((cand) => (
@@ -243,7 +249,6 @@ export default function DealCandidatesPageCommercant() {
                             <div className="flex mt-1">{renderStars(cand.userInfo?.rating || 3)}</div>
                           </div>
                         </div>
-
                         <div className="flex items-center gap-3">
                           {cand.status === "Envoyé" && (
                             <>
@@ -252,18 +257,20 @@ export default function DealCandidatesPageCommercant() {
                                   e.stopPropagation();
                                   updateStatus(cand.influenceurId, "Accepté");
                                 }}
-                                className="bg-[#1A2C24] text-white text-xs px-3 py-1 rounded"
+                                disabled={buttonLoading === cand.influenceurId + "Accepté"}
+                                className="bg-[#1A2C24] text-white text-xs px-3 py-1 rounded disabled:opacity-50"
                               >
-                                ACCEPTER
+                                {buttonLoading === cand.influenceurId + "Accepté" ? "..." : "ACCEPTER"}
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   refuseCandidate(cand.influenceurId);
                                 }}
-                                className="text-[#1A2C24] border border-[#1A2C24] text-xs px-3 py-1 rounded"
+                                disabled={buttonLoading === cand.influenceurId + "refus"}
+                                className="text-[#1A2C24] border border-[#1A2C24] text-xs px-3 py-1 rounded disabled:opacity-50"
                               >
-                                REFUSER
+                                {buttonLoading === cand.influenceurId + "refus" ? "..." : "REFUSER"}
                               </button>
                             </>
                           )}
@@ -275,9 +282,10 @@ export default function DealCandidatesPageCommercant() {
                                   e.stopPropagation();
                                   cancelContract(cand.influenceurId);
                                 }}
-                                className="text-red-500 text-xs underline"
+                                disabled={buttonLoading === cand.influenceurId + "cancel"}
+                                className="text-red-500 text-xs underline disabled:opacity-50"
                               >
-                                RÉSILIER
+                                {buttonLoading === cand.influenceurId + "cancel" ? "..." : "RÉSILIER"}
                               </button>
                             </>
                           )}
@@ -291,8 +299,8 @@ export default function DealCandidatesPageCommercant() {
                 </div>
               )}
             </div>
-          </div>
-        </>
+          </>
+        )
       )}
 
       <div className="w-full mt-auto">

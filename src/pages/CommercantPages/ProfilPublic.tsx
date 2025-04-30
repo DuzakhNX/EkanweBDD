@@ -4,7 +4,7 @@ import { db, auth } from "../../firebase/firebase";
 import { doc, getDoc, collection, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { Instagram, Music } from "lucide-react";
 import Navbar from "./Navbar";
-import profile from "../../assets/profile.png"
+import profile from "../../assets/profile.png";
 
 export default function ProfilPublicInfluenceur() {
   const navigate = useNavigate();
@@ -13,15 +13,17 @@ export default function ProfilPublicInfluenceur() {
   const [userData, setUserData] = useState<any>(null);
   const [dealsApplied, setDealsApplied] = useState<number>(0);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loadingContact, setLoadingContact] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       const authUser = auth.currentUser;
       if (!authUser) return;
       const currentSnap = await getDoc(doc(db, "users", authUser.uid));
-      if (currentSnap.exists()) setCurrentUser({ uid: authUser.uid, ...currentSnap.data() });
+      if (currentSnap.exists()) {
+        setCurrentUser({ uid: authUser.uid, ...currentSnap.data() });
+      }
     };
-
     init();
   }, []);
 
@@ -39,11 +41,8 @@ export default function ProfilPublicInfluenceur() {
         let count = 0;
         dealsSnap.forEach((dealDoc) => {
           const dealData = dealDoc.data();
-          if (dealData.candidatures && Array.isArray(dealData.candidatures)) {
-            const found = dealData.candidatures.find(
-              (c: any) => c.influenceurId === userId
-            );
-            if (found) count++;
+          if (dealData.candidatures?.some((c: any) => c.influenceurId === userId)) {
+            count++;
           }
         });
 
@@ -58,7 +57,7 @@ export default function ProfilPublicInfluenceur() {
 
   const handleContact = async () => {
     if (!currentUser || !userId || currentUser.uid === userId) return;
-
+    setLoadingContact(true);
     try {
       const chatId = [currentUser.uid, userId].sort().join("_");
       const chatRef = doc(db, "chats", chatId);
@@ -125,6 +124,8 @@ export default function ProfilPublicInfluenceur() {
       });
     } catch (err) {
       console.error("Erreur de contact :", err);
+    } finally {
+        setLoadingContact(false);
     }
   };
 
@@ -136,9 +137,7 @@ export default function ProfilPublicInfluenceur() {
     );
   }
 
-  const instagram = userData.instagram;
-  const tiktok = userData.tiktok;
-  const portfolioLink = userData.portfolioLink;
+  const { instagram, tiktok, portfolioLink } = userData;
 
   return (
     <div className="min-h-screen bg-[#F5F5E7] pb-32">
@@ -174,9 +173,14 @@ export default function ProfilPublicInfluenceur() {
           {currentUser?.role === "commercant" && currentUser.uid !== userId && (
             <button
               onClick={handleContact}
-              className="mb-6 bg-orange-500 text-white px-6 py-2 rounded-lg font-medium"
+              disabled={loadingContact}
+              className={`mb-6 px-6 py-2 rounded-lg font-medium ${
+                loadingContact
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-orange-500 text-white"
+              }`}
             >
-              Contacter
+              {loadingContact ? "Contact..." : "Contacter"}
             </button>
           )}
         </div>
