@@ -1,3 +1,4 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Splash from './pages/Splash';
 // Import LoginPages
 import Connection from './pages/LoginPages/Connection'
@@ -39,57 +40,13 @@ import ProfilePageInfluenceur from './pages/InfluenceurPages/Profile';
 import ReviewPageInfluenceur from './pages/InfluenceurPages/Review';
 import SaveDealsPageInfluenceur from './pages/InfluenceurPages/SaveDealsPage';
 import SuivisDealsPageInfluenceur from './pages/InfluenceurPages/SuivisDeals';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from './firebase/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-
-// Import pages (as is...)
-// ... Toutes tes importations existantes ...
-
-function ProtectedRoute({ children, role }: { children: JSX.Element, role?: string }) {
-  const [userChecked, setUserChecked] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setIsAuthorized(false);
-        setUserChecked(true);
-        return;
-      }
-
-      if (!role) {
-        setIsAuthorized(true);
-        setUserChecked(true);
-        return;
-      }
-
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        setIsAuthorized(userData.role === role);
-      } else {
-        setIsAuthorized(false);
-      }
-      setUserChecked(true);
-    });
-
-    return () => unsubscribe();
-  }, [role]);
-
-  if (!userChecked) return <div className='p-4 text-center'>Chargement...</div>;
-  return isAuthorized ? children : <Navigate to='/loginorsignup' />;
-}
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Splash />} />
-        {/* Auth pages */}
+        {/* Route Login */}
         <Route path="/connection" element={<Connection />} />
         <Route path="/intereststep" element={<InterestsStep />} />
         <Route path="/login" element={<LoginPage />} />
@@ -100,38 +57,36 @@ function App() {
         <Route path="/registrationstepone" element={<RegistrationStepOne />} />
         <Route path="/socialconnectstep" element={<SocialConnectStep />} />
         <Route path="/validateinscription" element={<ValidateInscription />} />
-
-        {/* Ekanwe */}
-        <Route path="/chat/:chatId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-        <Route path="/conceptcommercant" element={<ProtectedRoute><ConceptCommercant /></ProtectedRoute>} />
-        <Route path="/conceptinfluenceur" element={<ProtectedRoute><ConceptInfluenceur /></ProtectedRoute>} />
-        <Route path="/creatorinfluenceur" element={<ProtectedRoute><CreatorTypeInfluenceur /></ProtectedRoute>} />
-        <Route path="/creatorcommercant" element={<ProtectedRoute><CreatorTypeCommercant /></ProtectedRoute>} />
-        <Route path="/welcomecommercant" element={<ProtectedRoute role="commercant"><WelcomeCommercant /></ProtectedRoute>} />
-        <Route path="/welcomeinfluenceur" element={<ProtectedRoute role="influenceur"><WelcomeInfluenceur /></ProtectedRoute>} />
-
-        {/* Commerçant */}
-        <Route path="/dashboard" element={<ProtectedRoute role="commercant"><DashboardPageCommercant /></ProtectedRoute>} />
-        <Route path="/dealcandidatescommercant/:dealId" element={<ProtectedRoute role="commercant"><DealCandidatesPageCommercant /></ProtectedRoute>} />
-        <Route path="/dealdetailcommercant/:dealId/:influenceurId" element={<ProtectedRoute role="commercant"><DealDetailPageCommercant /></ProtectedRoute>} />
-        <Route path="/dealscommercant" element={<ProtectedRoute role="commercant"><DealsPageCommercant /></ProtectedRoute>} />
-        <Route path="/discussioncommercant" element={<ProtectedRoute role="commercant"><DiscussionPageCommercant /></ProtectedRoute>} />
-        <Route path="/merchantdetailcommercant" element={<ProtectedRoute role="commercant"><MerchantDetailPageCommercant /></ProtectedRoute>} />
-        <Route path="/notificationcommercant" element={<ProtectedRoute role="commercant"><NotificationPageCommercant /></ProtectedRoute>} />
-        <Route path="/profilecommercant" element={<ProtectedRoute role="commercant"><ProfilePageCommercant /></ProtectedRoute>} />
-        <Route path="/profilpubliccommercant/:userId" element={<ProtectedRoute role="commercant"><ProfilPublicPageCommercant /></ProtectedRoute>} />
-        <Route path="/suividealscommercant" element={<ProtectedRoute role="commercant"><SuiviDealsPageCommercant /></ProtectedRoute>} />
-
-        {/* Influenceur */}
-        <Route path="/dealdetailinfluenceur/:dealId" element={<ProtectedRoute role="influenceur"><DealDetailsPageInfluenceur /></ProtectedRoute>} />
-        <Route path="/dealsinfluenceur" element={<ProtectedRoute role="influenceur"><DealsPageInfluenceur /></ProtectedRoute>} />
-        <Route path="/dealsseemoreinfluenceur/:dealId" element={<ProtectedRoute role="influenceur"><DealsSeeMorePageInfluenceur /></ProtectedRoute>} />
-        <Route path="/discussioninfluenceur" element={<ProtectedRoute role="influenceur"><DiscussionPageInfluenceur /></ProtectedRoute>} />
-        <Route path="/notificationinfluenceur" element={<ProtectedRoute role="influenceur"><NotificationPageInfluenceur /></ProtectedRoute>} />
-        <Route path="/profileinfluenceur" element={<ProtectedRoute role="influenceur"><ProfilePageInfluenceur /></ProtectedRoute>} />
-        <Route path="/reviewinfluenceur/:dealId" element={<ProtectedRoute role="influenceur"><ReviewPageInfluenceur /></ProtectedRoute>} />
-        <Route path="/savedealsinfluenceur" element={<ProtectedRoute role="influenceur"><SaveDealsPageInfluenceur /></ProtectedRoute>} />
-        <Route path="/suivisdealsinfluenceur" element={<ProtectedRoute role="influenceur"><SuivisDealsPageInfluenceur /></ProtectedRoute>} />
+        {/* Route Ekanwe */}
+        <Route path="/chat/:chatId" element={<ChatPage />} />
+        <Route path="/conceptcommercant" element={<ConceptCommercant />} />
+        <Route path="/conceptinfluenceur" element={<ConceptInfluenceur />} />
+        <Route path="/creatorinfluenceur" element={<CreatorTypeInfluenceur />} />
+        <Route path="/creatorcommercant" element={<CreatorTypeCommercant />} />
+        <Route path="/welcomecommercant" element={<WelcomeCommercant />} />
+        <Route path="/welcomeinfluenceur" element={<WelcomeInfluenceur />} />
+        {/* Route Commercant */}
+        <Route path="/dashboard" element={<DashboardPageCommercant />} />
+        <Route path="/dealcandidatescommercant/:dealId" element={<DealCandidatesPageCommercant />} />
+        <Route path="/dealdetailcommercant/:dealId/:influenceurId" element={<DealDetailPageCommercant />} />
+        <Route path="/dealscommercant" element={<DealsPageCommercant />} />
+        <Route path="/discussioncommercant" element={<DiscussionPageCommercant />} />
+        <Route path="/merchantdetailcommercant" element={<MerchantDetailPageCommercant />} />
+        <Route path="/notificationcommercant" element={<NotificationPageCommercant />} />
+        <Route path="/profilecommercant" element={<ProfilePageCommercant />} />
+        <Route path="/profilpubliccommercant/:userId" element={<ProfilPublicPageCommercant />} />
+        <Route path="/suividealscommercant" element={<SuiviDealsPageCommercant />} />
+        {/* Route Influenceur */}
+        <Route path="/dealdetailinfluenceur/:dealId" element={<DealDetailsPageInfluenceur />} />
+        <Route path="/dealsinfluenceur" element={<DealsPageInfluenceur />} />
+        <Route path="/dealsseemoreinfluenceur/:dealId" element={<DealsSeeMorePageInfluenceur />} />
+        <Route path="/discussioninfluenceur" element={<DiscussionPageInfluenceur />} />
+        <Route path="/notificationinfluenceur" element={<NotificationPageInfluenceur />} />
+        <Route path="/profileinfluenceur" element={<ProfilePageInfluenceur />} />
+        <Route path="/reviewinfluenceur/:dealId" element={<ReviewPageInfluenceur />} />
+        <Route path="/savedealsinfluenceur" element={<SaveDealsPageInfluenceur />} />
+        <Route path="/suivisdealsinfluenceur" element={<SuivisDealsPageInfluenceur />} />
+        
       </Routes>
     </Router>
   );
