@@ -125,8 +125,12 @@ export default function DealDetailsPageInfluenceur() {
         <span className="ml-2">Deals</span>
       </div>
 
-      <div className="w-full h-48">
-        <img src={deal.imageUrl || profile} alt="Commerçant" className="w-full h-full object-cover" />
+      <div className="relative aspect-[4/3] w-full">
+        <img
+          src={deal.imageUrl || profile}
+          alt={deal.title}
+          className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
+        />
       </div>
 
       <div className="px-4 py-2">

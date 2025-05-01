@@ -154,8 +154,12 @@ export default function DealsSeeMorePageInfluenceur() {
 
       <main className="p-4">
         <div className="bg-white rounded-xl overflow-hidden shadow-md">
-          <div className="relative">
-            <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-48 object-cover" />
+          <div className="relative aspect-[4/3] w-full">
+            <img
+              src={deal.imageUrl || profile}
+              alt={deal.title}
+              className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
+            />
             <div className="absolute bottom-2 right-2 bg-white rounded-full p-1">
               <img src={fillplus} alt="Edit" className="h-6 w-6" />
             </div>

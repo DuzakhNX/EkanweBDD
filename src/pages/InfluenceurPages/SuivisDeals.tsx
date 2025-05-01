@@ -113,13 +113,13 @@ const SuivisDealsPageInfluenceur = () => {
           return (
             <div
               key={index}
-              className="flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer"
+              className="relative flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer"
               onClick={() => navigate(`/dealdetailinfluenceur/${candidature.dealId}`)}
             >
               <img
                 src={candidature.dealInfo?.imageUrl || profile}
                 alt={candidature.dealInfo?.title}
-                className="w-32 h-32 object-cover m-1 rounded-lg"
+                className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
               />
               <div className="flex-1 p-1 flex flex-col justify-between">
                 <div className="mb-2">

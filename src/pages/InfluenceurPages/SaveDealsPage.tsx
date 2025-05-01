@@ -1,112 +1,147 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
 import loupe from "../../assets/loupe.png";
 import menu from "../../assets/menu.png";
-import { useNavigate } from "react-router-dom";
 import BottomNavbar from "./BottomNavbar";
-import save from "../../assets/save.png";
 import fullsave from "../../assets/fullsave.png";
+import profile from "../../assets/profile.png";
 
 export default function SaveDealsPageInfluenceur() {
   const navigate = useNavigate();
-  const popularRef = useRef(null);
+  const [savedDeals, setSavedDeals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const user = auth.currentUser;
 
-  const [savedStates, setSavedStates] = useState([true, true, true]);
+  useEffect(() => {
+    if (!user) return;
 
-  const SaveDeals = [
-    {
-      title: "Boutique Sport",
-      image: "",
-      description: "Matériel haut de gamme pour tous les passionnés de sport...",
-    },
-  ];
-
-  const toggleSaveState = (index: number) => {
-    setSavedStates(prevStates => {
-      const newStates = [...prevStates];
-      newStates[index] = !newStates[index];
-      return newStates;
+    const saveRef = doc(db, "saveDeals", user.uid);
+    const unsubscribe = onSnapshot(saveRef, async (snap) => {
+      const data = snap.data();
+      const dealIds: string[] = data?.saved || [];
+      const dealsFetched = await Promise.all(
+        dealIds.map(async (id) => {
+          const dealSnap = await getDoc(doc(db, "deals", id));
+          if (dealSnap.exists()) return { id, ...dealSnap.data() };
+          return null;
+        })
+      );
+      setSavedDeals(dealsFetched.filter(Boolean));
+      setLoading(false);
     });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  const handleToggleSave = async (dealId: string) => {
+    if (!user) return;
+    const saveRef = doc(db, "saveDeals", user.uid);
+    const snap = await getDoc(saveRef);
+    const current = snap.exists() ? snap.data().saved || [] : [];
+    const updated = current.includes(dealId)
+      ? current.filter((id: string) => id !== dealId)
+      : [...current, dealId];
+
+    await setDoc(saveRef, { saved: updated });
+  };
+
+  const getStatus = (deal: any) => {
+    const uid = auth.currentUser?.uid;
+    return deal.candidatures?.find((c: any) => c.influenceurId === uid)?.status;
+  };
+
+  const renderStatusButton = (status: string) => {
+    const common = "w-full py-2 text-white font-semibold rounded-lg text-sm text-center";
+    if (status === "Envoyé") return <button disabled className={`${common} bg-gray-500`}>Candidature envoyée</button>;
+    if (status === "Accepté") return <button disabled className={`${common} bg-blue-500`}>Accepté</button>;
+    if (status === "Approbation") return <button disabled className={`${common} bg-yellow-500`}>En attente validation</button>;
+    if (status === "Terminé") return <button disabled className={`${common} bg-green-600`}>Mission terminée</button>;
+    return (
+      <button
+        className={`${common} bg-[#FF6B2E]`}
+        onClick={() => alert("Fonction de candidature ici")}
+      >
+        Dealer
+      </button>
+    );
   };
 
   return (
     <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-32 pt-5">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-3xl font-bold">Enrégistrés</h1>
+        <h1 className="text-3xl font-bold">Enregistrés</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notification")}>
+          <button onClick={() => navigate("/notificationinfluenceur")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")} />
         </div>
       </div>
 
       <div className="px-4 mb-4">
         <div className="flex items-center bg-white/10 border border-black rounded-lg px-3 py-2">
-          <div className="text-xl mr-3">
-            <img src={loupe} alt="loupe" className="w-6 h-6" />
-          </div>
-          <input
-            type="text"
-            placeholder="Recherche"
-            className="flex-grow outline-none bg-transparent text-2xs"
-          />
-          <div className="text-gray-400 text-lg ml-2">
-            <img src={menu} alt="Menu" className="w-6 h-6" />
-          </div>
+          <img src={loupe} alt="loupe" className="w-6 h-6 mr-3" />
+          <input type="text" placeholder="Recherche" className="flex-grow bg-transparent outline-none text-2xs" />
+          <img src={menu} alt="Menu" className="w-6 h-6 ml-2" />
         </div>
       </div>
 
-      <div className="flex items-center px-4 justify-between mb-2">
-        <div className="flex space-x-4 text-2xl"></div>
-      </div>
-
-      <div ref={popularRef} className="px-4 mb-6">
-        {SaveDeals.map((deal, index) => (
-          <div
-            key={index}
-            className="min-w-full mb-5 bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg"
-          >
-            <div className="relative">
-              <img
-                src={deal.image}
-                alt={deal.title}
-                className="w-full p-4 rounded-lg h-40 object-cover"
-              />
-              <button
-                className="absolute bottom-4 right-4 p-2 rounded-full"
-                onClick={() => toggleSaveState(index)}
-              >
-                <img
-                  src={savedStates[index] ? fullsave : save}
-                  alt="save"
-                  className="w-5 h-5"
-                />
-              </button>
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg text-white font-bold mb-1">{deal.title}</h3>
-              <p className="text-sm text-white mb-3">{deal.description}</p>
-              <div className="flex justify-between mt-8">
-                <button
-                  className="text-white border border-white rounded-lg px-4 py-2 text-sm"
-                  onClick={() => navigate("/dealSeeMore")}
-                >
-                  Voir plus
-                </button>
-                <button className="bg-[#FF6B2E] border border-white text-white px-4 py-2 rounded-lg text-sm font-semibold">
-                  Dealer
-                </button>
-              </div>
-            </div>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+          <div className="animate-spin-slow">
+            <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
           </div>
-        ))}
-      </div>
+          <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
+        </div>
+      ) : savedDeals.length === 0 ? (
+        <p className="text-center text-gray-600 mt-10">Aucun deal enregistré.</p>
+      ) : (
+        <div className="px-4 space-y-6">
+          {savedDeals.map((deal: any, index: number) => {
+            const status = getStatus(deal);
+            return (
+              <div key={index} className="bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
+                <div className="relative aspect-[4/3] w-full">
+                  <img
+                    src={deal.imageUrl || profile}
+                    alt={deal.title}
+                    className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
+                  />
+                  <button
+                    className="absolute bottom-4 right-4"
+                    onClick={() => handleToggleSave(deal.id)}
+                  >
+                    <img
+                      src={fullsave}
+                      alt="save"
+                      className="w-6 h-6"
+                    />
+                  </button>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg text-white font-bold mb-1">{deal.title}</h3>
+                  <p className="text-sm text-white mb-3">{deal.description}</p>
+                  <div className="flex justify-between items-center gap-2">
+                    <button
+                      className="text-white border border-white rounded-lg px-4 py-2 text-sm"
+                      onClick={() => navigate(`/dealdetailinfluenceur/${deal.id}`)}
+                    >
+                      Voir plus
+                    </button>
+                    {renderStatusButton(status)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      <div>
-        <BottomNavbar />
-      </div>
+      <BottomNavbar />
     </div>
   );
 }

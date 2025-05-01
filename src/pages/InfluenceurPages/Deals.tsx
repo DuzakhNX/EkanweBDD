@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { collection, onSnapshot, query, doc, updateDoc, setDoc, arrayUnion, getDoc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  doc,
+  updateDoc,
+  setDoc,
+  arrayUnion,
+  getDoc,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
@@ -17,22 +26,51 @@ export default function DealsPageInfluenceur() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [deals, setDeals] = useState<any[]>([]);
   const [savedDeals, setSavedDeals] = useState<string[]>([]);
+  const [loadingPage, setLoadingPage] = useState(true);
   const popularRef = useRef<HTMLDivElement>(null);
   const otherRef = useRef<HTMLDivElement>(null);
 
+  const user = auth.currentUser;
+
   useEffect(() => {
     const q = query(collection(db, "deals"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const allDeals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setDeals(allDeals);
+      setLoadingPage(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const toggleSave = (dealId: string) => {
-    setSavedDeals((prev) =>
-      prev.includes(dealId) ? prev.filter((id) => id !== dealId) : [...prev, dealId]
-    );
+  // Fetch saved deals from Firestore
+  useEffect(() => {
+    if (!user) return;
+    const fetchSaved = async () => {
+      const ref = doc(db, "saveDeal", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        setSavedDeals(snap.data()?.deals || []);
+      }
+    };
+    fetchSaved();
+  }, [user]);
+
+  const toggleSave = async (dealId: string) => {
+    if (!user) return;
+    const ref = doc(db, "saveDeal", user.uid);
+    const isSaved = savedDeals.includes(dealId);
+    const updated = isSaved
+      ? savedDeals.filter((id) => id !== dealId)
+      : [...savedDeals, dealId];
+    setSavedDeals(updated);
+
+    const data = { deals: updated };
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await updateDoc(ref, data);
+    } else {
+      await setDoc(ref, data);
+    }
   };
 
   const filters = ["All", ...Array.from(new Set(deals.map((d) => d.interest).filter(Boolean)))];
@@ -40,6 +78,17 @@ export default function DealsPageInfluenceur() {
   const sortedByPopularity = [...filteredDeals].sort((a, b) => (b.candidatures?.length || 0) - (a.candidatures?.length || 0));
   const popularDeals = sortedByPopularity.slice(0, 5);
   const otherDeals = sortedByPopularity.slice(5);
+
+  if (loadingPage) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+        <div className="animate-spin-slow">
+          <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
+        </div>
+        <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-32 pt-5">
@@ -76,10 +125,7 @@ export default function DealsPageInfluenceur() {
         </div>
       </div>
 
-      {/* POPULAIRE */}
       <Section title="Populaire" refProp={popularRef} deals={popularDeals} savedDeals={savedDeals} toggleSave={toggleSave} />
-
-      {/* AUTRES */}
       <Section title="Autres deals" refProp={otherRef} deals={otherDeals} savedDeals={savedDeals} toggleSave={toggleSave} />
 
       <BottomNavbar />
@@ -113,6 +159,23 @@ function Section({ title, refProp, deals, savedDeals, toggleSave }: any) {
 function DealCard({ deal, saved, onSave }: any) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      const dealRef = doc(db, "deals", deal.id);
+      const dealSnap = await getDoc(dealRef);
+      if (!dealSnap.exists()) return;
+      const dealData = dealSnap.data();
+      const found = dealData?.candidatures?.find((c: any) => c.influenceurId === user.uid);
+      if (found) {
+        setStatus(found.status);
+      }
+    };
+    fetchStatus();
+  }, [deal.id]);
 
   const handleApplyToDeal = async () => {
     const user = auth.currentUser;
@@ -122,12 +185,10 @@ function DealCard({ deal, saved, onSave }: any) {
     try {
       const dealRef = doc(db, "deals", deal.id);
       const dealSnap = await getDoc(dealRef);
-
       if (!dealSnap.exists()) throw new Error("Deal introuvable.");
 
       const dealData = dealSnap.data();
       const candidatures = dealData?.candidatures || [];
-
       if (candidatures.some((cand: any) => cand.influenceurId === user.uid)) {
         alert("Vous avez déjà postulé à ce deal.");
         setLoading(false);
@@ -155,7 +216,6 @@ function DealCard({ deal, saved, onSave }: any) {
 
       const chatRef = doc(db, "chats", chatId);
       const chatSnap = await getDoc(chatRef);
-
       if (!chatSnap.exists()) {
         await setDoc(chatRef, { messages: [message] });
       } else {
@@ -166,7 +226,6 @@ function DealCard({ deal, saved, onSave }: any) {
         const ref = doc(db, "userchats", uid);
         const snap = await getDoc(ref);
         const newChat = { chatId, receiverId, lastMessage: message.text, updatedAt: Date.now(), read };
-
         if (snap.exists()) {
           const data = snap.data();
           const chats = data.chats || [];
@@ -181,8 +240,8 @@ function DealCard({ deal, saved, onSave }: any) {
 
       await updateUserChats(user.uid, deal.merchantId, true);
       await updateUserChats(deal.merchantId, user.uid, false);
-
       alert("Votre candidature a été envoyée !");
+      setStatus("Envoyé");
     } catch (err) {
       console.error("Erreur lors de la candidature :", err);
       alert("Une erreur est survenue lors de la candidature.");
@@ -194,21 +253,17 @@ function DealCard({ deal, saved, onSave }: any) {
   const handleNavigation = async () => {
     const user = auth.currentUser;
     if (!user) return alert("Veuillez vous connecter.");
-
-    const dealRef = doc(db, "deals", deal.id);
-    const dealSnap = await getDoc(dealRef);
-
-    if (!dealSnap.exists()) return alert("Deal introuvable.");
-
-    const dealData = dealSnap.data();
-    const hasApplied = dealData?.candidatures?.some((cand: any) => cand.influenceurId === user.uid);
-    navigate(hasApplied ? `/dealdetailinfluenceur/${deal.id}` : `/dealsseemoreinfluenceur/${deal.id}`);
+    navigate(status ? `/dealdetailinfluenceur/${deal.id}` : `/dealsseemoreinfluenceur/${deal.id}`);
   };
 
   return (
     <div className="min-w-full bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
-      <div className="relative w-full h-40">
-        <img src={deal.imageUrl || profile} alt={deal.title} className="w-full h-full object-cover rounded-t-xl" />
+      <div className="relative aspect-[4/3] w-full">
+        <img
+          src={deal.imageUrl || profile}
+          alt={deal.title}
+          className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
+        />
         <button className="absolute bottom-2 right-2" onClick={() => onSave(deal.id)}>
           <img src={saved ? fullsave : save} alt="Save" className="w-6 h-6" />
         </button>
@@ -216,20 +271,37 @@ function DealCard({ deal, saved, onSave }: any) {
       <div className="p-4">
         <h3 className="text-lg text-white font-bold mb-1">{deal.title || "Titre du Deal"}</h3>
         <p className="text-sm text-white mb-3">{deal.description || "Description indisponible."}</p>
-        <div className="flex justify-between mt-8">
-          <button
-            className="text-white border border-white rounded-lg px-4 py-2 text-sm"
-            onClick={handleNavigation}
-          >
-            Voir plus
-          </button>
-          <button
-            disabled={loading}
-            className="bg-[#FF6B2E] border border-white text-white px-4 py-2 rounded-lg text-sm font-semibold"
-            onClick={handleApplyToDeal}
-          >
-            {loading ? "Envoi..." : "Dealer"}
-          </button>
+        <div className="mt-6">
+          {status ? (
+            <button
+              disabled
+              className={`w-full py-2 text-sm font-semibold rounded-lg ${
+                status === "Terminé"
+                  ? "bg-green-600 text-white"
+                  : status === "Approbation"
+                  ? "bg-yellow-500 text-white"
+                  : "bg-gray-400 text-white"
+              }`}
+            >
+              {status}
+            </button>
+          ) : (
+            <div className="flex justify-between">
+              <button
+                className="text-white border border-white rounded-lg px-4 py-2 text-sm"
+                onClick={handleNavigation}
+              >
+                Voir plus
+              </button>
+              <button
+                disabled={loading}
+                className="bg-[#FF6B2E] border border-white text-white px-4 py-2 rounded-lg text-sm font-semibold"
+                onClick={handleApplyToDeal}
+              >
+                {loading ? "Envoi..." : "Dealer"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
