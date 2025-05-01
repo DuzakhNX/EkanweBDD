@@ -9,6 +9,7 @@ import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
 import Navbar from "./Navbar";
 import profile from "../../assets/profile.png";
+import { sendNotification } from "../../hooks/sendNotifications";
 
 export default function SuivisDealsPageCommercant() {
   const navigate = useNavigate();
@@ -76,9 +77,20 @@ export default function SuivisDealsPageCommercant() {
         const dealData = dealSnap.data();
         const candidatures = dealData?.candidatures || [];
 
-        candidatures[candidatureIndex].status = newStatus;
-
+        const updatedCandidature = candidatures[candidatureIndex];
+        updatedCandidature.status = newStatus;
         await updateDoc(dealRef, { candidatures });
+        if (newStatus === "Accepté" || newStatus === "Refusé") {
+          await sendNotification({
+            toUserId: updatedCandidature.influenceurId,
+            fromUserId: dealData.merchantId,
+            message: `Votre candidature au deal "${dealData.title}" a été ${newStatus.toLowerCase()}.`,
+            relatedDealId: dealId,
+            type: "candidature_update",
+            targetRoute: `/dealdetailinfluenceur/${dealId}`
+          });
+        }
+  
         setLoadingIndex(null);
       }
     } catch (error) {
