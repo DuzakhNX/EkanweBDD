@@ -75,8 +75,8 @@ export default function NotificationPageInfluenceur() {
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")} />
+        <div className="flex items-center space-x-4" onClick={() => navigate("/dealsinfluenceur")}>
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6"/>
         </div>
       </div>
 

@@ -44,7 +44,6 @@ export default function NotificationPageCommercant() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Marquer la notification comme lue
     try {
       const notifDocRef = doc(db, "users", user.uid, "notifications", notif.id);
       await updateDoc(notifDocRef, { read: true });
@@ -75,8 +74,8 @@ export default function NotificationPageCommercant() {
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealscommercant")}/>
+        <div className="flex items-center space-x-4" onClick={() => navigate("/dealscommercant")}>
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6"/>
         </div>
       </div>
 
