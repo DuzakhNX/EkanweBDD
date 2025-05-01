@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Splash from './pages/Splash';
+import 'leaflet/dist/leaflet.css';
 // Import LoginPages
 import Connection from './pages/LoginPages/Connection'
 import InterestsStep from './pages/LoginPages/InterestStep'

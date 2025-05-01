@@ -27,9 +27,7 @@ export default function DealDetailPageCommercant() {
           const dealData = dealSnap.data();
           setDeal({ id: dealSnap.id, ...dealData });
 
-          const cand = dealData.candidatures.find(
-            (c: any) => c.influenceurId === influenceurId
-          );
+          const cand = dealData.candidatures.find((c: any) => c.influenceurId === influenceurId);
           setCandidature(cand || null);
         }
       } catch (error) {
@@ -50,13 +48,10 @@ export default function DealDetailPageCommercant() {
       const dealSnap = await getDoc(dealRef);
 
       if (!dealSnap.exists()) throw new Error("Deal introuvable");
-
       const dealData = dealSnap.data();
 
       const updatedCandidatures = dealData.candidatures.map((cand: any) =>
-        cand.influenceurId === influenceurId
-          ? { ...cand, status: "Terminé" }
-          : cand
+        cand.influenceurId === influenceurId ? { ...cand, status: "Terminé" } : cand
       );
 
       await updateDoc(dealRef, { candidatures: updatedCandidatures });
@@ -72,7 +67,7 @@ export default function DealDetailPageCommercant() {
 
       setCandidature((prev: any) => ({ ...prev, status: "Terminé" }));
     } catch (error) {
-      console.error("Erreur lors de l'Approbation :", error);
+      console.error("Erreur lors de l'approbation :", error);
     } finally {
       setApproving(false);
     }
@@ -84,15 +79,11 @@ export default function DealDetailPageCommercant() {
     try {
       const dealRef = doc(db, "deals", dealId);
       const dealSnap = await getDoc(dealRef);
-
       if (!dealSnap.exists()) throw new Error("Deal introuvable");
-
       const dealData = dealSnap.data();
 
       const updatedCandidatures = dealData.candidatures.map((cand: any) =>
-        cand.influenceurId === influenceurId
-          ? { ...cand, status: "Refusé" }
-          : cand
+        cand.influenceurId === influenceurId ? { ...cand, status: "Refusé" } : cand
       );
 
       await updateDoc(dealRef, { candidatures: updatedCandidatures });
@@ -100,11 +91,12 @@ export default function DealDetailPageCommercant() {
       await sendNotification({
         toUserId: influenceurId,
         fromUserId: auth.currentUser?.uid!,
-        message: `Votre prestation a été annulé par le commerçant.`,
+        message: `Votre candidature a été résiliée par le commerçant.`,
         relatedDealId: dealId,
         targetRoute: `/suivisdealsinfluenceur`,
         type: "deal_cancelled",
       });
+
       navigate(-1);
     } catch (error) {
       console.error("Erreur lors de la résiliation :", error);
@@ -116,13 +108,12 @@ export default function DealDetailPageCommercant() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
-        <div className="animate-spin-slow">
-          <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
-        </div>
+        <img src={sign} alt="Ekanwe Logo" className="w-16 h-16 animate-spin" />
         <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
       </div>
     );
   }
+
   if (!deal || !candidature) return <div className="p-4">Données introuvables</div>;
 
   return (
@@ -132,15 +123,11 @@ export default function DealDetailPageCommercant() {
           <ArrowLeft className="cursor-pointer" onClick={() => navigate(-1)} />
           <span className="ml-2">Retour</span>
         </div>
-        <img
-          src={sign}
-          className="w-6 h-6 cursor-pointer"
-          onClick={() => navigate("/dealscommercant")}
-        />
+        <img src={sign} className="w-6 h-6 cursor-pointer" onClick={() => navigate("/dealscommercant")} />
       </div>
 
-      <div className="w-full h-48">
-        <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-full object-cover" />
+      <div className="w-full h-48 overflow-hidden">
+        <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-full object-cover object-center" />
       </div>
 
       <div className="px-4 py-2">
@@ -149,7 +136,16 @@ export default function DealDetailPageCommercant() {
         </div>
         <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
           <MapPin className="w-4 h-4" />
-          <span>{deal.location || "Localisation inconnue"}</span>
+          {deal.locationCoords && (
+            <a
+              href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-sm"
+            >
+              Voir sur Google Maps
+            </a>
+          )}
         </div>
         <div className="text-sm text-gray-600 mb-2">
           <h3 className="font-semibold text-[#1A2C24] text-lg">Description</h3>
@@ -159,9 +155,7 @@ export default function DealDetailPageCommercant() {
           <h3 className="font-semibold text-[#1A2C24] text-lg">Intérêts</h3>
           <div className="flex flex-wrap gap-2">
             {(deal.interests || []).map((item: string, idx: number) => (
-              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">
-                {item}
-              </span>
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
             ))}
           </div>
         </div>
@@ -169,9 +163,7 @@ export default function DealDetailPageCommercant() {
           <h3 className="font-semibold text-[#1A2C24] text-lg">Type de contenu</h3>
           <div className="flex flex-wrap gap-2">
             {(deal.typeOfContent || []).map((item: string, idx: number) => (
-              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">
-                {item}
-              </span>
+              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
             ))}
           </div>
         </div>
@@ -212,6 +204,11 @@ export default function DealDetailPageCommercant() {
           >
             {approving ? "Approbation..." : "Approuver"}
           </button>
+        </div>
+      )}
+
+      {candidature.status === "Envoyé" && (
+        <div className="px-4 flex flex-col gap-4 mb-10">
           <button
             onClick={handleCancel}
             disabled={cancelling}
@@ -239,9 +236,7 @@ const ProgressRibbon = ({ currentStatus }: { currentStatus: string }) => {
       <div className="flex items-center justify-between">
         {steps.map((step, index) => (
           <div key={index} className="flex items-center">
-            <span className={`text-[#FF6B2E] ${index < currentStep ? "font-bold" : "opacity-50"}`}>
-              {step}
-            </span>
+            <span className={`text-[#FF6B2E] ${index < currentStep ? "font-bold" : "opacity-50"}`}>{step}</span>
             {index < steps.length - 1 && (
               <div className="flex-1 mx-2 flex items-center">
                 <div className={`h-0.5 w-12 ${index < currentStep - 1 ? "bg-[#FF6B2E]" : "bg-gray-400"}`}></div>

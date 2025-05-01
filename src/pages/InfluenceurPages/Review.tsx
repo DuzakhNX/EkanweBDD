@@ -63,44 +63,48 @@ export default function ReviewPageInfluenceur() {
     }, [dealId]);
 
     const handleSubmit = async () => {
-        if (!dealId) return;
-
+        if (!dealId || !user) return;
+      
         const hasRating = ratings.some(r => r.score > 0);
         if (!hasRating) return alert("Veuillez attribuer au moins une étoile.");
         if (!comment.trim()) return alert("Veuillez écrire un commentaire.");
-
+      
         const avgRating = Math.round(
-            ratings.reduce((acc, cur) => acc + cur.score, 0) / ratings.length
+          ratings.reduce((acc, cur) => acc + cur.score, 0) / ratings.length
         );
-
+      
         try {
-            const dealRef = doc(db, "deals", dealId);
-            const dealSnap = await getDoc(dealRef);
-            if (!dealSnap.exists()) return;
-
-            const dealData = dealSnap.data();
-            const uid = auth.currentUser?.uid;
-
-            const updatedCandidatures = dealData.candidatures.map((cand: any) => {
-                if (cand.influenceurId === uid) {
-                    return {
-                        ...cand,
-                        review: {
-                            rating: avgRating,
-                            text: comment
-                        }
-                    };
+          const dealRef = doc(db, "deals", dealId);
+          const dealSnap = await getDoc(dealRef);
+          if (!dealSnap.exists()) return;
+      
+          const dealData = dealSnap.data();
+          const uid = auth.currentUser?.uid;
+      
+          const updatedCandidatures = dealData.candidatures.map((cand: any) => {
+            if (cand.influenceurId === uid) {
+              return {
+                ...cand,
+                review: {
+                  userId: uid,
+                  fromUsername: user.pseudonyme || user.prenom || "Utilisateur",
+                  avatar: user.photoURL || null,
+                  rating: avgRating,
+                  comment: comment.trim(),
                 }
-                return cand;
-            });
-
-            await updateDoc(dealRef, { candidatures: updatedCandidatures });
-            setIsModalOpen(true);
+              };
+            }
+            return cand;
+          });
+      
+          await updateDoc(dealRef, { candidatures: updatedCandidatures });
+          setIsModalOpen(true);
         } catch (error) {
-            console.error("Erreur lors de la soumission de l'avis :", error);
-            alert("Une erreur est survenue.");
+          console.error("Erreur lors de la soumission de l'avis :", error);
+          alert("Une erreur est survenue.");
         }
-    };
+      };
+      
 
     const handleCloseModal = () => {
         setIsModalOpen(false);

@@ -47,12 +47,12 @@ export default function DashboardPageCommercant() {
       let ratings: number[] = [];
       let completedDeals = 0;
 
-      dealsSnap.forEach((deal) => {
+      for (const deal of dealsSnap.docs) {
         const dealData = deal.data();
-        if (dealData.merchantId !== currentUser.uid) return;
+        if (dealData.merchantId !== currentUser.uid) continue;
 
         const candidatures = dealData.candidatures || [];
-        candidatures.forEach((c: any) => {
+        for (const c of candidatures) {
           if (c.status === "Terminé") completedDeals++;
           if (c.proofs && Array.isArray(c.proofs)) {
             c.proofs.forEach((proof: any) => {
@@ -60,18 +60,22 @@ export default function DashboardPageCommercant() {
               shares += proof.shares || 0;
             });
           }
+
           if (c.review) {
             allReviews.push({
-              fromUsername: c.review.fromUsername || "Influenceur",
+              userId: c.review.userId,
+              username: c.review.fromUsername,
+              avatar: c.review.avatar || null,
               rating: c.review.rating || 0,
               comment: c.review.comment || "",
               likes: c.proofs?.reduce((acc: number, p: any) => acc + (p.likes || 0), 0) || 0,
               shares: c.proofs?.reduce((acc: number, p: any) => acc + (p.shares || 0), 0) || 0,
             });
+
             ratings.push(c.review.rating);
           }
-        });
-      });
+        }
+      }
 
       const avgRating = ratings.length > 0
         ? ratings.reduce((a, b) => a + b, 0) / ratings.length
@@ -165,18 +169,19 @@ export default function DashboardPageCommercant() {
                 key={index}
                 className="bg-[#1A2C24] text-white rounded-lg overflow-hidden p-4"
               >
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg">{review.fromUsername}</h3>
-                    <p className="text-sm mt-1">{review.comment}</p>
-                    <div className="flex mt-2">{renderStars(review.rating)}</div>
+                <div className="flex items-start gap-3">
+                  <img
+                    src={review.avatar || "https://ui-avatars.com/api/?name=" + review.username}
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg">{review.username}</h3>
+                    <div className="flex mt-1">{renderStars(review.rating)}</div>
+                    <p className="text-sm mt-2 text-gray-100">{review.comment}</p>
                   </div>
                   <button className="focus:outline-none" onClick={() => toggleSave(index)}>
-                    <img
-                      src={savedItems[index] ? fullsave : save}
-                      alt="Save"
-                      className="w-6 h-6"
-                    />
+                    <img src={savedItems[index] ? fullsave : save} alt="Save" className="w-6 h-6" />
                   </button>
                 </div>
 

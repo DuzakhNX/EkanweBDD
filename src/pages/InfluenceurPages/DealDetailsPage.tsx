@@ -1,4 +1,4 @@
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { auth, db } from "../../firebase/firebase";
@@ -17,63 +17,128 @@ export default function DealDetailsPageInfluenceur() {
   const [hasReviewed, setHasReviewed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchDeal = async () => {
     if (!dealId) return;
 
-    const fetchData = async () => {
-      try {
-        const dealRef = doc(db, "deals", dealId);
-        const dealSnap = await getDoc(dealRef);
+    try {
+      const dealRef = doc(db, "deals", dealId);
+      const dealSnap = await getDoc(dealRef);
 
-        if (dealSnap.exists()) {
-          const dealData = dealSnap.data();
-          setDeal({ id: dealSnap.id, ...dealData });
+      if (dealSnap.exists()) {
+        const dealData = dealSnap.data();
+        setDeal({ id: dealSnap.id, ...dealData });
 
-          const currentUserId = auth.currentUser?.uid;
-          if (currentUserId && dealData?.candidatures) {
-            const candidature = dealData.candidatures.find((c: any) => c.influenceurId === currentUserId);
-            if (candidature) {
-              setStatus(candidature.status);
-              setHasReviewed(!!candidature.review);
-              setUploads(candidature.proofs || []);
-            }
+        const currentUserId = auth.currentUser?.uid;
+        if (currentUserId && dealData?.candidatures) {
+          const candidature = dealData.candidatures.find((c: any) => c.influenceurId === currentUserId);
+          if (candidature) {
+            setStatus(candidature.status);
+            setHasReviewed(!!candidature.review);
+            setUploads(candidature.proofs || []);
           }
         }
-
-        const eventsSnap = await getDocs(collection(db, "deals", dealId, "events"));
-        setTimeline(eventsSnap.docs.map((doc) => doc.data()));
-      } catch (error) {
-        console.error("Erreur lors du fetch:", error);
       }
-    };
 
-    fetchData();
+      const eventsSnap = await getDocs(collection(db, "deals", dealId, "events"));
+      setTimeline(eventsSnap.docs.map((doc) => doc.data()));
+    } catch (error) {
+      console.error("Erreur lors du fetch:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeal();
   }, [dealId]);
+
+  const syncProofsToFirestore = async (newProofs: any[]) => {
+    const userId = auth.currentUser?.uid;
+    if (!deal || !userId) return;
+
+    const dealRef = doc(db, "deals", dealId!);
+    const dealSnap = await getDoc(dealRef);
+    if (!dealSnap.exists()) return;
+
+    const data = dealSnap.data();
+    const updated = data.candidatures.map((c: any) =>
+      c.influenceurId === userId ? { ...c, proofs: newProofs } : c
+    );
+
+    await updateDoc(dealRef, { candidatures: updated });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        if (reader.result) {
+          const newUpload = { image: reader.result as string, likes: 0, shares: 0 };
+          const newUploads = [...uploads, newUpload];
+          setUploads(newUploads);
+          await syncProofsToFirestore(newUploads);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDeleteUpload = async (index: number) => {
+    const newUploads = [...uploads];
+    newUploads.splice(index, 1);
+    setUploads(newUploads);
+    await syncProofsToFirestore(newUploads);
+  };
+
+  const handleUpdateField = async (index: number, field: "likes" | "shares", value: number) => {
+    const updated = [...uploads];
+    updated[index][field] = value;
+    setUploads(updated);
+    await syncProofsToFirestore(updated);
+  };
+
+  const handleUndoMarkAsDone = async () => {
+    if (loading || status !== "Approbation") return;
+    setLoading(true);
+
+    try {
+      const userId = auth.currentUser?.uid;
+      if (!deal || !userId) throw new Error("Utilisateur non connecté");
+
+      const updatedCandidatures = deal.candidatures.map((cand: any) =>
+        cand.influenceurId === userId ? { ...cand, status: "Accepté" } : cand
+      );
+
+      await updateDoc(doc(db, "deals", deal.id), { candidatures: updatedCandidatures });
+
+      setStatus("Accepté");
+    } catch (error) {
+      console.error("Erreur lors du retour à l'état 'Accepté' :", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMarkAsDone = async () => {
     if (loading || status !== "Accepté") return;
     setLoading(true);
 
     try {
-      const dealRef = doc(db, "deals", dealId!);
-      const dealSnap = await getDoc(dealRef);
-      if (!dealSnap.exists()) throw new Error("Deal introuvable");
+      const userId = auth.currentUser?.uid;
+      if (!deal || !userId) throw new Error("Utilisateur non connecté");
 
-      const dealData = dealSnap.data();
-      const currentUserId = auth.currentUser?.uid;
-      if (!currentUserId) throw new Error("Utilisateur non connecté");
-
-      const updatedCandidatures = dealData?.candidatures?.map((cand: any) =>
-        cand.influenceurId === currentUserId ? { ...cand, status: "Approbation", proofs: uploads } : cand
+      const updatedCandidatures = deal.candidatures.map((cand: any) =>
+        cand.influenceurId === userId ? { ...cand, status: "Approbation", proofs: uploads } : cand
       );
 
-      await updateDoc(dealRef, { candidatures: updatedCandidatures });
+      await updateDoc(doc(db, "deals", deal.id), { candidatures: updatedCandidatures });
 
       await sendNotification({
-        toUserId: dealData.merchantId,
-        fromUserId: currentUserId,
+        toUserId: deal.merchantId,
+        fromUserId: userId,
         message: "L'influenceur a terminé sa mission et attend votre validation.",
-        relatedDealId: dealId!,
+        relatedDealId: deal.id,
         targetRoute: "/suividealscommercant",
         type: "approval_request",
       });
@@ -84,26 +149,6 @@ export default function DealDetailsPageInfluenceur() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result) {
-          setUploads((prev) => [...prev, { image: reader.result as string, likes: 0, shares: 0 }]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleUpdateLikes = (index: number, field: "likes" | "shares", value: number) => {
-    const updated = [...uploads];
-    updated[index][field] = value;
-    setUploads(updated);
   };
 
   const getCurrentStep = () => {
@@ -125,68 +170,73 @@ export default function DealDetailsPageInfluenceur() {
         <span className="ml-2">Deals</span>
       </div>
 
-      <div className="relative aspect-[4/3] w-full">
-        <img
-          src={deal.imageUrl || profile}
-          alt={deal.title}
-          className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
-        />
+      <div className="w-full aspect-[4/3] overflow-hidden">
+        <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-full object-cover" />
       </div>
 
       <div className="px-4 py-2">
-        <div className="flex justify-between mb-1 text-[#1A2C24] items-center text-2xl font-semibold">
-          <span>{deal.title}</span>
-        </div>
+        <h2 className="text-2xl font-semibold text-[#1A2C24] mb-1">{deal.title}</h2>
         <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
           <MapPin className="w-4 h-4" />
-          <span>{deal.location || "Localisation inconnue"}</span>
+          {deal.locationCoords && (
+            <a
+              href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-sm"
+            >
+              Voir sur Google Maps
+            </a>
+          )}
         </div>
-        <div className="text-sm text-gray-600 mb-2">
-          <h3 className="font-semibold text-[#1A2C24] text-lg">Description</h3>
-          <p>{deal.description}</p>
+        <p className="text-gray-700 text-sm mb-4">{deal.description}</p>
+
+        <h3 className="font-semibold text-[#1A2C24] mb-1">Intérêts</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(deal.interests || []).map((tag: string, i: number) => (
+            <span key={i} className="px-3 py-1 border border-black rounded-full text-sm">{tag}</span>
+          ))}
         </div>
-        <div className="text-sm text-gray-600 mb-4">
-          <h3 className="font-semibold text-[#1A2C24] text-lg">Intérêts</h3>
-          <div className="flex flex-wrap gap-2">
-            {(deal.interests || []).map((item: string, idx: number) => (
-              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
-            ))}
-          </div>
-        </div>
-        <div className="text-sm text-gray-600 mb-4">
-          <h3 className="font-semibold text-[#1A2C24] text-lg">Type de contenu</h3>
-          <div className="flex flex-wrap gap-2">
-            {(deal.typeOfContent || []).map((item: string, idx: number) => (
-              <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
-            ))}
-          </div>
+
+        <h3 className="font-semibold text-[#1A2C24] mb-1">Type de contenu</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {(deal.typeOfContent || []).map((tag: string, i: number) => (
+            <span key={i} className="px-3 py-1 border border-black rounded-full text-sm">{tag}</span>
+          ))}
         </div>
       </div>
 
-      <div className="px-4 mb-6">
+      <div className="px-4 mb-4">
         <ProgressRibbon currentStep={getCurrentStep()} status={status} />
       </div>
 
       {status === "Accepté" && (
         <div className="px-4 mb-6">
-          <label className="block mb-2 text-sm font-medium text-gray-700">Captures d'écran des actions réalisées :</label>
-          <input type="file" multiple onChange={handleImageUpload} className="mb-4" />
-          {uploads.map((upload, index) => (
-            <div key={index} className="mb-6">
-              <img src={upload.image} alt={`Upload ${index}`} className="w-full h-48 object-cover mb-2 rounded-lg" />
+          <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="mb-4" />
+          {uploads.map((upload, i) => (
+            <div key={i} className="mb-6">
+              <div className="relative">
+                <img src={upload.image} alt={`Upload ${i}`} className="w-full h-48 object-cover rounded-lg mb-2" />
+                <button
+                  onClick={() => handleDeleteUpload(i)}
+                  className="absolute top-2 right-2 bg-white p-1 rounded-full shadow"
+                >
+                  <Trash2 className="text-red-500 w-4 h-4" />
+                </button>
+              </div>
               <div className="flex gap-4">
                 <input
                   type="number"
                   placeholder="Likes"
                   value={upload.likes}
-                  onChange={(e) => handleUpdateLikes(index, "likes", +e.target.value)}
+                  onChange={(e) => handleUpdateField(i, "likes", +e.target.value)}
                   className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
                 />
                 <input
                   type="number"
                   placeholder="Partages"
                   value={upload.shares}
-                  onChange={(e) => handleUpdateLikes(index, "shares", +e.target.value)}
+                  onChange={(e) => handleUpdateField(i, "shares", +e.target.value)}
                   className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
                 />
               </div>
@@ -197,15 +247,22 @@ export default function DealDetailsPageInfluenceur() {
             className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-semibold mt-2"
             disabled={loading}
           >
-            {loading ? "Envoi en cours..." : "Marquer comme Terminé"}
+            {loading ? "Envoi..." : "Marquer comme terminé"}
           </button>
         </div>
       )}
 
       {status === "Approbation" && (
-        <div className="px-4 mb-6">
+        <div className="px-4 mb-6 flex flex-col gap-3">
           <button disabled className="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold">
-            En attente d'Approbation du commerçant
+            En attente d’approbation
+          </button>
+          <button
+            onClick={handleUndoMarkAsDone}
+            className="w-full border border-[#FF6B2E] text-[#FF6B2E] py-2 rounded-lg font-semibold"
+            disabled={loading}
+          >
+            {loading ? "Retour..." : "Marquer comme non terminé"}
           </button>
         </div>
       )}
@@ -213,7 +270,7 @@ export default function DealDetailsPageInfluenceur() {
       {status === "Refusé" && (
         <div className="px-4 mb-6">
           <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold">
-            Candidature Refusée
+            Refusé
           </button>
         </div>
       )}
@@ -253,7 +310,7 @@ export default function DealDetailsPageInfluenceur() {
   );
 }
 
-const ProgressRibbon = ({ currentStep = 1, status }: { currentStep: number, status: string }) => {
+const ProgressRibbon = ({ currentStep = 1, status }: { currentStep: number; status: string }) => {
   if (status === "Refusé") {
     return (
       <div className="w-full bg-red-500 rounded-lg p-3 text-center">

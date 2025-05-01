@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, doc, getDoc, onSnapshot, updateDoc, where, query } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 import loupe from "../../assets/loupe.png";
 import menu from "../../assets/menu.png";
 import cloche from "../../assets/clochenotification.png";
@@ -19,7 +19,7 @@ export default function SuivisDealsPageCommercant() {
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<string>("");
 
-  const filters = ["Tous", "Envoyé", "Accepté", "Terminé", "Refusé"];
+  const filters = ["Tous", "Envoyé", "Accepté", "Approbation", "Terminé", "Refusé"];
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -69,7 +69,6 @@ export default function SuivisDealsPageCommercant() {
   ) => {
     try {
       setLoadingIndex(candidatureIndex);
-
       const dealRef = doc(db, "deals", dealId);
       const dealSnap = await getDoc(dealRef);
 
@@ -80,6 +79,7 @@ export default function SuivisDealsPageCommercant() {
         const updatedCandidature = candidatures[candidatureIndex];
         updatedCandidature.status = newStatus;
         await updateDoc(dealRef, { candidatures });
+
         if (newStatus === "Accepté" || newStatus === "Refusé") {
           await sendNotification({
             toUserId: updatedCandidature.influenceurId,
@@ -90,7 +90,7 @@ export default function SuivisDealsPageCommercant() {
             targetRoute: `/dealdetailinfluenceur/${dealId}`
           });
         }
-  
+
         setLoadingIndex(null);
       }
     } catch (error) {
@@ -103,6 +103,24 @@ export default function SuivisDealsPageCommercant() {
     selectedFilter === "Tous"
       ? candidatures
       : candidatures.filter((c) => c.status === selectedFilter);
+
+  const getProgressColor = (status: string) => {
+    switch (status) {
+      case "Approbation": return "bg-yellow-500";
+      case "Terminé": return "bg-green-600";
+      case "Accepté": return "bg-blue-600";
+      default: return "bg-gray-500";
+    }
+  };
+
+  const getProgressLabel = (status: string) => {
+    switch (status) {
+      case "Approbation": return "En attente de validation";
+      case "Terminé": return "Mission terminée";
+      case "Accepté": return "En cours";
+      default: return status;
+    }
+  };
 
   if (loading) {
     return (
@@ -120,127 +138,60 @@ export default function SuivisDealsPageCommercant() {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-3xl font-bold">Suivi Candidatures</h1>
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate("/notificationcommercant")}>
-            <img src={cloche} alt="Notification" className="w-6 h-6" />
-          </button>
-          <img
-            src={sign}
-            alt="Ekanwe Sign"
-            className="w-6 h-6 cursor-pointer"
-            onClick={() => {
-              if (userRole === "influenceur") navigate("/dealsinfluenceur");
-              else navigate("/dealscommercant");
-            }}
-          />
+          <button onClick={() => navigate("/notificationcommercant")}> <img src={cloche} alt="Notification" className="w-6 h-6" /> </button>
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6 cursor-pointer" onClick={() => navigate(userRole === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant")} />
         </div>
       </div>
 
       <div className="px-4 mb-4">
         <div className="flex items-center bg-white/10 border border-black rounded-lg px-3 py-2">
           <img src={loupe} alt="loupe" className="w-6 h-6 mr-3" />
-          <input
-            type="text"
-            placeholder="Recherche"
-            className="flex-grow outline-none bg-transparent text-2xs"
-          />
+          <input type="text" placeholder="Recherche" className="flex-grow outline-none bg-transparent text-2xs" />
           <img src={menu} alt="Menu" className="w-6 h-6 ml-2" />
         </div>
 
         <div className="flex space-x-2 mt-3 overflow-x-auto">
           {filters.map((item) => (
-            <button
-              key={item}
-              onClick={() => setSelectedFilter(item)}
-              className={`border px-7 py-3 rounded-lg text-base ${selectedFilter === item
-                  ? "bg-[#1A2C24] text-white"
-                  : "border-[#14210F] text-[#14210F] bg-white/10"
-                }`}
-            >
-              {item}
-            </button>
+            <button key={item} onClick={() => setSelectedFilter(item)} className={`border px-7 py-3 rounded-lg text-base ${selectedFilter === item ? "bg-[#1A2C24] text-white" : "border-[#14210F] text-[#14210F] bg-white/10"}`}>{item}</button>
           ))}
         </div>
       </div>
 
       {filteredCandidatures.length === 0 ? (
-        <div className="text-center mt-10 text-gray-500">
-          Aucune candidature trouvée
-        </div>
+        <div className="text-center mt-10 text-gray-500">Aucune candidature trouvée</div>
       ) : (
-        filteredCandidatures.map((candidature, index) => (
-          <div
-            key={index}
-            className="flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer"
-            onClick={() =>
-              navigate(
-                `/dealdetailcommercant/${candidature.dealId}/${candidature.influenceurId}`
-              )
-            }
-          >
-            <img
-              src={candidature.dealInfo?.imageUrl || profile}
-              alt={candidature.dealInfo?.title}
-              className="w-32 h-32 object-cover m-1 rounded-lg"
-            />
-            <div className="flex-1 p-1 flex flex-col justify-between">
-              <div className="mb-2">
-                <h2 className="text-xl font-bold text-[#1A2C24]">
-                  {candidature.dealInfo?.title}
-                </h2>
-                <span className="text-[#FF6B2E] text-xs font-bold">
-                  {candidature.dealId}
-                </span>
-                <p className="text-xs text-gray-600 truncate">
-                  {candidature.dealInfo?.description}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs font-bold">{candidature.status}</span>
-                  {candidature.status === "Envoyé" && (
-                    <>
-                      <button
-                        className="bg-[#1A2C24] text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(
-                            candidature.dealId,
-                            candidature.candidatureIndex,
-                            "Accepté"
-                          );
-                        }}
-                        disabled={loadingIndex === candidature.candidatureIndex}
-                      >
-                        {loadingIndex === candidature.candidatureIndex
-                          ? "..."
-                          : "Accepter"}
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(
-                            candidature.dealId,
-                            candidature.candidatureIndex,
-                            "Refusé"
-                          );
-                        }}
-                        disabled={loadingIndex === candidature.candidatureIndex}
-                      >
-                        {loadingIndex === candidature.candidatureIndex
-                          ? "..."
-                          : "Refuser"}
-                      </button>
-                    </>
-                  )}
+        filteredCandidatures.map((candidature, index) => {
+          const chatId = [candidature.dealInfo?.merchantId, candidature.influenceurId].sort().join("");
+          return (
+            <div key={index} className="flex border border-black rounded-lg overflow-hidden bg-white/10 m-4 items-start cursor-pointer">
+              <img src={candidature.dealInfo?.imageUrl || profile} alt={candidature.dealInfo?.title} className="aspect-square w-32 object-cover m-1 rounded-lg" />
+              <div className="flex-1 p-1 flex flex-col justify-between">
+                <div className="mb-2">
+                  <h2 className="text-xl font-bold text-[#1A2C24]">{candidature.dealInfo?.title}</h2>
+                  <span className="text-[#FF6B2E] text-xs font-bold">{candidature.dealId}</span>
+                  <p className="text-xs text-gray-600 truncate">{candidature.dealInfo?.description}</p>
                 </div>
 
-                <ArrowRight className="w-5 h-5 text-[#14210F]" />
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center space-x-2">
+                    {candidature.status === "Envoyé" ? (
+                      <>
+                        <button className="bg-[#1A2C24] text-white px-2 py-1 rounded text-xs disabled:opacity-50" onClick={() => handleStatusChange(candidature.dealId, candidature.candidatureIndex, "Accepté")} disabled={loadingIndex === candidature.candidatureIndex}>{loadingIndex === candidature.candidatureIndex ? "..." : "Accepter"}</button>
+                        <button className="bg-red-500 text-white px-2 py-1 rounded text-xs disabled:opacity-50" onClick={() => handleStatusChange(candidature.dealId, candidature.candidatureIndex, "Refusé")} disabled={loadingIndex === candidature.candidatureIndex}>{loadingIndex === candidature.candidatureIndex ? "..." : "Refuser"}</button>
+                      </>
+                    ) : (
+                      <span className={`text-white text-xs font-semibold px-3 py-1 rounded-full ${getProgressColor(candidature.status)}`}>{getProgressLabel(candidature.status)}</span>
+                    )}
+                    <button className="bg-[#FF6B2E] text-white p-1 rounded-full" onClick={() => navigate(`/chat/${chatId}`)}>
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-[#14210F]" onClick={() => navigate(`/dealdetailcommercant/${candidature.dealId}/${candidature.influenceurId}`)} />
+                </div>
               </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
 
       <Navbar />

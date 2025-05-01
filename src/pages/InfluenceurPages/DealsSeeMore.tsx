@@ -169,9 +169,18 @@ export default function DealsSeeMorePageInfluenceur() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-3xl font-bold text-[#1A2C24] mb-2">{deal.title}</h2>
-                <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-5">
+                <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
                   <MapPin className="w-4 h-4" />
-                  <span>{deal.location || "Localisation inconnue"}</span>
+                  {deal.locationCoords && (
+                    <a
+                      href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline text-sm"
+                    >
+                      Voir sur Google Maps
+                    </a>
+                  )}
                 </div>
                 <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Description</h3>
                 <p className="text-xs text-[#1A2C24] mb-2">{deal.description}</p>
