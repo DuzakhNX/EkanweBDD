@@ -181,7 +181,7 @@ export default function DealCandidatesPageCommercant() {
         </button>
         <img
           src={sign}
-          onClick={() => navigate(auth.currentUser?.displayName === "commercant" ? "/dealscommercant" : "/dealsinfluenceur")}
+          onClick={() => navigate("/dealscommercant")}
           className="h-6 w-6 cursor-pointer"
           alt="ekanwe-logo"
         />
