@@ -123,7 +123,7 @@ export default function DealCandidatesPageCommercant() {
         toUserId: influenceurId,
         message: `Votre contrat a été résilié.`,
         relatedDealId: dealId!,
-        targetRoute: "/dealsinfluenceur",
+        targetRoute: `/dealdetailinfluenceur/${dealId}`,
         fromUserId: auth.currentUser?.uid || "",
         type: "contract_cancelled",
       });
