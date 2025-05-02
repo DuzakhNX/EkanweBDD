@@ -182,7 +182,20 @@ export default function SuivisDealsPageCommercant() {
                     ) : (
                       <span className={`text-white text-xs font-semibold px-3 py-1 rounded-full ${getProgressColor(candidature.status)}`}>{getProgressLabel(candidature.status)}</span>
                     )}
-                    <button className="bg-[#FF6B2E] text-white p-1 rounded-full" onClick={() => navigate(`/chat/${chatId}`)}>
+                    <button className="bg-[#FF6B2E] text-white p-1 rounded-full" onClick={async () => {
+                      const userRef = doc(db, "users", candidature.influenceurId);
+                      const userSnap = await getDoc(userRef);
+                      if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        navigate(`/chat/${chatId}`, {
+                          state: {
+                            pseudonyme: userData.pseudonyme || "",
+                            photoURL: userData.photoURL || "",
+                            receiverId: candidature.influenceurId,
+                          },
+                        });
+                      }
+                    }}>
                       <MessageCircle className="w-4 h-4" />
                     </button>
                   </div>
@@ -195,6 +208,6 @@ export default function SuivisDealsPageCommercant() {
       )}
 
       <Navbar />
-    </div>
+    </div >
   );
 }
