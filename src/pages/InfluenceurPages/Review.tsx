@@ -108,7 +108,7 @@ export default function ReviewPageInfluenceur() {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        navigate("/dealinfluenceur");
+        navigate("/dealsinfluenceur");
     };
 
     const handleRatingChange = (index: number, score: number) => {

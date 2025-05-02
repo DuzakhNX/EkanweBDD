@@ -181,6 +181,13 @@ export default function DealsSeeMorePageInfluenceur() {
                       Voir sur Google Maps
                     </a>
                   )}
+                  {deal.locationName && (
+                    <a
+                      className="underline text-sm"
+                    >
+                      {deal.locationName}
+                    </a>
+                  )}
                 </div>
                 <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Description</h3>
                 <p className="text-xs text-[#1A2C24] mb-2">{deal.description}</p>

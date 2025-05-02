@@ -146,6 +146,13 @@ export default function DealDetailPageCommercant() {
               Voir sur Google Maps
             </a>
           )}
+          {deal.locationName && (
+            <a
+              className="underline text-sm"
+            >
+              {deal.locationName}
+            </a>
+          )}
         </div>
         <div className="text-sm text-gray-600 mb-2">
           <h3 className="font-semibold text-[#1A2C24] text-lg">Description</h3>

@@ -13,7 +13,9 @@ export default function DealDetailsPageInfluenceur() {
   const [deal, setDeal] = useState<any>(null);
   const [status, setStatus] = useState("Envoyé");
   const [timeline, setTimeline] = useState<any[]>([]);
-  const [uploads, setUploads] = useState<{ image: string; likes: number; shares: number }[]>([]);
+  const [uploads, setUploads] = useState<
+    { image: string; likes: number; shares: number; loading?: boolean }[]
+  >([]);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +67,23 @@ export default function DealDetailsPageInfluenceur() {
 
     await updateDoc(dealRef, { candidatures: updated });
   };
+
+  const handleValidateUpload = async (index: number) => {
+    const newUploads = [...uploads];
+    newUploads[index].loading = true;
+    setUploads([...newUploads]);
+
+    try {
+      const cleanUploads = newUploads.map(({ loading, ...rest }) => rest);
+      await syncProofsToFirestore(cleanUploads);
+    } catch (err) {
+      console.error("Erreur de validation individuelle :", err);
+    } finally {
+      newUploads[index].loading = false;
+      setUploads([...newUploads]);
+    }
+  };
+
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -188,6 +207,13 @@ export default function DealDetailsPageInfluenceur() {
               Voir sur Google Maps
             </a>
           )}
+          {deal.locationName && (
+            <a
+              className="underline text-sm"
+            >
+              {deal.locationName}
+            </a>
+          )}
         </div>
         <p className="text-gray-700 text-sm mb-4">{deal.description}</p>
 
@@ -214,7 +240,7 @@ export default function DealDetailsPageInfluenceur() {
         <div className="px-4 mb-6">
           <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="mb-4" />
           {uploads.map((upload, i) => (
-            <div key={i} className="mb-6">
+            <div key={i} className="mb-6 relative">
               <div className="relative">
                 <img src={upload.image} alt={`Upload ${i}`} className="w-full h-48 object-cover rounded-lg mb-2" />
                 <button
@@ -224,7 +250,8 @@ export default function DealDetailsPageInfluenceur() {
                   <Trash2 className="text-red-500 w-4 h-4" />
                 </button>
               </div>
-              <div className="flex gap-4">
+
+              <div className="flex gap-4 mb-2">
                 <input
                   type="number"
                   placeholder="Likes"
@@ -240,8 +267,16 @@ export default function DealDetailsPageInfluenceur() {
                   className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
                 />
               </div>
+
+              <button
+                onClick={() => handleValidateUpload(i)}
+                className="w-full py-2 rounded-lg bg-[#FF6B2E] text-white font-semibold"
+              >
+                {upload.loading ? "Validation..." : "Valider cet upload"}
+              </button>
             </div>
           ))}
+
           <button
             onClick={handleMarkAsDone}
             className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-semibold mt-2"
