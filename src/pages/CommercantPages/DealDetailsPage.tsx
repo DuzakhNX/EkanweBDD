@@ -180,20 +180,22 @@ export default function DealDetailPageCommercant() {
         <ProgressRibbon currentStatus={candidature.status} />
       </div>
 
-      {candidature.proofs && candidature.proofs.length > 0 && (
-        <div className="px-4 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Captures réalisées :</h2>
-          {candidature.proofs.map((proof: any, index: number) => (
-            <div key={index} className="mb-6">
-              <img src={proof.image} alt="Capture" className="w-full h-48 object-cover mb-2 rounded-lg" />
-              <div className="flex justify-between text-sm text-gray-700">
-                <span>Likes : {proof.likes}</span>
-                <span>Partages : {proof.shares}</span>
+      {["Accepté", "Approbation", "Terminé"].includes(candidature.status) &&
+        candidature.proofs &&
+        candidature.proofs.length > 0 && (
+          <div className="px-4 mb-6">
+            <h2 className="text-lg font-semibold mb-4">Captures réalisées :</h2>
+            {candidature.proofs.map((proof: any, index: number) => (
+              <div key={index} className="mb-6">
+                <img src={proof.image} alt="Capture" className="w-full h-48 object-cover mb-2 rounded-lg" />
+                <div className="flex justify-between text-sm text-gray-700">
+                  <span>Likes : {proof.likes}</span>
+                  <span>Partages : {proof.shares}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
       {candidature.status === "Terminé" && candidature.review && (
         <div className="px-4 mb-6">
