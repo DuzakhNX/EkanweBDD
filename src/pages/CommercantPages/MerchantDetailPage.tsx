@@ -12,24 +12,9 @@ import {
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import sign from "../../assets/ekanwesign.png";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import LocationSelector from "../../components/LocationSelector";
 
-const markerIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-function LocationPicker({ position, setPosition }: any) {
-  useMapEvents({
-    click(e) {
-      setPosition(e.latlng);
-    },
-  });
-  return position ? <Marker position={position} icon={markerIcon} /> : null;
-}
 
 export default function MerchantDetailPageCommercant() {
   const navigate = useNavigate();
@@ -43,6 +28,7 @@ export default function MerchantDetailPageCommercant() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [position, setPosition] = useState<any>(null); // lat/lng
+  const [locationName, setLocationName] = useState<string>("");
 
   const availableInterests = [
     "Mode", "Cuisine", "Voyage", "Beauté", "Sport", "Technologie", "Gaming",
@@ -113,6 +99,7 @@ export default function MerchantDetailPageCommercant() {
           lng: position.lng,
         },
         candidatures: [],
+        locationName,
       });
 
       const usersSnapshot = await getDocs(
@@ -167,7 +154,7 @@ export default function MerchantDetailPageCommercant() {
       <div className="p-4 flex flex-col gap-4">
         <textarea value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre" className="border p-2 rounded bg-white" />
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="border p-2 rounded bg-white" />
-        
+
         {/* Tags */}
         <div>
           <p className="font-medium mb-1">Intérêts</p>
@@ -202,10 +189,11 @@ export default function MerchantDetailPageCommercant() {
         {/* Map */}
         <div className="h-64 mt-4">
           <p className="font-medium mb-2">Sélectionnez une localisation</p>
-          <MapContainer center={[14.6937, -17.4441]} zoom={12} className="h-full rounded overflow-hidden">
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <LocationPicker position={position} setPosition={setPosition} />
-          </MapContainer>
+          <LocationSelector
+            position={position}
+            setPosition={setPosition}
+            setLocationName={setLocationName}
+          />
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
