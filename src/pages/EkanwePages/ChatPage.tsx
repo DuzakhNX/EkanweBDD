@@ -162,7 +162,7 @@ export default function ChatPage() {
             <h1 className="text-xl font-semibold">{pseudonyme || "Utilisateur"}</h1>
           </div>
         </div>
-        <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+        <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={ () => navigate((location.state.role === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant"))}/>
       </div>
 
       {/* MESSAGES */}

@@ -192,6 +192,7 @@ export default function SuivisDealsPageCommercant() {
                             pseudonyme: userData.pseudonyme || "",
                             photoURL: userData.photoURL || "",
                             receiverId: candidature.influenceurId,
+                            role: userData.role,
                           },
                         });
                       }

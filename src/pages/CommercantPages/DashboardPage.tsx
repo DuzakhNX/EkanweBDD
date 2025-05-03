@@ -5,8 +5,6 @@ import Navbar from "./Navbar";
 import {
   Heart,
   Eye,
-  Share2,
-  TrendingUp,
   TrendingDown,
   MoreHorizontal,
 } from "lucide-react";
@@ -70,6 +68,8 @@ export default function DashboardPageCommercant() {
               comment: c.review.comment || "",
               likes: c.proofs?.reduce((acc: number, p: any) => acc + (p.likes || 0), 0) || 0,
               shares: c.proofs?.reduce((acc: number, p: any) => acc + (p.shares || 0), 0) || 0,
+              dealId: deal.id,
+              influenceurId: c.influenceurId,
             });
 
             ratings.push(c.review.rating);
@@ -167,6 +167,7 @@ export default function DashboardPageCommercant() {
             reviews.map((review, index) => (
               <div
                 key={index}
+                onClick={() => navigate(`/dealdetailcommercant/${review.dealId}/${review.influenceurId}`)}
                 className="bg-[#1A2C24] text-white rounded-lg overflow-hidden p-4"
               >
                 <div className="flex items-start gap-3">
@@ -192,11 +193,6 @@ export default function DashboardPageCommercant() {
                   </div>
                   <div className="flex items-center">
                     <Eye className="h-4 w-4 mr-1" />
-                    <span className="font-medium">+1000</span>
-                    <TrendingUp className="h-3 w-3 ml-1 text-green-500" />
-                  </div>
-                  <div className="flex items-center">
-                    <Share2 className="h-4 w-4 mr-1" />
                     <span className="font-medium">{review.shares}</span>
                     <TrendingDown className="h-3 w-3 ml-1 text-red-500" />
                   </div>

@@ -7,7 +7,7 @@ import { ArrowRight, MessageCircle } from "lucide-react";
 import BottomNavbar from "./BottomNavbar";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../firebase/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc } from "firebase/firestore";
 import profile from "../../assets/profile.png";
 
 const SuivisDealsPageInfluenceur = () => {
@@ -114,7 +114,38 @@ const SuivisDealsPageInfluenceur = () => {
                     <div className={progressStyles.line2}></div>
                     <span className={`text-xs ${progressStyles.completed.text}`}>Effectué</span>
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); navigate(`/chat/${chatId}`); }} className="bg-[#FF6B2E] text-white p-1 rounded-full ml-2">
+                  {/* onClick={async () => {
+                                        const userRef = doc(db, "users", candidature.influenceurId);
+                                        const userSnap = await getDoc(userRef);
+                                        if (userSnap.exists()) {
+                                          const userData = userSnap.data();
+                                          navigate(`/chat/${chatId}`, {
+                                            state: {
+                                              pseudonyme: userData.pseudonyme || "",
+                                              photoURL: userData.photoURL || "",
+                                              receiverId: candidature.influenceurId,
+                                              role: userData.role,
+                                            },
+                                          });
+                                        }
+                                      }} */}
+                  <button onClick={ async(e) => {
+                    e.stopPropagation();
+                    const userRef = doc(db, "users", candidature.influenceurId);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                      const userData = userSnap.data();
+                      navigate(`/chat/${chatId}`, {
+                        state: {
+                          pseudonyme: userData.pseudonyme || "",
+                          photoURL: userData.photoURL || "",
+                          receiverId: candidature.influenceurId,
+                          role: userData.role,
+                        },
+                      });
+                    }
+                  }}
+                  className="bg-[#FF6B2E] text-white p-1 rounded-full ml-2">
                     <MessageCircle className="w-4 h-4" />
                   </button>
                   <ArrowRight className="w-5 h-5 text-[#14210F] ml-2" />
@@ -126,7 +157,7 @@ const SuivisDealsPageInfluenceur = () => {
       )}
 
       <BottomNavbar />
-    </div>
+    </div >
   );
 };
 

@@ -14,6 +14,9 @@ export default function ProfilPublicInfluenceur() {
     const [dealsApplied, setDealsApplied] = useState<number>(0);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [loadingContact, setLoadingContact] = useState(false);
+    const [completedDealsData, setCompletedDealsData] = useState<
+        { title: string; likes: number; shares: number }[]
+    >([]);
 
     useEffect(() => {
         const init = async () => {
@@ -38,15 +41,44 @@ export default function ProfilPublicInfluenceur() {
                 }
 
                 const dealsSnap = await getDocs(collection(db, "deals"));
-                let count = 0;
+                let dealsAppliedCount = 0;
+                let dealsTermines = 0;
+                let totalLikes = 0;
+                let totalShares = 0;
+                const completedDeals: { title: string; likes: number; shares: number }[] = [];
+
                 dealsSnap.forEach((dealDoc) => {
                     const dealData = dealDoc.data();
-                    if (dealData.candidatures?.some((c: any) => c.influenceurId === userId)) {
-                        count++;
-                    }
+                    const candidatures = dealData.candidatures || [];
+
+                    candidatures.forEach((c: any) => {
+                        if (c.influenceurId === userId && c.status === "Terminé") {
+                            dealsAppliedCount++;
+                            dealsTermines++;
+
+                            let likes = 0;
+                            let shares = 0;
+                            if (Array.isArray(c.proofs)) {
+                                c.proofs.forEach((proof: any) => {
+                                    likes += proof.likes || 0;
+                                    shares += proof.shares || 0;
+                                });
+                            }
+
+                            totalLikes += likes;
+                            totalShares += shares;
+
+                            completedDeals.push({
+                                title: dealData.title,
+                                likes,
+                                shares,
+                            });
+                        }
+                    });
                 });
 
-                setDealsApplied(count);
+                setDealsApplied(dealsAppliedCount);
+                setCompletedDealsData(completedDeals);
             } catch (error) {
                 console.error("Erreur de récupération du profil :", error);
             }
@@ -54,6 +86,8 @@ export default function ProfilPublicInfluenceur() {
 
         fetchProfile();
     }, [userId]);
+
+
 
     const handleContact = async () => {
         if (!currentUser || !userId || currentUser.uid === userId) return;
@@ -120,6 +154,7 @@ export default function ProfilPublicInfluenceur() {
                     pseudonyme: userData.pseudonyme,
                     photoURL: userData.photoURL,
                     receiverId: userId,
+                    role: userData.role,
                 },
             });
         } catch (err) {
@@ -175,8 +210,8 @@ export default function ProfilPublicInfluenceur() {
                             onClick={handleContact}
                             disabled={loadingContact}
                             className={`mb-6 px-6 py-2 rounded-lg font-medium ${loadingContact
-                                    ? "bg-gray-400 text-white cursor-not-allowed"
-                                    : "bg-orange-500 text-white"
+                                ? "bg-gray-400 text-white cursor-not-allowed"
+                                : "bg-orange-500 text-white"
                                 }`}
                         >
                             {loadingContact ? "Contact..." : "Contacter"}
@@ -196,6 +231,22 @@ export default function ProfilPublicInfluenceur() {
                             <li><strong>Centres d'intérêt :</strong> {userData.interets.join(", ")}</li>
                         )}
                     </ul>
+                </div>
+
+                <div className="mb-6">
+                    {completedDealsData.length > 0 && (
+                        <div className="mt-4">
+                            <h3 className="text-lg font-bold text-[#14210F] mb-2">Deals terminés :</h3>
+                            <ul className="space-y-2">
+                                {completedDealsData.map((deal, index) => (
+                                    <li key={index} className="bg-white p-3 rounded-xl shadow">
+                                        <p className="font-semibold text-[#14210F]">{deal.title}</p>
+                                        <p className="text-sm text-gray-600">{deal.likes} likes · {deal.shares} nombre de vues</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
 
                 <div className="mb-6">
