@@ -257,14 +257,14 @@ export default function DealDetailsPageInfluenceur() {
                   placeholder="Likes"
                   value={upload.likes}
                   onChange={(e) => handleUpdateField(i, "likes", +e.target.value)}
-                  className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
+                  className="border p-2 rounded w-1/2 bg-white text-black"
                 />
                 <input
                   type="number"
-                  placeholder="Partages"
+                  placeholder="Nombre de vues"
                   value={upload.shares}
                   onChange={(e) => handleUpdateField(i, "shares", +e.target.value)}
-                  className="border p-2 rounded w-1/2 bg-[#1A2C24] text-white"
+                  className="border p-2 rounded w-1/2 bg-white text-black"
                 />
               </div>
 
