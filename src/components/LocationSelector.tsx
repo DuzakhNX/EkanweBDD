@@ -129,7 +129,13 @@ function SearchBox({
   );
 }
 
-function UserLocation() {
+function UserLocation({
+  setPosition,
+  setLocationName,
+}: {
+  setPosition: (pos: any) => void;
+  setLocationName: (name: string) => void;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -138,13 +144,27 @@ function UserLocation() {
       maxZoom: 13,
     });
 
-    map.on("locationfound", (e) => {
+    map.on("locationfound", async (e) => {
+      const { lat, lng } = e.latlng;
+      setPosition({ lat, lng });
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+        );
+        const data = await res.json();
+        setLocationName(data.display_name || "");
+      } catch (err) {
+        console.error("Erreur reverse geocoding :", err);
+      }
+
       map.setView(e.latlng, 13);
     });
-  }, [map]);
+  }, [map, setPosition, setLocationName]);
 
   return null;
 }
+
 
 export default function LocationSelector({
   position,
@@ -167,7 +187,7 @@ export default function LocationSelector({
           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <UserLocation/>
+        <UserLocation setPosition={setPosition} setLocationName={setLocationName} />
         <LocationPicker setPosition={setPosition} setLocationName={setLocationName} />
         <SearchBox setPosition={setPosition} setLocationName={setLocationName} />
         {position && (
