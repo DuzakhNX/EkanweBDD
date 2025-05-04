@@ -1,9 +1,9 @@
 import { useState } from "react";
 import {
-    MapContainer,
-    TileLayer,
-    Marker,
-    useMap,
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import { Popup } from "react-leaflet";
@@ -14,14 +14,19 @@ import { useEffect } from "react";
 import { GeoSearchControl, OpenStreetMapProvider, SearchResult } from "leaflet-geosearch";
 
 
-function SearchBox() {
+function SearchBox({
+  setPosition,
+  setLocationName,
+}: {
+  setPosition: (coords: [number, number]) => void;
+  setLocationName: (name: string) => void;
+}) {
   const map = useMap();
   const provider = new OpenStreetMapProvider();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [selectedPosition, setSelectedPosition] = useState<[number, number] | null>(null);
-
+  
   const handleSearch = async () => {
     const res = await provider.search({ query });
     setResults(res);
@@ -29,7 +34,8 @@ function SearchBox() {
     if (res.length > 0) {
       const { x, y } = res[0];
       map.setView([y, x], 15);
-      setSelectedPosition([y, x]);
+      setPosition([y, x]);
+      setLocationName(res[0].label);
     }
   };
 
@@ -59,7 +65,8 @@ function SearchBox() {
                   map.setView([result.y, result.x], 15);
                   setQuery(result.label);
                   setResults([]);
-                  setSelectedPosition([result.y, result.x]);
+                  setPosition([result.y, result.x]);
+                  setLocationName(result.label);
                 }}
               >
                 {result.label}
@@ -68,88 +75,90 @@ function SearchBox() {
           </ul>
         )}
       </div>
-
-      {selectedPosition && (
-        <Marker
-          position={selectedPosition}
-          icon={L.icon({
-            iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-          })}
-        >
-          <Popup>Résultat sélectionné</Popup>
-        </Marker>
-      )}
     </>
   );
 }
 
 function UserLocation() {
-    const map = useMap();
-  
-    useEffect(() => {
-      map.locate({
-        setView: true,
-        maxZoom: 13,
-      });
-  
-      map.on("locationfound", (e) => {
-        map.setView(e.latlng, 13);
-      });
-    }, [map]);
-  
-    return null;
-  }
+  const map = useMap();
+
+  useEffect(() => {
+    map.locate({
+      setView: true,
+      maxZoom: 13,
+    });
+
+    map.on("locationfound", (e) => {
+      map.setView(e.latlng, 13);
+    });
+  }, [map]);
+
+  return null;
+}
 
 export function SearchControl({ setPosition }: { setPosition: (coords: any) => void }) {
-    const map = useMap();
+  const map = useMap();
 
-    useEffect(() => {
-        const provider = new OpenStreetMapProvider();
-        // @ts-ignore
-        const searchControl = new GeoSearchControl({
-            provider,
-            style: "bar",
-            autoClose: true,
-            keepResult: false,
-        });
+  useEffect(() => {
+    const provider = new OpenStreetMapProvider();
+    // @ts-ignore
+    const searchControl = new GeoSearchControl({
+      provider,
+      style: "bar",
+      autoClose: true,
+      keepResult: false,
+    });
 
-        map.addControl(searchControl);
+    map.addControl(searchControl);
 
-        map.on("geosearch/showlocation", (result: any) => {
-            setPosition(result.location); // met à jour lat/lng
-        });
+    map.on("geosearch/showlocation", (result: any) => {
+      setPosition(result.location); // met à jour lat/lng
+    });
 
-        return () => {
-            map.removeControl(searchControl);
-        };
-    }, [map, setPosition]);
+    return () => {
+      map.removeControl(searchControl);
+    };
+  }, [map, setPosition]);
 
-    return null;
+  return null;
 }
 
 export default function LocationSelector({
+  position,
+  setPosition,
+  setLocationName,
 }: {
-    position: any;
-    setPosition: (pos: any) => void;
-    setLocationName: (name: string) => void;
+  position: any;
+  setPosition: (pos: any) => void;
+  setLocationName: (name: string) => void;
 }) {
-    return (
-        <div className="rounded-lg overflow-hidden border mt-2" style={{ height: "300px" }}>
-            <MapContainer
-                center={[9.3077, 2.3158]}
-                zoom={12}
-                style={{ height: "75%", width: "75%" }}
-                className="rounded-lg"
-            >
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <UserLocation />
-                <SearchBox />
-            </MapContainer>
-        </div>
-    );
+  return (
+    <div className="rounded-lg overflow-hidden border mt-2" style={{ height: "300px" }}>
+      <MapContainer
+        center={[9.3077, 2.3158]}
+        zoom={12}
+        style={{ height: "75%", width: "75%" }}
+        className="rounded-lg"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <UserLocation />
+        <SearchBox setPosition={setPosition} setLocationName={setLocationName} />
+        {position && (
+          <Marker
+            position={position}
+            icon={L.icon({
+              iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+            })}
+          >
+            <Popup>Position sélectionnée</Popup>
+          </Marker>
+        )}
+      </MapContainer>
+    </div>
+  );
 }
