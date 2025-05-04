@@ -115,7 +115,7 @@ function SearchBox({
                   map.setView([result.y, result.x], 15);
                   setQuery(result.label);
                   setResults([]);
-                  setPosition([result.y, result.x]);
+                  setPosition({ lat: result.y, lng: result.x });
                   setLocationName(result.label);
                 }}
               >
