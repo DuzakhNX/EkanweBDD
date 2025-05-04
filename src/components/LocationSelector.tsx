@@ -129,6 +129,23 @@ function SearchBox({
   );
 }
 
+function UserLocation() {
+  const map = useMap();
+
+  useEffect(() => {
+    map.locate({
+      setView: true,
+      maxZoom: 13,
+    });
+
+    map.on("locationfound", (e) => {
+      map.setView(e.latlng, 13);
+    });
+  }, [map]);
+
+  return null;
+}
+
 export default function LocationSelector({
   position,
   setPosition,
@@ -150,6 +167,7 @@ export default function LocationSelector({
           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <UserLocation/>
         <LocationPicker setPosition={setPosition} setLocationName={setLocationName} />
         <SearchBox setPosition={setPosition} setLocationName={setLocationName} />
         {position && (
