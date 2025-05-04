@@ -3,6 +3,7 @@ import {
   MapContainer,
   TileLayer,
   Marker,
+  useMapEvents,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
@@ -13,12 +14,58 @@ import { useEffect } from "react";
 // @ts-ignore
 import { GeoSearchControl, OpenStreetMapProvider, SearchResult } from "leaflet-geosearch";
 
+export function SearchControl({ setPosition }: { setPosition: (coords: any) => void }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const provider = new OpenStreetMapProvider();
+    // @ts-ignore
+    const searchControl = new GeoSearchControl({
+      provider,
+      style: "bar",
+      autoClose: true,
+      keepResult: false,
+    });
+
+    map.addControl(searchControl);
+
+    map.on("geosearch/showlocation", (result: any) => {
+      setPosition(result.location); // met à jour lat/lng
+    });
+
+    return () => {
+      map.removeControl(searchControl);
+    };
+  }, [map, setPosition]);
+
+  return null;
+}
+
+function LocationPicker({ setPosition, setLocationName }: any) {
+  useMapEvents({
+    click: async (e) => {
+      const { lat, lng } = e.latlng;
+      setPosition({ lat, lng });
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+        );
+        const data = await res.json();
+        setLocationName(data.display_name || "");
+      } catch (err) {
+        console.error("Erreur reverse geocoding :", err);
+      }
+    },
+  });
+  return null;
+}
 
 function SearchBox({
   setPosition,
   setLocationName,
 }: {
-  setPosition: (coords: [number, number]) => void;
+  setPosition: (pos: any) => void
   setLocationName: (name: string) => void;
 }) {
   const map = useMap();
@@ -26,16 +73,19 @@ function SearchBox({
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
-  
+
   const handleSearch = async () => {
     const res = await provider.search({ query });
     setResults(res);
 
     if (res.length > 0) {
-      const { x, y } = res[0];
-      map.setView([y, x], 15);
-      setPosition([y, x]);
-      setLocationName(res[0].label);
+      const { lat, lon, display_name } = results[0];
+      const newPos = { lat: parseFloat(lat), lng: parseFloat(lon) };
+      setPosition(newPos);
+      setLocationName(display_name);
+      map.setView(newPos, 14);
+    } else {
+      alert("Lieu introuvable");
     }
   };
 
@@ -79,50 +129,6 @@ function SearchBox({
   );
 }
 
-function UserLocation() {
-  const map = useMap();
-
-  useEffect(() => {
-    map.locate({
-      setView: true,
-      maxZoom: 13,
-    });
-
-    map.on("locationfound", (e) => {
-      map.setView(e.latlng, 13);
-    });
-  }, [map]);
-
-  return null;
-}
-
-export function SearchControl({ setPosition }: { setPosition: (coords: any) => void }) {
-  const map = useMap();
-
-  useEffect(() => {
-    const provider = new OpenStreetMapProvider();
-    // @ts-ignore
-    const searchControl = new GeoSearchControl({
-      provider,
-      style: "bar",
-      autoClose: true,
-      keepResult: false,
-    });
-
-    map.addControl(searchControl);
-
-    map.on("geosearch/showlocation", (result: any) => {
-      setPosition(result.location); // met à jour lat/lng
-    });
-
-    return () => {
-      map.removeControl(searchControl);
-    };
-  }, [map, setPosition]);
-
-  return null;
-}
-
 export default function LocationSelector({
   position,
   setPosition,
@@ -144,7 +150,7 @@ export default function LocationSelector({
           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <UserLocation />
+        <LocationPicker setPosition={setPosition} setLocationName={setLocationName} />
         <SearchBox setPosition={setPosition} setLocationName={setLocationName} />
         {position && (
           <Marker

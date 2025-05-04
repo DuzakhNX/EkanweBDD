@@ -27,7 +27,7 @@ export default function MerchantDetailPageCommercant() {
   const [imageBase64, setImageBase64] = useState<string>("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [position, setPosition] = useState<any>(null); // lat/lng
+  const [position, setPosition] = useState<any>(null);
   const [locationName, setLocationName] = useState<string>("");
 
   const availableInterests = [
