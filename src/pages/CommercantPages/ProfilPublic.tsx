@@ -205,16 +205,18 @@ export default function ProfilPublicInfluenceur() {
 
                     <p className="font-bold text-[#14210F] text-xl mb-4">{dealsApplied} deals réalisés</p>
 
-                    <button
-                        onClick={handleContact}
-                        disabled={loadingContact}
-                        className={`mb-6 px-6 py-2 rounded-lg font-medium ${loadingContact
-                            ? "bg-gray-400 text-white cursor-not-allowed"
-                            : "bg-orange-500 text-white"
-                            }`}
-                    >
-                        {loadingContact ? "Contact..." : "Contacter"}
-                    </button>
+                    {currentUser?.role === "commercant" && currentUser.uid !== userId && (
+                        <button
+                            onClick={handleContact}
+                            disabled={loadingContact}
+                            className={`mb-6 px-6 py-2 rounded-lg font-medium ${loadingContact
+                                ? "bg-gray-400 text-white cursor-not-allowed"
+                                : "bg-orange-500 text-white"
+                                }`}
+                        >
+                            {loadingContact ? "Contact..." : "Contacter"}
+                        </button>
+                    )}
                 </div>
 
                 <div className="mb-6 bg-white/10 p-4 rounded-lg">
