@@ -171,23 +171,21 @@ export default function DealsSeeMorePageInfluenceur() {
                 <h2 className="text-3xl font-bold text-[#1A2C24] mb-2">{deal.title}</h2>
                 <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
                   <MapPin className="w-4 h-4" />
-                  {deal.locationCoords && (
-                    <a
-                      href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline text-sm"
-                    >
-                      Voir sur Google Maps
-                    </a>
-                  )}
-                  {deal.locationName && (
-                    <a
-                      className="underline text-sm"
-                    >
-                      {deal.locationName}
-                    </a>
-                  )}
+                  <div className="flex flex-col">
+                    {deal.locationName && (
+                      <span className="text-[#1A2C24]">{deal.locationName}</span>
+                    )}
+                    {deal.locationCoords && (
+                      <a
+                        href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#FF6B2E] hover:underline text-xs"
+                      >
+                        Voir sur Google Maps
+                      </a>
+                    )}
+                  </div>
                 </div>
                 <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Description</h3>
                 <p className="text-xs text-[#1A2C24] mb-2">{deal.description}</p>
@@ -207,9 +205,18 @@ export default function DealsSeeMorePageInfluenceur() {
             </div>
 
             <div className="divide-y divide-black rounded-lg overflow-hidden">
-              <InfoRow label="Type de Contenu" value={deal.typeOfContent || "Non spécifié"} />
-              <InfoRow label="Date de Validité" value={deal.validUntil || "Non spécifiée"} />
-              <InfoRow label="Conditions" value={deal.conditions || "Aucune condition"} />
+              <div className="w-full flex items-center justify-between px-4 py-4 bg-gray-50">
+                <span className="text-[#1A2C24] text-lg font-bold">Type de Contenu</span>
+                <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.typeOfContent || "Non spécifié"}</span>
+              </div>
+              <div className="w-full flex items-center justify-between px-4 py-4 bg-gray-50">
+                <span className="text-[#1A2C24] text-lg font-bold">Date de Validité</span>
+                <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.validUntil || "Non spécifiée"}</span>
+              </div>
+              <div className="w-full flex items-center justify-between px-4 py-4 bg-gray-50">
+                <span className="text-[#1A2C24] text-lg font-bold">Conditions</span>
+                <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.conditions || "Aucune condition"}</span>
+              </div>
             </div>
 
             <div className="flex gap-2 mt-6">
