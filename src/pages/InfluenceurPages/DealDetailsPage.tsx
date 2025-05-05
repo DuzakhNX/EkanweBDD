@@ -241,43 +241,57 @@ export default function DealDetailsPageInfluenceur() {
       {status === "Accepté" && (
         <div className="px-4 mb-6">
           <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="mb-4" />
-          {uploads.map((upload, i) => (
-            <div key={i} className="mb-6 relative">
-              <div className="relative">
-                <img src={upload.image} alt={`Upload ${i}`} className="w-full h-48 object-cover rounded-lg mb-2" />
-                <button
-                  onClick={() => handleDeleteUpload(i)}
-                  className="absolute top-2 right-2 bg-white p-1 rounded-full shadow"
-                >
-                  <Trash2 className="text-red-500 w-4 h-4" />
-                </button>
-              </div>
+          {uploads.map((upload, i) => {
+            const isValid = upload.likes > 0 && upload.shares > 0;
 
-              <div className="flex gap-4 mb-2">
-                <input
-                  type="number"
-                  placeholder="Likes"
-                  value={upload.likes}
-                  onChange={(e) => handleUpdateField(i, "likes", +e.target.value)}
-                  className="border p-2 rounded w-1/2 bg-white text-black"
-                />
-                <input
-                  type="number"
-                  placeholder="Nombre de vues"
-                  value={upload.shares}
-                  onChange={(e) => handleUpdateField(i, "shares", +e.target.value)}
-                  className="border p-2 rounded w-1/2 bg-white text-black"
-                />
-              </div>
+            return (
+              <div key={i} className="mb-6 relative">
+                <div className="relative">
+                  <img src={upload.image} alt={`Upload ${i}`} className="w-full h-48 object-cover rounded-lg mb-2" />
+                  <button
+                    onClick={() => handleDeleteUpload(i)}
+                    className="absolute top-2 right-2 bg-white p-1 rounded-full shadow"
+                  >
+                    <Trash2 className="text-red-500 w-4 h-4" />
+                  </button>
+                </div>
 
-              <button
-                onClick={() => handleValidateUpload(i)}
-                className="w-full py-2 rounded-lg bg-[#FF6B2E] text-white font-semibold"
-              >
-                {upload.loading ? "Validation..." : "Valider cet upload"}
-              </button>
-            </div>
-          ))}
+                <div className="flex gap-4 mb-2">
+                  <input
+                    type="number"
+                    placeholder="Likes"
+                    value={upload.likes}
+                    onChange={(e) => handleUpdateField(i, "likes", parseInt(e.target.value))}
+                    className="border px-2 py-1 rounded w-full"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Shares"
+                    value={upload.shares}
+                    onChange={(e) => handleUpdateField(i, "shares", parseInt(e.target.value))}
+                    className="border px-2 py-1 rounded w-full"
+                  />
+                </div>
+
+                {!isValid && (
+                  <p className="text-red-500 text-sm mb-2">
+                    Veuillez remplir les champs Likes et Shares.
+                  </p>
+                )}
+
+                {isValid && (
+                  <button
+                    disabled={upload.loading}
+                    onClick={() => handleValidateUpload(i)}
+                    className={`w-full py-2 rounded text-white ${upload.loading ? "bg-gray-400" : "bg-green-600"}`}
+                  >
+                    {upload.loading ? "Validation..." : "Valider cette preuve"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
 
           <button
             onClick={handleMarkAsDone}
