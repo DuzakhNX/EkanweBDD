@@ -69,7 +69,7 @@ export default function RegistrationComplete() {
           <div className="flex justify-center w-full mt-4">
             <button
               className="bg-[#FF6B2E] text-white px-10 py-3 rounded-lg text-sm font-semibold"
-              onClick={() => navigate("/")} // fallback si l'utilisateur veut cliquer manuellement
+              onClick={() => navigate("/")}
             >
               CONTINUER
             </button>

@@ -14,7 +14,6 @@ export default function ConceptInfluenceur() {
             bottom: "280px",
             right: " 30px",
             zIndex: 0,
-            // transform: "scaleX(-1)",
         }}
         />
 

@@ -1,4 +1,3 @@
-// components/RoleBasedRoute.tsx
 import { Navigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase/firebase";

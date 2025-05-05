@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Splash from './pages/Splash';
 import 'leaflet/dist/leaflet.css';
-// Import LoginPages
 import Connection from './pages/LoginPages/Connection'
 import InterestsStep from './pages/LoginPages/InterestStep'
 import LoginPage from './pages/LoginPages/Login'
@@ -12,7 +11,6 @@ import RegistrationComplete from './pages/LoginPages/RegistrationComplete'
 import RegistrationStepOne from './pages/LoginPages/RegistrationStepOne'
 import SocialConnectStep from './pages/LoginPages/SocialConnect'
 import ValidateInscription from './pages/LoginPages/ValidateIncription'
-// Import EkanwePages
 import ChatPage from './pages/EkanwePages/ChatPage'
 import ConceptCommercant from './pages/EkanwePages/ConceptCommercant'
 import ConceptInfluenceur from './pages/EkanwePages/ConceptInfluenceur'
@@ -20,7 +18,6 @@ import CreatorTypeCommercant from './pages/EkanwePages/CreatorTypeInfluenceur'
 import CreatorTypeInfluenceur from './pages/EkanwePages/CreatorTypeCommercant'
 import WelcomeInfluenceur from './pages/EkanwePages/WelcomeInfluenceur'
 import WelcomeCommercant from './pages/EkanwePages/WelcomeCommercant';
-// Import CommerçantPages
 import DashboardPageCommercant from './pages/CommercantPages/DashboardPage';
 import DealCandidatesPageCommercant from './pages/CommercantPages/DealCandidatesPage';
 import DealDetailPageCommercant from './pages/CommercantPages/DealDetailsPage';
@@ -31,7 +28,6 @@ import NotificationPageCommercant from './pages/CommercantPages/Notif';
 import ProfilePageCommercant from './pages/CommercantPages/Profile';
 import ProfilPublicPageCommercant from './pages/CommercantPages/ProfilPublic';
 import SuiviDealsPageCommercant from './pages/CommercantPages/SuivisDeals';
-// Import InfluenceurPages
 import DealDetailsPageInfluenceur from './pages/InfluenceurPages/DealDetailsPage';
 import DealsPageInfluenceur from './pages/InfluenceurPages/Deals';
 import DealsSeeMorePageInfluenceur from './pages/InfluenceurPages/DealsSeeMore';
@@ -47,7 +43,6 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Splash />} />
-        {/* Route Login */}
         <Route path="/connection" element={<Connection />} />
         <Route path="/intereststep" element={<InterestsStep />} />
         <Route path="/login" element={<LoginPage />} />
@@ -58,7 +53,6 @@ function App() {
         <Route path="/registrationstepone" element={<RegistrationStepOne />} />
         <Route path="/socialconnectstep" element={<SocialConnectStep />} />
         <Route path="/validateinscription" element={<ValidateInscription />} />
-        {/* Route Ekanwe */}
         <Route path="/chat/:chatId" element={<ChatPage />} />
         <Route path="/conceptcommercant" element={<ConceptCommercant />} />
         <Route path="/conceptinfluenceur" element={<ConceptInfluenceur />} />
@@ -66,7 +60,6 @@ function App() {
         <Route path="/creatorcommercant" element={<CreatorTypeCommercant />} />
         <Route path="/welcomecommercant" element={<WelcomeCommercant />} />
         <Route path="/welcomeinfluenceur" element={<WelcomeInfluenceur />} />
-        {/* Route Commercant */}
         <Route path="/dashboard" element={<DashboardPageCommercant />} />
         <Route path="/dealcandidatescommercant/:dealId" element={<DealCandidatesPageCommercant />} />
         <Route path="/dealdetailcommercant/:dealId/:influenceurId" element={<DealDetailPageCommercant />} />
@@ -77,7 +70,6 @@ function App() {
         <Route path="/profilecommercant" element={<ProfilePageCommercant />} />
         <Route path="/profilpubliccommercant/:userId" element={<ProfilPublicPageCommercant />} />
         <Route path="/suividealscommercant" element={<SuiviDealsPageCommercant />} />
-        {/* Route Influenceur */}
         <Route path="/dealdetailinfluenceur/:dealId" element={<DealDetailsPageInfluenceur />} />
         <Route path="/dealsinfluenceur" element={<DealsPageInfluenceur />} />
         <Route path="/dealsseemoreinfluenceur/:dealId" element={<DealsSeeMorePageInfluenceur />} />

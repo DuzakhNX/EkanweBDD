@@ -61,22 +61,6 @@ export default function RegistrationStepOne() {
         console.error("Erreur lors du chargement des données:", error);
       }
     };
-    /*nom,
-//       prenom,
-//       pseudonyme,
-//       dateNaissance,
-//       phone: phone || null,
-//       email: userRecord.email,
-//       centresInteret: centresInteret || [],
-//       social: {
-//         instagram: instagram || null,
-//         tiktok: tiktok || null
-//       },
-//       portfolio: portfolioUrls || [],
-//       statutInscription: "en_attente",
-//       role: role || "influenceur",
-//       dateCreation: admin.firestore.FieldValue.serverTimestamp(),
-//       verified: userRecord.emailVerified */
     fetchUserData();
   }, []);
 

@@ -44,7 +44,6 @@ export default function NotificationPageInfluenceur() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Marquer la notification comme lue
     try {
       const notifDocRef = doc(db, "users", user.uid, "notifications", notif.id);
       await updateDoc(notifDocRef, { read: true });

@@ -56,7 +56,6 @@ export default function LoginOrConnect() {
           bottom: "250px",
           left: "30px",
           zIndex: 0,
-          //   transform: "scaleX(-1)",
         }}
       />
     </div>

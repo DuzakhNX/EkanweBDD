@@ -1,9 +1,7 @@
-// usePrefillUserData.ts
 import { useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
-// Hook : utilitaire pour pré-remplir les données utilisateur depuis Firestore
 export const usePrefillUserData = (fields: string[], onDataFetched: (data: any) => void) => {
   useEffect(() => {
     const fetchData = async () => {

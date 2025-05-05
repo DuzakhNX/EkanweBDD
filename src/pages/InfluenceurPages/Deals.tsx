@@ -42,7 +42,6 @@ export default function DealsPageInfluenceur() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch saved deals from Firestore
   useEffect(() => {
     if (!user) return;
     const fetchSaved = async () => {

@@ -1,4 +1,3 @@
-// components/ProtectedRoute.tsx
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { auth, db } from "../firebase/firebase";
