@@ -144,65 +144,121 @@ export default function MerchantDetailPageCommercant() {
       {/* Image Preview */}
       <div className="relative">
         <img src={imageBase64 || "https://via.placeholder.com/600x200"} className="w-full h-48 object-cover" />
-        <label className="absolute bottom-2 right-2 bg-white p-1 rounded-full cursor-pointer">
+        <label className="absolute bottom-2 right-2 bg-white/10 p-1 rounded-full cursor-pointer">
           <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
           📸
         </label>
       </div>
 
       {/* Form */}
-      <div className="p-4 flex flex-col gap-4">
-        <textarea value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre" className="border p-2 rounded bg-white" />
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="border p-2 rounded bg-white" />
+      <div className="p-4 flex flex-col gap-6">
+        <div className="space-y-2">
+          <label className="text-[#1A2C24] font-semibold text-lg">Titre du Deal</label>
+          <textarea 
+            value={title} 
+            onChange={(e) => setTitle(e.target.value)} 
+            placeholder="Entrez le titre de votre deal" 
+            className="w-full border-2  border-gray-400 p-3 rounded-lg bg-white/10 focus:border-[#FF6B2E] focus:outline-none" 
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[#1A2C24] font-semibold text-lg">Description</label>
+          <textarea 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            placeholder="Décrivez votre deal en détail" 
+            className="w-full border-2  border-gray-400 p-3 rounded-lg bg-white/10 focus:border-[#FF6B2E] focus:outline-none min-h-[100px]" 
+          />
+        </div>
 
         {/* Tags */}
-        <div>
-          <p className="font-medium mb-1">Intérêts</p>
+        <div className="space-y-2">
+          <p className="text-[#1A2C24] font-semibold text-lg">Intérêts</p>
           <div className="flex flex-wrap gap-2">
             {availableInterests.map((interest) => (
-              <button key={interest} onClick={() => toggleSelection(interest, selectedInterests, setSelectedInterests)}
-                className={`px-3 py-1 border rounded-full text-sm ${selectedInterests.includes(interest) ? "bg-[#1A2C24] text-white" : "bg-white border-gray-300"}`}>
+              <button 
+                key={interest} 
+                onClick={() => toggleSelection(interest, selectedInterests, setSelectedInterests)}
+                className={`px-4 py-2 border-2 rounded-full text-sm transition-colors duration-200 ${
+                  selectedInterests.includes(interest) 
+                    ? "bg-[#1A2C24] text-white border-[#1A2C24]" 
+                    : "bg-white/10 border-gray-300 text-[#1A2C24] hover:border-[#FF6B2E]"
+                }`}
+              >
                 {interest}
               </button>
             ))}
           </div>
         </div>
 
-        <div>
-          <p className="font-medium mb-1">Type de contenu</p>
+        <div className="space-y-2">
+          <p className="text-[#1A2C24] font-semibold text-lg">Type de contenu</p>
           <div className="flex flex-wrap gap-2">
             {availableTypes.map((type) => (
-              <button key={type} onClick={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
-                className={`px-3 py-1 border rounded-full text-sm ${selectedTypes.includes(type) ? "bg-[#FF6B2E] text-white" : "bg-white border-gray-300"}`}>
+              <button 
+                key={type} 
+                onClick={() => toggleSelection(type, selectedTypes, setSelectedTypes)}
+                className={`px-4 py-2 border-2 rounded-full text-sm transition-colors duration-200 ${
+                  selectedTypes.includes(type) 
+                    ? "bg-[#FF6B2E] text-white border-[#FF6B2E]" 
+                    : "bg-white/10 border-gray-300 text-[#1A2C24] hover:border-[#FF6B2E]"
+                }`}
+              >
                 {type}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Date */}
-        <input type="date" value={validUntil || ""} onChange={(e) => setValidUntil(e.target.value)} className="border p-2 rounded bg-white" />
-
-        {/* Conditions */}
-        <textarea value={conditions} onChange={(e) => setConditions(e.target.value)} placeholder="Conditions" className="border p-2 rounded bg-white" />
-
-        {/* Map */}
-        <div className="h-64 mt-4">
-          <p className="font-medium mb-2">Sélectionnez une localisation</p>
-          <LocationSelector
-            position={position}
-            setPosition={setPosition}
-            setLocationName={setLocationName}
+        <div className="space-y-2">
+          <label className="text-[#1A2C24] font-semibold text-lg">Date de validité</label>
+          <input 
+            type="date" 
+            value={validUntil || ""} 
+            onChange={(e) => setValidUntil(e.target.value)} 
+            className="w-full border-2 border-gray-400 p-3 rounded-lg bg-white/10 focus:border-[#FF6B2E] focus:outline-none" 
           />
         </div>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <div className="space-y-2">
+          <label className="text-[#1A2C24] font-semibold text-lg">Conditions</label>
+          <textarea 
+            value={conditions} 
+            onChange={(e) => setConditions(e.target.value)} 
+            placeholder="Décrivez les conditions de votre deal" 
+            className="w-full border-2  border-gray-400 p-3 rounded-lg bg-white/10 focus:border-[#FF6B2E] focus:outline-none min-h-[100px]" 
+          />
+        </div>
+
+        {/* Map */}
+        <div className="space-y-2">
+          <p className="text-[#1A2C24] font-semibold text-lg">Localisation</p>
+          <div className="h-64 border-2  border-gray-400 rounded-lg overflow-hidden">
+            <LocationSelector
+              position={position}
+              setPosition={setPosition}
+              setLocationName={setLocationName}
+            />
+          </div>
+        </div>
+
+        {error && <p className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
       </div>
 
       {/* Footer */}
-      <div className="flex mt-auto">
-        <button onClick={() => navigate(-1)} className="w-1/2 py-4 bg-gray-600 text-white">RETOUR</button>
-        <button onClick={handleExecute} disabled={isLoading} className="w-1/2 py-4 bg-[#FF6B2E] text-white">
+      <div className="flex mt-auto border-t  border-gray-400">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="w-1/2 py-4 bg-[#1A2C24] text-white font-semibold hover:bg-[#14210F] transition-colors duration-200"
+        >
+          RETOUR
+        </button>
+        <button 
+          onClick={handleExecute} 
+          disabled={isLoading} 
+          className="w-1/2 py-4 bg-[#FF6B2E] text-white font-semibold hover:bg-[#e55a1f] transition-colors duration-200 disabled:bg-gray-400"
+        >
           {isLoading ? "Traitement..." : "EXÉCUTER"}
         </button>
       </div>

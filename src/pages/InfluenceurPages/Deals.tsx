@@ -256,7 +256,7 @@ function DealCard({ deal, saved, onSave }: any) {
   };
 
   return (
-    <div className="min-w-full bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
+    <div className="w-[90%] sm:w-[45%] md:w-[30%] lg:w-[23%] bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
       <div className="relative aspect-[4/3] w-full">
         <img
           src={deal.imageUrl || profile}
@@ -264,17 +264,17 @@ function DealCard({ deal, saved, onSave }: any) {
           className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
         />
         <button className="absolute bottom-2 right-2" onClick={() => onSave(deal.id)}>
-          <img src={saved ? fullsave : save} alt="Save" className="w-6 h-6" />
+          <img src={saved ? fullsave : save} alt="Save" className="w-5 h-5" />
         </button>
       </div>
-      <div className="p-4">
-        <h3 className="text-lg text-white font-bold mb-1">{deal.title || "Titre du Deal"}</h3>
-        <p className="text-sm text-white mb-3">{deal.description || "Description indisponible."}</p>
-        <div className="mt-6">
+      <div className="p-3">
+        <h3 className="text-base text-white font-bold mb-1">{deal.title || "Titre du Deal"}</h3>
+        <p className="text-xs text-white mb-2 line-clamp-2">{deal.description || "Description indisponible."}</p>
+        <div className="mt-4">
           {status ? (
             <button
               disabled
-              className={`w-full py-2 text-sm font-semibold rounded-lg ${
+              className={`w-full py-1.5 text-xs font-semibold rounded-lg ${
                 status === "Terminé"
                   ? "bg-green-600 text-white"
                   : status === "Approbation"
@@ -287,14 +287,14 @@ function DealCard({ deal, saved, onSave }: any) {
           ) : (
             <div className="flex justify-between">
               <button
-                className="text-white border border-white rounded-lg px-4 py-2 text-sm"
+                className="text-white border border-white rounded-lg px-3 py-1.5 text-xs"
                 onClick={handleNavigation}
               >
                 Voir plus
               </button>
               <button
                 disabled={loading}
-                className="bg-[#FF6B2E] border border-white text-white px-4 py-2 rounded-lg text-sm font-semibold"
+                className="bg-[#FF6B2E] border border-white text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
                 onClick={handleApplyToDeal}
               >
                 {loading ? "Envoi..." : "Dealer"}
