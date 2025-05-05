@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import { arrayUnion, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
@@ -9,6 +9,7 @@ import menu from "../../assets/menu.png";
 import BottomNavbar from "./BottomNavbar";
 import fullsave from "../../assets/fullsave.png";
 import profile from "../../assets/profile.png";
+import { sendNotification } from "../../hooks/sendNotifications";
 
 export default function SaveDealsPageInfluenceur() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function SaveDealsPageInfluenceur() {
   const user = auth.currentUser;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) return;
 
     const saveRef = doc(db, "saveDeal", user.uid);
     const unsubscribe = onSnapshot(saveRef, async (snap) => {
@@ -35,10 +36,10 @@ export default function SaveDealsPageInfluenceur() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user?.uid]);
 
   const handleToggleSave = async (dealId: string) => {
-    if (!user) return;
+    if (!user?.uid) return;
     const saveRef = doc(db, "saveDeal", user.uid);
     const snap = await getDoc(saveRef);
     const current = snap.exists() ? snap.data().deals || [] : [];
@@ -46,7 +47,7 @@ export default function SaveDealsPageInfluenceur() {
       ? current.filter((id: string) => id !== dealId)
       : [...current, dealId];
 
-    await setDoc(saveRef, { saved: updated });
+    await setDoc(saveRef, { deals: updated });
   };
 
   const getStatus = (deal: any) => {
@@ -54,7 +55,79 @@ export default function SaveDealsPageInfluenceur() {
     return deal.candidatures?.find((c: any) => c.influenceurId === uid)?.status;
   };
 
-  const renderStatusButton = (status: string) => {
+  const handleApplyToDeal = async (deal: any) => {
+      const user = auth.currentUser;
+      if (!user) return alert("Veuillez vous connecter pour postuler.");
+      setLoading(true);
+  
+      try {
+        const dealRef = doc(db, "deals", deal.id);
+        const dealSnap = await getDoc(dealRef);
+        if (!dealSnap.exists()) throw new Error("Deal introuvable.");
+  
+        const dealData = dealSnap.data();
+        const candidatures = dealData?.candidatures || [];
+        if (candidatures.some((cand: any) => cand.influenceurId === user.uid)) {
+          alert("Vous avez déjà postulé à ce deal.");
+          setLoading(false);
+          return;
+        }
+  
+        const newCandidature = { influenceurId: user.uid, status: "Envoyé" };
+        await updateDoc(dealRef, { candidatures: arrayUnion(newCandidature) });
+  
+        await sendNotification({
+          toUserId: deal.merchantId,
+          fromUserId: user.uid,
+          message: "Un influenceur a postulé à votre deal !",
+          type: "application",
+          relatedDealId: deal.id,
+          targetRoute: `/dealcandidatescommercant/${deal.id}`,
+        });
+  
+        const chatId = [user.uid, deal.merchantId].sort().join("");
+        const message = {
+          senderId: user.uid,
+          text: `Bonjour, je suis intéressé par le deal "${deal.title}".`,
+          createdAt: new Date(),
+        };
+  
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+        if (!chatSnap.exists()) {
+          await setDoc(chatRef, { messages: [message] });
+        } else {
+          await updateDoc(chatRef, { messages: arrayUnion(message) });
+        }
+  
+        const updateUserChats = async (uid: string, receiverId: string, read: boolean) => {
+          const ref = doc(db, "userchats", uid);
+          const snap = await getDoc(ref);
+          const newChat = { chatId, receiverId, lastMessage: message.text, updatedAt: Date.now(), read };
+          if (snap.exists()) {
+            const data = snap.data();
+            const chats = data.chats || [];
+            const idx = chats.findIndex((c: any) => c.chatId === chatId);
+            if (idx !== -1) chats[idx] = newChat;
+            else chats.push(newChat);
+            await updateDoc(ref, { chats });
+          } else {
+            await setDoc(ref, { chats: [newChat] });
+          }
+        };
+  
+        await updateUserChats(user.uid, deal.merchantId, true);
+        await updateUserChats(deal.merchantId, user.uid, false);
+        alert("Votre candidature a été envoyée !");
+      } catch (err) {
+        console.error("Erreur lors de la candidature :", err);
+        alert("Une erreur est survenue lors de la candidature.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  const renderStatusButton = (status: string, deal: any) => {
     const common = "w-full py-2 text-white font-semibold rounded-lg text-sm text-center";
     if (status === "Envoyé") return <button disabled className={`${common} bg-gray-500`}>Candidature envoyée</button>;
     if (status === "Accepté") return <button disabled className={`${common} bg-blue-500`}>Accepté</button>;
@@ -63,7 +136,7 @@ export default function SaveDealsPageInfluenceur() {
     return (
       <button
         className={`${common} bg-[#FF6B2E]`}
-        onClick={() => alert("Fonction de candidature ici")}
+        onClick={() => handleApplyToDeal(deal)}
       >
         Dealer
       </button>
@@ -78,7 +151,7 @@ export default function SaveDealsPageInfluenceur() {
           <button onClick={() => navigate("/notificationinfluenceur")}>
             <img src={cloche} alt="Notification" className="w-6 h-6" />
           </button>
-          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={() => navigate("/dealsinfluenceur")} />
+          <img src={sign} alt="Ekanwe Sign" className="w-6 h-6 cursor-pointer" onClick={() => navigate("/dealsinfluenceur")} />
         </div>
       </div>
 
@@ -115,11 +188,7 @@ export default function SaveDealsPageInfluenceur() {
                     className="absolute bottom-4 right-4"
                     onClick={() => handleToggleSave(deal.id)}
                   >
-                    <img
-                      src={fullsave}
-                      alt="save"
-                      className="w-6 h-6"
-                    />
+                    <img src={fullsave} alt="save" className="w-6 h-6" />
                   </button>
                 </div>
                 <div className="p-4">
@@ -128,11 +197,11 @@ export default function SaveDealsPageInfluenceur() {
                   <div className="flex justify-between items-center gap-2">
                     <button
                       className="text-white border border-white rounded-lg px-4 py-2 text-sm"
-                      onClick={() => navigate(`/dealdetailinfluenceur/${deal.id}`)}
+                      onClick={() => navigate(`/dealsseemoreinfluenceur/${deal.id}`)}
                     >
                       Voir plus
                     </button>
-                    {renderStatusButton(status)}
+                    {renderStatusButton(status, deal)}
                   </div>
                 </div>
               </div>
