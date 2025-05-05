@@ -303,7 +303,7 @@ export default function DealDetailsPageInfluenceur() {
 
                 <div className="flex gap-4 mb-2">
                   <div className="flex-1">
-                    <label className="block text-sm text-gray-600 mb-1 font-medium">Nombre de likes</label>
+                    <label className="block text-sm text-gray-600  mt-5 mb-1 font-bold">Nombre de likes</label>
                     <input
                       type="number"
                       placeholder="Likes"
@@ -313,7 +313,7 @@ export default function DealDetailsPageInfluenceur() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm text-gray-600 mb-1 font-medium">Nombre de partages</label>
+                    <label className="block text-sm text-gray-600 mt-5 mb-1 font-bold">Nombre de partages</label>
                     <input
                       type="number"
                       placeholder="Shares"
