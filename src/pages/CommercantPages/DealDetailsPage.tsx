@@ -194,7 +194,7 @@ export default function DealDetailPageCommercant() {
                 <img src={proof.image} alt="Capture" className="w-full h-48 object-cover mb-2 rounded-lg" />
                 <div className="flex justify-between text-sm text-gray-700">
                   <span>Likes : {proof.likes}</span>
-                  <span>Partages : {proof.shares}</span>
+                  <span>Nombre de vue : {proof.shares}</span>
                 </div>
               </div>
             ))}
