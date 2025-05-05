@@ -215,7 +215,7 @@ export default function DealDetailPageCommercant() {
             disabled={hasReviewed}
             className={`w-full ${hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"} text-white py-2 rounded-lg font-semibold`}
           >
-            {hasReviewed ? "Déjà évalué" : "Noter le commerçant"}
+            {hasReviewed ? "Déjà évalué" : "Noter l'influenceur"}
           </button>
         </div>
       )}
