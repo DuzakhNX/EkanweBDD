@@ -30,7 +30,7 @@ export default function ProfilPublicInfluenceur() {
         const ratingMap: Record<string, { total: number; count: number }> = {};
         deals.forEach((deal) => {
             deal.candidatures?.forEach((cand: any) => {
-                const uid = cand.fromUid;
+                const uid = cand.userId;
                 const rating = cand.influreview?.rating;
                 if (uid && typeof rating === "number") {
                     if (!ratingMap[uid]) {
