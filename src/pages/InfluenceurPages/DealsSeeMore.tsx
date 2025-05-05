@@ -199,7 +199,7 @@ export default function DealsSeeMorePageInfluenceur() {
 
             <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Intérêts</h3>
             <div className="flex gap-2 mb-4 flex-wrap">
-              {deal.interet ? (
+              {deal.interests ? (
                 <span className="px-4 py-2 text-[#1A2C24] text-sm border border-black rounded-lg">{deal.interest}</span>
               ) : (
                 <span className="text-gray-400 text-sm">Aucun intérêt défini</span>
