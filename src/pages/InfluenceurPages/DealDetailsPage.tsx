@@ -14,7 +14,7 @@ export default function DealDetailsPageInfluenceur() {
   const [status, setStatus] = useState("Envoyé");
   const [timeline, setTimeline] = useState<any[]>([]);
   const [uploads, setUploads] = useState<
-    { image: string; likes: number; shares: number; loading?: boolean }[]
+    { image: string; likes: number; shares: number; isValidated: boolean; loading?: boolean }[]
   >([]);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [candidature, setCandidature] = useState<any>(null);
@@ -73,7 +73,11 @@ export default function DealDetailsPageInfluenceur() {
   const handleValidateUpload = async (index: number) => {
     const newUploads = [...uploads];
     newUploads[index].loading = true;
-    setUploads([...newUploads]);
+    setUploads(prev => {
+      const newUploads = [...prev];
+      newUploads[index].isValidated = true;
+      return newUploads;
+    });
 
     try {
       const cleanUploads = newUploads.map(({ loading, ...rest }) => rest);
@@ -95,7 +99,7 @@ export default function DealDetailsPageInfluenceur() {
       const reader = new FileReader();
       reader.onload = async () => {
         if (reader.result) {
-          const newUpload = { image: reader.result as string, likes: 0, shares: 0 };
+          const newUpload = { image: reader.result as string, likes: 0, shares: 0, isValidated: true };
           const newUploads = [...uploads, newUpload];
           setUploads(newUploads);
           await syncProofsToFirestore(newUploads);
@@ -210,11 +214,11 @@ export default function DealDetailsPageInfluenceur() {
             </a>
           )}
           {deal.locationName && (
-            <a
+            <span
               className="underline text-sm"
             >
               {deal.locationName}
-            </a>
+            </span>
           )}
         </div>
         <p className="text-gray-700 text-sm mb-4">{deal.description}</p>
@@ -242,12 +246,17 @@ export default function DealDetailsPageInfluenceur() {
         <div className="px-4 mb-6">
           <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="mb-4" />
           {uploads.map((upload, i) => {
-            const isValid = upload.likes > 0 && upload.shares > 0;
+            const isValid = upload.likes > 0 && upload.shares > 0 && upload.image;
 
             return (
               <div key={i} className="mb-6 relative">
+                {/* Image et bouton supprimer */}
                 <div className="relative">
-                  <img src={upload.image} alt={`Upload ${i}`} className="w-full h-48 object-cover rounded-lg mb-2" />
+                  <img
+                    src={upload.image}
+                    alt={`Upload ${i}`}
+                    className="w-full h-48 object-cover rounded-lg mb-2"
+                  />
                   <button
                     onClick={() => handleDeleteUpload(i)}
                     className="absolute top-2 right-2 bg-white p-1 rounded-full shadow"
@@ -256,6 +265,7 @@ export default function DealDetailsPageInfluenceur() {
                   </button>
                 </div>
 
+                {/* Champs likes et partages */}
                 <div className="flex gap-4 mb-2">
                   <input
                     type="number"
@@ -273,24 +283,31 @@ export default function DealDetailsPageInfluenceur() {
                   />
                 </div>
 
-                {!isValid && (
+                {!isValid && !upload.isValidated && (
                   <p className="text-red-500 text-sm mb-2">
-                    Veuillez remplir les champs Likes et Shares.
+                    Veuillez remplir tous les champs pour valider.
                   </p>
                 )}
 
-                {isValid && (
+                {isValid && !upload.isValidated && (
                   <button
                     disabled={upload.loading}
                     onClick={() => handleValidateUpload(i)}
-                    className={`w-full py-2 rounded text-white ${upload.loading ? "bg-gray-400" : "bg-green-600"}`}
+                    className={`w-full py-2 rounded text-white ${upload.loading ? "bg-gray-400" : "bg-orange-500"
+                      }`}
                   >
-                    {upload.loading ? "Validation..." : "Valider cette preuve"}
+                    {upload.loading ? "Validation..." : "Valider cet upload"}
                   </button>
+                )}
+
+                {/* Message de confirmation */}
+                {upload.isValidated && (
+                  <p className="text-green-600 font-semibold text-center">Upload validé ✅</p>
                 )}
               </div>
             );
           })}
+
 
 
           <button
