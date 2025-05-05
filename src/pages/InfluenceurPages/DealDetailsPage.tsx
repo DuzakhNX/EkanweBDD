@@ -6,6 +6,7 @@ import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore"
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
+import sign from "../../assets/ekanwesign.png";
 
 export default function DealDetailsPageInfluenceur() {
   const navigate = useNavigate();
@@ -186,7 +187,15 @@ export default function DealDetailsPageInfluenceur() {
     return stepMap[status] || 1;
   };
 
-  if (!deal) return <div className="p-4">Chargement...</div>;
+  if (!deal)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+        <div className="animate-spin-slow">
+          <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
+        </div>
+        <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
+      </div>
+    );
 
   return (
     <div className="bg-[#f7f6ed] min-h-screen flex flex-col">
