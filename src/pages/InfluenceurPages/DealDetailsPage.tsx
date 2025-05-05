@@ -209,57 +209,84 @@ export default function DealDetailsPageInfluenceur() {
       </div>
 
       <div className="px-4 py-2">
-        <h2 className="text-2xl font-semibold text-[#1A2C24] mb-1">{deal.title}</h2>
+        <h2 className="text-2xl font-extrabold text-[#1A2C24] mb-1 tracking-tight">{deal.title}</h2>
         <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
           <MapPin className="w-4 h-4" />
-          {deal.locationCoords && (
-            <a
-              href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline text-sm"
-            >
-              Voir sur Google Maps
-            </a>
-          )}
-          {deal.locationName && (
-            <span
-              className="underline text-sm"
-            >
-              {deal.locationName}
-            </span>
-          )}
-        </div>
-        <p className="text-gray-700 text-sm mb-4">{deal.description}</p>
-
-        <h3 className="font-semibold text-[#1A2C24] mb-1">Intérêts</h3>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {(deal.interests || []).map((tag: string, i: number) => (
-            <span key={i} className="px-3 py-1 border border-black rounded-full text-sm">{tag}</span>
-          ))}
+          <div className="flex flex-col">
+            {deal.locationName && (
+              <span className="text-[#1A2C24] font-medium">{deal.locationName}</span>
+            )}
+            {deal.locationCoords && (
+              <a
+                href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#FF6B2E] hover:underline text-xs font-medium"
+              >
+                Voir sur Google Maps
+              </a>
+            )}
+          </div>
         </div>
 
-        <h3 className="font-semibold text-[#1A2C24] mb-1">Type de contenu</h3>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {(deal.typeOfContent || []).map((tag: string, i: number) => (
-            <span key={i} className="px-3 py-1 border border-black rounded-full text-sm">{tag}</span>
-          ))}
+        <div className="space-y-2 mb-4">
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Description</h3>
+          <p className="text-gray-700 text-sm leading-relaxed">{deal.description}</p>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Intérêts</h3>
+          <div className="flex flex-wrap gap-2">
+            {(deal.interests || []).map((tag: string, i: number) => (
+              <span key={i} className="px-3 py-1 border border-[#1A2C24] rounded-full text-sm text-[#1A2C24] font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Type de contenu</h3>
+          <div className="flex flex-wrap gap-2">
+            {(deal.typeOfContent || []).map((tag: string, i: number) => (
+              <span key={i} className="px-3 py-1 border border-[#FF6B2E] rounded-full text-sm text-[#FF6B2E] font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Date de validité</h3>
+          <p className="text-gray-700 text-sm">{deal.validUntil || "Non spécifiée"}</p>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Conditions</h3>
+          <p className="text-gray-700 text-sm leading-relaxed">{deal.conditions || "Aucune condition"}</p>
         </div>
       </div>
 
       <div className="px-4 mb-4">
+        <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide mb-2">État de la candidature</h3>
         <ProgressRibbon currentStep={getCurrentStep()} status={status} />
       </div>
 
       {status === "Accepté" && (
         <div className="px-4 mb-6">
-          <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="mb-4" />
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide mb-4">Preuves de réalisation</h3>
+          <input 
+            type="file" 
+            multiple 
+            accept="image/*" 
+            onChange={handleImageUpload} 
+            className="mb-4 w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#FF6B2E] file:text-white hover:file:bg-[#e55a1f]" 
+          />
           {uploads.map((upload, i) => {
             const isValid = upload.likes > 0 && upload.shares > 0 && upload.image;
 
             return (
               <div key={i} className="mb-6 relative">
-                {/* Image et bouton supprimer */}
                 <div className="relative">
                   <img
                     src={upload.image}
@@ -268,32 +295,37 @@ export default function DealDetailsPageInfluenceur() {
                   />
                   <button
                     onClick={() => handleDeleteUpload(i)}
-                    className="absolute top-2 right-2 bg-white p-1 rounded-full shadow"
+                    className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-100 transition-colors duration-200"
                   >
                     <Trash2 className="text-red-500 w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Champs likes et partages */}
                 <div className="flex gap-4 mb-2">
-                  <input
-                    type="number"
-                    placeholder="Likes"
-                    value={upload.likes}
-                    onChange={(e) => handleUpdateField(i, "likes", parseInt(e.target.value))}
-                    className="border px-2 py-1 rounded w-full"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Shares"
-                    value={upload.shares}
-                    onChange={(e) => handleUpdateField(i, "shares", parseInt(e.target.value))}
-                    className="border px-2 py-1 rounded w-full"
-                  />
+                  <div className="flex-1">
+                    <label className="block text-sm text-gray-600  mt-5 mb-1 font-bold">Nombre de likes</label>
+                    <input
+                      type="number"
+                      placeholder="Likes"
+                      value={upload.likes}
+                      onChange={(e) => handleUpdateField(i, "likes", parseInt(e.target.value))}
+                      className="w-full border border-gray-200 px-3 py-2 rounded-lg focus:border-[#FF6B2E] focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm text-gray-600 mt-5 mb-1 font-bold">Nombre de partages</label>
+                    <input
+                      type="number"
+                      placeholder="Shares"
+                      value={upload.shares}
+                      onChange={(e) => handleUpdateField(i, "shares", parseInt(e.target.value))}
+                      className="w-full border border-gray-200 px-3 py-2 rounded-lg focus:border-[#FF6B2E] focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 {!isValid && !upload.isValidated && (
-                  <p className="text-red-500 text-sm mb-2">
+                  <p className="text-red-500 text-sm mb-2 font-medium">
                     Veuillez remplir tous les champs pour valider.
                   </p>
                 )}
@@ -302,26 +334,24 @@ export default function DealDetailsPageInfluenceur() {
                   <button
                     disabled={upload.loading}
                     onClick={() => handleValidateUpload(i)}
-                    className={`w-full py-2 rounded text-white ${upload.loading ? "bg-gray-400" : "bg-orange-500"
-                      }`}
+                    className={`w-full py-2 rounded-lg text-white font-bold transition-colors duration-200 ${
+                      upload.loading ? "bg-gray-400" : "bg-[#FF6B2E] hover:bg-[#e55a1f]"
+                    }`}
                   >
                     {upload.loading ? "Validation..." : "Valider cet upload"}
                   </button>
                 )}
 
-                {/* Message de confirmation */}
                 {upload.isValidated && (
-                  <p className="text-green-600 font-semibold text-center">Upload validé ✅</p>
+                  <p className="text-green-600 font-bold text-center">Upload validé ✅</p>
                 )}
               </div>
             );
           })}
 
-
-
           <button
             onClick={handleMarkAsDone}
-            className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-semibold mt-2"
+            className="w-full bg-[#FF6B2E] text-white py-2 rounded-lg font-bold mt-2 hover:bg-[#e55a1f] transition-colors duration-200"
             disabled={loading}
           >
             {loading ? "Envoi..." : "Marquer comme terminé"}
@@ -331,12 +361,12 @@ export default function DealDetailsPageInfluenceur() {
 
       {status === "Approbation" && (
         <div className="px-4 mb-6 flex flex-col gap-3">
-          <button disabled className="w-full bg-gray-400 text-white py-2 rounded-lg font-semibold">
-            En attente d’approbation
+          <button disabled className="w-full bg-gray-400 text-white py-2 rounded-lg font-bold">
+            En attente d'approbation
           </button>
           <button
             onClick={handleUndoMarkAsDone}
-            className="w-full border border-[#FF6B2E] text-[#FF6B2E] py-2 rounded-lg font-semibold"
+            className="w-full border-2 border-[#FF6B2E] text-[#FF6B2E] py-2 rounded-lg font-bold hover:bg-[#FF6B2E] hover:text-white transition-colors duration-200"
             disabled={loading}
           >
             {loading ? "Retour..." : "Marquer comme non terminé"}
@@ -346,16 +376,16 @@ export default function DealDetailsPageInfluenceur() {
 
       {status === "Refusé" && (
         <div className="px-4 mb-6">
-          <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold">
-            Refusé
+          <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-bold">
+            Candidature Refusée
           </button>
         </div>
       )}
 
       {status === "Terminé" && candidature.influreview && (
         <div className="px-4 mb-6">
-          <h2 className="text-lg font-semibold mb-2">Avis laissé :</h2>
-          <p className="text-gray-700">"{candidature.influreview.comment}"</p>
+          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide mb-2">Avis laissé</h3>
+          <p className="text-gray-700 text-sm leading-relaxed">"{candidature.influreview.comment}"</p>
         </div>
       )}
 
@@ -364,7 +394,11 @@ export default function DealDetailsPageInfluenceur() {
           <button
             onClick={() => !hasReviewed && navigate(`/reviewinfluenceur/${dealId}`)}
             disabled={hasReviewed}
-            className={`w-full ${hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"} text-white py-2 rounded-lg font-semibold`}
+            className={`w-full py-2 rounded-lg font-bold transition-colors duration-200 ${
+              hasReviewed 
+                ? "bg-gray-400 text-white" 
+                : "bg-[#FF6B2E] text-white hover:bg-[#e55a1f]"
+            }`}
           >
             {hasReviewed ? "Déjà évalué" : "Noter le commerçant"}
           </button>
@@ -372,15 +406,15 @@ export default function DealDetailsPageInfluenceur() {
       )}
 
       <div className="px-4 mb-20">
-        <h3 className="font-semibold text-xl text-[#1A2C24]">Timeline</h3>
-        <div className="pl-2 bg-[#F5F5E7]">
+        <h3 className="font-bold text-xl text-[#1A2C24] tracking-wide mb-4">Historique</h3>
+        <div className="pl-2 bg-[#F5F5E7] rounded-lg p-4">
           <ul className="space-y-8 relative">
             <div className="absolute left-1.5 top-3 bottom-3 w-0.5 bg-gray-400"></div>
             {timeline.map((event, index) => (
               <li key={index} className="relative pl-8">
                 <div className="absolute left-0 top-1.5 w-3 h-3 rounded-full bg-[#1A2C24] z-10" />
                 <div className="flex flex-col">
-                  <span className="text-sm text-gray-700">{event.text}</span>
+                  <span className="text-sm text-gray-700 font-medium">{event.text}</span>
                   <span className="text-xs text-gray-500 mt-1">{event.date}</span>
                 </div>
               </li>
