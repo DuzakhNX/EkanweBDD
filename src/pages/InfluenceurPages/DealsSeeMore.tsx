@@ -241,10 +241,3 @@ export default function DealsSeeMorePageInfluenceur() {
     </div>
   );
 }
-
-const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="w-full flex items-center justify-between px-4 py-3 bg-gray-50">
-    <span className="text-[#1A2C24] text-xl font-bold">{label}</span>
-    <span className="text-sm text-[#1A2C24]">{value}</span>
-  </div>
-);
