@@ -15,6 +15,7 @@ export default function DealDetailPageCommercant() {
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,7 +29,10 @@ export default function DealDetailPageCommercant() {
           setDeal({ id: dealSnap.id, ...dealData });
 
           const cand = dealData.candidatures.find((c: any) => c.influenceurId === influenceurId);
-          setCandidature(cand || null);
+          if (cand) {
+            setCandidature(cand || null);
+            setHasReviewed(!!cand.influreview);
+          }
         }
       } catch (error) {
         console.error("Erreur lors du fetch:", error);
@@ -200,7 +204,19 @@ export default function DealDetailPageCommercant() {
       {candidature.status === "Terminé" && candidature.review && (
         <div className="px-4 mb-6">
           <h2 className="text-lg font-semibold mb-2">Avis laissé :</h2>
-          <p className="text-gray-700">"{candidature.review.text}"</p>
+          <p className="text-gray-700">"{candidature.review.comment}"</p>
+        </div>
+      )}
+
+      {candidature.status === "Terminé" && (
+        <div className="px-4 mb-6">
+          <button
+            onClick={() => !hasReviewed && navigate(`/reviewcommercant/${dealId}/${influenceurId}`)}
+            disabled={hasReviewed}
+            className={`w-full ${hasReviewed ? "bg-gray-400" : "bg-[#FF6B2E]"} text-white py-2 rounded-lg font-semibold`}
+          >
+            {hasReviewed ? "Déjà évalué" : "Noter le commerçant"}
+          </button>
         </div>
       )}
 

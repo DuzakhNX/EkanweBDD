@@ -5,6 +5,7 @@ import { doc, getDoc, collection, getDocs, setDoc, updateDoc } from "firebase/fi
 import { Instagram, Music } from "lucide-react";
 import Navbar from "./Navbar";
 import profile from "../../assets/profile.png";
+import sign from "../../assets/ekanwesign.png";
 
 export default function ProfilPublicInfluenceur() {
     const navigate = useNavigate();
@@ -17,28 +18,55 @@ export default function ProfilPublicInfluenceur() {
     const [completedDealsData, setCompletedDealsData] = useState<
         { title: string; likes: number; shares: number }[]
     >([]);
+    const [loading, setLoading] = useState(true);
+    const [averageRatings, setAverageRatings] = useState<Record<string, number>>({});
 
-    useEffect(() => {
-        const init = async () => {
-            const authUser = auth.currentUser;
-            if (!authUser) return;
-            const currentSnap = await getDoc(doc(db, "users", authUser.uid));
-            if (currentSnap.exists()) {
-                setCurrentUser({ uid: authUser.uid, ...currentSnap.data() });
-            }
-        };
-        init();
-    }, []);
+    async function getAllDeals() {
+        const snapshot = await getDocs(collection(db, "deals"));
+        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    }
+
+    function calculateAverageRatings(deals: any[]) {
+        const ratingMap: Record<string, { total: number; count: number }> = {};
+        deals.forEach((deal) => {
+            deal.candidatures?.forEach((cand: any) => {
+                const uid = cand.fromUid;
+                const rating = cand.influreview?.rating;
+                if (uid && typeof rating === "number") {
+                    if (!ratingMap[uid]) {
+                        ratingMap[uid] = { total: rating, count: 1 };
+                    } else {
+                        ratingMap[uid].total += rating;
+                        ratingMap[uid].count += 1;
+                    }
+                }
+            });
+        });
+        const averageMap: Record<string, number> = {};
+        for (const uid in ratingMap) {
+            averageMap[uid] = ratingMap[uid].total / ratingMap[uid].count;
+        }
+        return averageMap;
+    }
 
     useEffect(() => {
         const fetchProfile = async () => {
             if (!userId) return;
             try {
+                const authUser = auth.currentUser;
+                if (!authUser) return;
+                const currentSnap = await getDoc(doc(db, "users", authUser.uid));
+                if (currentSnap.exists()) {
+                    setCurrentUser({ uid: authUser.uid, ...currentSnap.data() });
+                }
                 const userRef = doc(db, "users", userId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
                     setUserData(userSnap.data());
                 }
+                const deals = await getAllDeals();
+                const averages = calculateAverageRatings(deals);
+                setAverageRatings(averages);
 
                 const dealsSnap = await getDocs(collection(db, "deals"));
                 let dealsAppliedCount = 0;
@@ -81,6 +109,8 @@ export default function ProfilPublicInfluenceur() {
                 setCompletedDealsData(completedDeals);
             } catch (error) {
                 console.error("Erreur de récupération du profil :", error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -174,6 +204,17 @@ export default function ProfilPublicInfluenceur() {
 
     const { instagram, tiktok, portfolioLink } = userData;
 
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
+                <div className="animate-spin-slow">
+                    <img src={sign} alt="Ekanwe Logo" className="w-16 h-16" />
+                </div>
+                <p className="mt-4 text-[#14210F]">Chargement en cours...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#F5F5E7] pb-32">
             <div className="p-4 flex items-center">
@@ -199,7 +240,7 @@ export default function ProfilPublicInfluenceur() {
 
                     <div className="flex space-x-2 mb-2">
                         {[...Array(5)].map((_, index) => (
-                            <span key={index} className={`text-2xl ${index < (userData.rating || 3) ? 'text-orange-500' : 'text-gray-300'}`}>★</span>
+                            <span key={index} className={`text-2xl ${index < Math.round(averageRatings[userData.uid] || 0) ? 'text-orange-500' : 'text-gray-300'}`}>★</span>
                         ))}
                     </div>
 

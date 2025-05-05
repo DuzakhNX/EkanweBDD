@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import fillplus from "../../assets/fillplus.png";
 import Navbar from "./Navbar";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, getDocs, collection } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
@@ -16,10 +16,39 @@ export default function DealCandidatesPageCommercant() {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState<string | null>(null);
-
+  const [averageRatings, setAverageRatings] = useState<Record<string, number>>({});
+  
   interface Candidature {
     influenceurId: string;
     status: string;
+  }
+
+  async function getAllDeals() {
+    const snapshot = await getDocs(collection(db, "deals"));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  }
+
+  function calculateAverageRatings(deals: any[]) {
+    const ratingMap: Record<string, { total: number; count: number }> = {};
+    deals.forEach((deal) => {
+      deal.candidatures?.forEach((cand: any) => {
+        const uid = cand.fromUid;
+        const rating = cand.influreview?.rating;
+        if (uid && typeof rating === "number") {
+          if (!ratingMap[uid]) {
+            ratingMap[uid] = { total: rating, count: 1 };
+          } else {
+            ratingMap[uid].total += rating;
+            ratingMap[uid].count += 1;
+          }
+        }
+      });
+    });
+    const averageMap: Record<string, number> = {};
+    for (const uid in ratingMap) {
+      averageMap[uid] = ratingMap[uid].total / ratingMap[uid].count;
+    }
+    return averageMap;
   }
 
   useEffect(() => {
@@ -28,6 +57,9 @@ export default function DealCandidatesPageCommercant() {
         if (!dealId) return;
         const dealRef = doc(db, "deals", dealId);
         const dealSnap = await getDoc(dealRef);
+        const deals = await getAllDeals();
+        const averages = calculateAverageRatings(deals);
+        setAverageRatings(averages);
 
         if (dealSnap.exists()) {
           const dealData = dealSnap.data();
@@ -246,7 +278,7 @@ export default function DealCandidatesPageCommercant() {
                             <p className="font-medium text-[#1A2C24]">
                               {cand.userInfo?.pseudonyme || "Utilisateur"}
                             </p>
-                            <div className="flex mt-1">{renderStars(cand.userInfo?.rating || 3)}</div>
+                            <div className="flex mt-1">{renderStars(Math.round(averageRatings[cand.influenceurId] || 0))}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">

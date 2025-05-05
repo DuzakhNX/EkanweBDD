@@ -37,6 +37,7 @@ import ProfilePageInfluenceur from './pages/InfluenceurPages/Profile';
 import ReviewPageInfluenceur from './pages/InfluenceurPages/Review';
 import SaveDealsPageInfluenceur from './pages/InfluenceurPages/SaveDealsPage';
 import SuivisDealsPageInfluenceur from './pages/InfluenceurPages/SuivisDeals';
+import ReviewPageCommercant from './pages/CommercantPages/Review';
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPageCommercant />} />
         <Route path="/dealcandidatescommercant/:dealId" element={<DealCandidatesPageCommercant />} />
         <Route path="/dealdetailcommercant/:dealId/:influenceurId" element={<DealDetailPageCommercant />} />
+        <Route path="/reviewcommercant/:dealId/:influenceurId" element={<ReviewPageCommercant />} />
         <Route path="/dealscommercant" element={<DealsPageCommercant />} />
         <Route path="/discussioncommercant" element={<DiscussionPageCommercant />} />
         <Route path="/merchantdetailcommercant" element={<MerchantDetailPageCommercant />} />

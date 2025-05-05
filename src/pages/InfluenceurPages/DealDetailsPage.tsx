@@ -17,6 +17,7 @@ export default function DealDetailsPageInfluenceur() {
     { image: string; likes: number; shares: number; loading?: boolean }[]
   >([]);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [candidature, setCandidature] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchDeal = async () => {
@@ -35,6 +36,7 @@ export default function DealDetailsPageInfluenceur() {
           const candidature = dealData.candidatures.find((c: any) => c.influenceurId === currentUserId);
           if (candidature) {
             setStatus(candidature.status);
+            setCandidature(candidature || null);
             setHasReviewed(!!candidature.review);
             setUploads(candidature.proofs || []);
           }
@@ -307,6 +309,13 @@ export default function DealDetailsPageInfluenceur() {
           <button disabled className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold">
             Refusé
           </button>
+        </div>
+      )}
+
+      {status === "Terminé" && candidature.influreview && (
+        <div className="px-4 mb-6">
+          <h2 className="text-lg font-semibold mb-2">Avis laissé :</h2>
+          <p className="text-gray-700">"{candidature.influreview.comment}"</p>
         </div>
       )}
 
