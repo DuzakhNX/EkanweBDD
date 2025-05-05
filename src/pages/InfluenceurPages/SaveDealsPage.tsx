@@ -19,10 +19,10 @@ export default function SaveDealsPageInfluenceur() {
   useEffect(() => {
     if (!user) return;
 
-    const saveRef = doc(db, "saveDeals", user.uid);
+    const saveRef = doc(db, "saveDeal", user.uid);
     const unsubscribe = onSnapshot(saveRef, async (snap) => {
       const data = snap.data();
-      const dealIds: string[] = data?.saved || [];
+      const dealIds: string[] = data?.deals || [];
       const dealsFetched = await Promise.all(
         dealIds.map(async (id) => {
           const dealSnap = await getDoc(doc(db, "deals", id));
@@ -39,9 +39,9 @@ export default function SaveDealsPageInfluenceur() {
 
   const handleToggleSave = async (dealId: string) => {
     if (!user) return;
-    const saveRef = doc(db, "saveDeals", user.uid);
+    const saveRef = doc(db, "saveDeal", user.uid);
     const snap = await getDoc(saveRef);
-    const current = snap.exists() ? snap.data().saved || [] : [];
+    const current = snap.exists() ? snap.data().deals || [] : [];
     const updated = current.includes(dealId)
       ? current.filter((id: string) => id !== dealId)
       : [...current, dealId];
