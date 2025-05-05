@@ -86,6 +86,15 @@ export default function LoginPage() {
           />
         </form>
 
+        <div className="text-right mb-4">
+          <button
+            onClick={() => navigate("/forgot-password")}
+            className="text-gray-300 text-xs hover:text-white transition-colors duration-200"
+          >
+            Mot de passe oublié ?
+          </button>
+        </div>
+
         {error && (
           <p className="text-red-400 text-sm mt-4 text-center">{error}</p>
         )}
