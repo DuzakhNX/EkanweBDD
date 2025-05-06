@@ -117,7 +117,7 @@ export default function SuivisDealsPageCommercant() {
     switch (status) {
       case "Approbation": return "En attente de validation";
       case "Terminé": return "Mission terminée";
-      case "Accepté": return "En cours";
+      case "Accepté": return "En cours ...";
       default: return status;
     }
   };
