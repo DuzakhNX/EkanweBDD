@@ -17,7 +17,7 @@ export default function DealCandidatesPageCommercant() {
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState<string | null>(null);
   const [averageRatings, setAverageRatings] = useState<Record<string, number>>({});
-  
+
   interface Candidature {
     influenceurId: string;
     status: string;
@@ -32,7 +32,7 @@ export default function DealCandidatesPageCommercant() {
     const ratingMap: Record<string, { total: number; count: number }> = {};
     deals.forEach((deal) => {
       deal.candidatures?.forEach((cand: any) => {
-        const uid = cand.userId;
+        const uid = cand.influenceurId;
         const rating = cand.influreview?.rating;
         if (uid && typeof rating === "number") {
           if (!ratingMap[uid]) {

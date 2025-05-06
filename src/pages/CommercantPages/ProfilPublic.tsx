@@ -28,12 +28,10 @@ export default function ProfilPublicInfluenceur() {
 
     function calculateAverageRatings(deals: any[]) {
         const ratingMap: Record<string, { total: number; count: number }> = {};
-    
         deals.forEach((deal) => {
             deal.candidatures?.forEach((cand: any) => {
                 const uid = cand.influenceurId;
                 const rating = cand.influreview?.rating;
-    
                 if (uid && typeof rating === "number") {
                     if (!ratingMap[uid]) {
                         ratingMap[uid] = { total: rating, count: 1 };
@@ -44,14 +42,12 @@ export default function ProfilPublicInfluenceur() {
                 }
             });
         });
-    
         const averageMap: Record<string, number> = {};
         for (const uid in ratingMap) {
             averageMap[uid] = ratingMap[uid].total / ratingMap[uid].count;
         }
         return averageMap;
     }
-    
 
     useEffect(() => {
         const fetchProfile = async () => {
