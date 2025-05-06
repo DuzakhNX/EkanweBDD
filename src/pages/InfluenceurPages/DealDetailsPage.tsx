@@ -7,6 +7,8 @@ import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
 import sign from "../../assets/ekanwesign.png";
+import fullsave from "../../assets/fullsave.png";
+import save from "../../assets/save.png";
 
 export default function DealDetailsPageInfluenceur() {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function DealDetailsPageInfluenceur() {
   const [hasReviewed, setHasReviewed] = useState(false);
   const [candidature, setCandidature] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
 
   const fetchDeal = async () => {
     if (!dealId) return;
@@ -187,6 +191,14 @@ export default function DealDetailsPageInfluenceur() {
     return stepMap[status] || 1;
   };
 
+  const handleToggleSave = () => {
+    setSaved(!saved);
+  };
+
+  const handleCandidature = () => {
+    setAlreadyApplied(true);
+  };
+
   if (!deal)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
@@ -204,66 +216,98 @@ export default function DealDetailsPageInfluenceur() {
         <span className="ml-2">Deals</span>
       </div>
 
-      <div className="w-full aspect-[4/3] overflow-hidden">
-        <img src={deal.imageUrl || profile} alt="Deal" className="w-full h-full object-cover" />
-      </div>
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="relative aspect-[16/9] w-full">
+          <img
+            src={deal.imageUrl || profile}
+            alt={deal.title}
+            className="w-full h-full object-cover"
+          />
+          <button
+            className="absolute top-4 right-4 bg-[#1A2C24]/90 p-2 rounded-full shadow-lg hover:bg-[#1A2C24] transition-colors duration-200"
+            onClick={handleToggleSave}
+          >
+            <img src={saved ? fullsave : save} alt="Save" className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1A2C24] mb-3">{deal.title}</h2>
+              <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-3">
+                <MapPin className="w-4 h-4" />
+                <div className="flex flex-col">
+                  {deal.locationName && (
+                    <span className="text-[#1A2C24] font-medium">{deal.locationName}</span>
+                  )}
+                  {deal.locationCoords && (
+                    <a
+                      href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#FF6B2E] hover:underline text-xs"
+                    >
+                      Voir sur Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              <span className="text-[#FF6B2E] text-sm font-bold bg-[#FF6B2E]/10 px-3 py-1 rounded-full">#{deal.id}</span>
+            </div>
+          </div>
 
-      <div className="px-4 py-2">
-        <h2 className="text-2xl font-extrabold text-[#1A2C24] mb-1 tracking-tight">{deal.title}</h2>
-        <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
-          <MapPin className="w-4 h-4" />
-          <div className="flex flex-col">
-            {deal.locationName && (
-              <span className="text-[#1A2C24] font-medium">{deal.locationName}</span>
-            )}
-            {deal.locationCoords && (
-              <a
-                href={`https://www.google.com/maps?q=${deal.locationCoords.lat},${deal.locationCoords.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#FF6B2E] hover:underline text-xs font-medium"
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl text-[#1A2C24] font-bold mb-3">Description</h3>
+              <p className="text-sm text-[#1A2C24] leading-relaxed">{deal.description}</p>
+            </div>
+
+            <div>
+              <h3 className="text-xl text-[#1A2C24] font-bold mb-3">Intérêts</h3>
+              <div className="flex gap-2 flex-wrap">
+                {deal.interests ? (
+                  <span className="px-4 py-2 text-[#1A2C24] text-sm border border-black/20 rounded-lg bg-gray-50">{deal.interest}</span>
+                ) : (
+                  <span className="text-gray-400 text-sm">Aucun intérêt défini</span>
+                )}
+              </div>
+            </div>
+
+            <div className="divide-y divide-black/10 rounded-lg overflow-hidden bg-gray-50">
+              <div className="w-full flex items-center justify-between px-4 py-4">
+                <span className="text-[#1A2C24] text-lg font-bold">Type de Contenu</span>
+                <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.typeOfContent || "Non spécifié"}</span>
+              </div>
+              <div className="w-full flex items-center justify-between px-4 py-4">
+                <span className="text-[#1A2C24] text-lg font-bold">Date de Validité</span>
+                <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.validUntil || "Non spécifiée"}</span>
+              </div>
+              <div className="w-full flex items-center justify-between px-4 py-4">
+                <span className="text-[#1A2C24] text-lg font-bold">Conditions</span>
+                <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.conditions || "Aucune condition"}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                className="flex-1 py-3 text-white font-medium bg-[#1A2C24] rounded-lg hover:bg-[#1A2C24]/90 transition-colors duration-200"
+                onClick={() => navigate("/dealsinfluenceur")}
               >
-                Voir sur Google Maps
-              </a>
-            )}
+                RETOUR
+              </button>
+              <button
+                disabled={alreadyApplied}
+                onClick={handleCandidature}
+                className={`flex-1 py-3 text-white font-medium rounded-lg transition-colors duration-200 ${
+                  alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E] hover:bg-[#FF6B2E]/90"
+                }`}
+              >
+                {alreadyApplied ? "Candidature envoyée" : "EXÉCUTER"}
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Description</h3>
-          <p className="text-gray-700 text-sm leading-relaxed">{deal.description}</p>
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Intérêts</h3>
-          <div className="flex flex-wrap gap-2">
-            {(deal.interests || []).map((tag: string, i: number) => (
-              <span key={i} className="px-3 py-1 border border-[#1A2C24] rounded-full text-sm text-[#1A2C24] font-medium">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Type de contenu</h3>
-          <div className="flex flex-wrap gap-2">
-            {(deal.typeOfContent || []).map((tag: string, i: number) => (
-              <span key={i} className="px-3 py-1 border border-[#FF6B2E] rounded-full text-sm text-[#FF6B2E] font-medium">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Date de validité</h3>
-          <p className="text-gray-700 text-sm">{deal.validUntil || "Non spécifiée"}</p>
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide">Conditions</h3>
-          <p className="text-gray-700 text-sm leading-relaxed">{deal.conditions || "Aucune condition"}</p>
         </div>
       </div>
 
