@@ -132,7 +132,7 @@ export default function SaveDealsPageInfluenceur() {
     if (status === "Envoyé") return <button disabled className={`${common} bg-gray-500`}>Candidature envoyée</button>;
     if (status === "Accepté") return <button disabled className={`${common} bg-blue-500`}>Accepté</button>;
     if (status === "Approbation") return <button disabled className={`${common} bg-yellow-500`}>En attente validation</button>;
-    if (status === "Terminé") return <button disabled className={`${common} bg-green-600`}>Mission terminée</button>;
+    if (status === "Terminé") return <button disabled className={`${common} bg-green-700`}>Mission terminée</button>;
     return (
       <button
         className={`${common} bg-[#FF6B2E]`}
