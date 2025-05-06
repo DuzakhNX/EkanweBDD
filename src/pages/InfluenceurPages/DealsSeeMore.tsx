@@ -7,6 +7,9 @@ import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
 import sign from "../../assets/ekanwesign.png";
+import saved from "../../assets/saved.png";
+import fullsave from "../../assets/fullsave.png";
+import save from "../../assets/save.png";
 
 export default function DealsSeeMorePageInfluenceur() {
   const navigate = useNavigate();
@@ -14,6 +17,7 @@ export default function DealsSeeMorePageInfluenceur() {
   const [deal, setDeal] = useState<any>(null);
   const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     const fetchDeal = async () => {
@@ -128,6 +132,10 @@ export default function DealsSeeMorePageInfluenceur() {
     }
   };
 
+  const handleToggleSave = () => {
+    setSaved(!saved);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5E7]">
@@ -153,27 +161,29 @@ export default function DealsSeeMorePageInfluenceur() {
       </header>
 
       <main className="p-4">
-        <div className="bg-white rounded-xl overflow-hidden shadow-md">
-          <div className="relative aspect-[4/3] w-full">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="relative aspect-[16/9] w-full">
             <img
               src={deal.imageUrl || profile}
               alt={deal.title}
-              className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
+              className="w-full h-full object-cover"
             />
-            <div className="absolute bottom-2 right-2 bg-white rounded-full p-1">
-              <img src={fillplus} alt="Edit" className="h-6 w-6" />
-            </div>
+            <button
+              className="absolute top-4 right-4 bg-[#1A2C24]/90 p-2 rounded-full shadow-lg hover:bg-[#1A2C24] transition-colors duration-200"
+              onClick={handleToggleSave}
+            >
+              <img src={saved ? fullsave : save} alt="Save" className="w-5 h-5" />
+            </button>
           </div>
-
-          <div className="p-4">
-            <div className="flex justify-between items-start mb-4">
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-3xl font-bold text-[#1A2C24] mb-2">{deal.title}</h2>
-                <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
+                <h2 className="text-2xl font-bold text-[#1A2C24] mb-3">{deal.title}</h2>
+                <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-3">
                   <MapPin className="w-4 h-4" />
                   <div className="flex flex-col">
                     {deal.locationName && (
-                      <span className="text-[#1A2C24]">{deal.locationName}</span>
+                      <span className="text-[#1A2C24] font-medium">{deal.locationName}</span>
                     )}
                     {deal.locationCoords && (
                       <a
@@ -187,41 +197,41 @@ export default function DealsSeeMorePageInfluenceur() {
                     )}
                   </div>
                 </div>
-                <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Description</h3>
-                <p className="text-xs text-[#1A2C24] mb-2">{deal.description}</p>
+                <h3 className="text-xl text-[#1A2C24] font-bold mb-3">Description</h3>
+                <p className="text-sm text-[#1A2C24] mb-4 leading-relaxed">{deal.description}</p>
               </div>
               <div>
-                <span className="text-[#FF6B2E] text-sm font-bold">{deal.id}</span>
+                <span className="text-[#FF6B2E] text-sm font-bold bg-[#FF6B2E]/10 px-3 py-1 rounded-full">#{deal.id}</span>
               </div>
             </div>
 
-            <h3 className="text-xl text-[#1A2C24] font-bold mb-4">Intérêts</h3>
-            <div className="flex gap-2 mb-4 flex-wrap">
+            <h3 className="text-xl text-[#1A2C24] font-bold mb-3">Intérêts</h3>
+            <div className="flex gap-2 mb-6 flex-wrap">
               {deal.interests ? (
-                <span className="px-4 py-2 text-[#1A2C24] text-sm border border-black rounded-lg">{deal.interest}</span>
+                <span className="px-4 py-2 text-[#1A2C24] text-lg border border-black/20 rounded-lg bg-gray-50">{deal.interest}</span>
               ) : (
                 <span className="text-gray-400 text-sm">Aucun intérêt défini</span>
               )}
             </div>
 
-            <div className="divide-y divide-black rounded-lg overflow-hidden">
-              <div className="w-full flex items-center justify-between px-4 py-4 bg-gray-50">
+            <div className="divide-y divide-black/10 rounded-lg overflow-hidden bg-gray-50 mb-6">
+              <div className="w-full flex items-center justify-between px-4 py-4">
                 <span className="text-[#1A2C24] text-lg font-bold">Type de Contenu</span>
                 <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.typeOfContent || "Non spécifié"}</span>
               </div>
-              <div className="w-full flex items-center justify-between px-4 py-4 bg-gray-50">
+              <div className="w-full flex items-center justify-between px-4 py-4">
                 <span className="text-[#1A2C24] text-lg font-bold">Date de Validité</span>
                 <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.validUntil || "Non spécifiée"}</span>
               </div>
-              <div className="w-full flex items-center justify-between px-4 py-4 bg-gray-50">
+              <div className="w-full flex items-center justify-between px-4 py-4">
                 <span className="text-[#1A2C24] text-lg font-bold">Conditions</span>
                 <span className="text-sm text-[#1A2C24] max-w-[60%] text-right">{deal.conditions || "Aucune condition"}</span>
               </div>
             </div>
 
-            <div className="flex gap-2 mt-6">
+            <div className="flex gap-3">
               <button
-                className="flex-1 py-3 text-white font-medium bg-[#1A2C24] rounded-lg"
+                className="flex-1 py-3 text-white font-medium bg-[#1A2C24] rounded-lg hover:bg-[#1A2C24]/90 transition-colors duration-200"
                 onClick={() => navigate("/dealsinfluenceur")}
               >
                 RETOUR
@@ -229,8 +239,9 @@ export default function DealsSeeMorePageInfluenceur() {
               <button
                 disabled={alreadyApplied}
                 onClick={handleCandidature}
-                className={`flex-1 py-3 text-white font-medium rounded-lg ${alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E]"
-                  }`}
+                className={`flex-1 py-3 text-white font-medium rounded-lg transition-colors duration-200 ${
+                  alreadyApplied ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF6B2E] hover:bg-[#FF6B2E]/90"
+                }`}
               >
                 {alreadyApplied ? "Candidature envoyée" : "EXÉCUTER"}
               </button>

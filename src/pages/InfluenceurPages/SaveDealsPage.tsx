@@ -178,25 +178,25 @@ export default function SaveDealsPageInfluenceur() {
             const status = getStatus(deal);
             return (
               <div key={index} className="bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
-                <div className="relative aspect-[4/3] w-full">
+                <div className="relative aspect-[16/9] w-full">
                   <img
                     src={deal.imageUrl || profile}
                     alt={deal.title}
                     className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
                   />
                   <button
-                    className="absolute bottom-4 right-4"
+                    className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-colors duration-200"
                     onClick={() => handleToggleSave(deal.id)}
                   >
-                    <img src={fullsave} alt="save" className="w-6 h-6" />
+                    <img src={fullsave} alt="save" className="w-5 h-5" />
                   </button>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg text-white font-bold mb-1">{deal.title}</h3>
-                  <p className="text-sm text-white mb-3">{deal.description}</p>
-                  <div className="flex justify-between items-center gap-2">
+                  <h3 className="text-lg text-white font-bold mb-2">{deal.title}</h3>
+                  <p className="text-sm text-white/90 mb-4 line-clamp-2">{deal.description}</p>
+                  <div className="flex justify-between items-center gap-3">
                     <button
-                      className="text-white border border-white rounded-lg px-4 py-2 text-sm"
+                      className="text-white border border-white/50 rounded-lg px-4 py-2 text-sm hover:bg-white/10 transition-colors duration-200"
                       onClick={() => navigate(`/dealsseemoreinfluenceur/${deal.id}`)}
                     >
                       Voir plus

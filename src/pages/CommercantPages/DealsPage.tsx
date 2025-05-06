@@ -163,10 +163,10 @@ export default function DealsPageCommercant() {
               <div className="text-center text-gray-500 mt-4">Aucun deal trouvé.</div>
             ) : (
               deals.map((deal, index) => (
-                <div key={deal.id} className="min-w-[80%] bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg flex flex-col">
-                  <div className="flex p-4">
-                    <div className="w-1/2 pr-2">
-                      <div className="h-32 rounded-lg overflow-hidden">
+                <div key={deal.id} className="min-w-[85%] bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg flex flex-col">
+                  <div className="flex p-4 gap-4">
+                    <div className="w-1/2">
+                      <div className="aspect-[4/3] rounded-lg overflow-hidden">
                         <img
                           src={deal.imageUrl || profile}
                           alt={deal.title}
@@ -174,14 +174,17 @@ export default function DealsPageCommercant() {
                         />
                       </div>
                     </div>
-                    <div className="w-1/2 pl-2 flex flex-col">
+                    <div className="w-1/2 flex flex-col">
                       <div className="flex justify-between items-start">
-                        <h3 className="text-lg text-white font-bold mb-1">{deal.title || "Sans titre"}</h3>
-                        <button onClick={() => toggleSave(index)}>
-                          <img src={savedItems[index] ? fullsave : save} alt="Save" className="w-6 h-6" />
+                        <h3 className="text-lg text-white font-bold mb-2">{deal.title || "Sans titre"}</h3>
+                        <button 
+                          onClick={() => toggleSave(index)}
+                          className="bg-white/90 p-1.5 rounded-full hover:bg-white transition-colors duration-200"
+                        >
+                          <img src={savedItems[index] ? fullsave : save} alt="Save" className="w-5 h-5" />
                         </button>
                       </div>
-                      <p className="text-xs text-white mb-2">
+                      <p className="text-sm text-white/90 mb-3 line-clamp-2">
                         <span className="font-bold">Description :</span> {deal.description || "-"}
                       </p>
                       <div className="flex mt-auto">
@@ -192,7 +195,7 @@ export default function DealsPageCommercant() {
                   <div className="p-4 pt-0 mt-auto">
                     <div className="flex justify-between">
                       <button
-                        className="text-white border border-white rounded-lg px-4 py-2 text-sm"
+                        className="text-white border border-white/50 rounded-lg px-4 py-2 text-sm hover:bg-white/10 transition-colors duration-200"
                         onClick={() => navigate(`/dealcandidatescommercant/${deal.id}`)}
                       >
                         Voir plus
