@@ -244,12 +244,11 @@ export default function ProfilPublicInfluenceur() {
 
                     <div className="flex space-x-2 mb-2">
                         {[...Array(5)].map((_, index) => (
-                            <span key={index} className={`text-lg ${index < averageRatings[userData.uid] ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
+                            <span key={index} className={`text-lg ${index < averageRatings[userId!] ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
                         ))}
-                        {averageRatings[userData.uid]}
                     </div>
 
-                    <p className="font-bold text-[#14210F] text-xl mb-4">{dealsApplied} deals réalisés</p>
+                    <p className="font-bold text-[#14210F] text-xl mb-4">{averageRatings[userId!]} {dealsApplied} deals réalisés</p>
 
                     {currentUser?.role === "commercant" && currentUser.uid !== userId && (
                         <button
