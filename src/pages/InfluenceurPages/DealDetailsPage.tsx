@@ -312,7 +312,7 @@ export default function DealDetailsPageInfluenceur() {
       </div>
 
       <div className="px-4 mb-4">
-        <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide mb-2">État de la candidature</h3>
+        <h3 className="text-xl font-bold text-[#1A2C24] tracking-wide mt-5 mb-2">État de la candidature</h3>
         <ProgressRibbon currentStep={getCurrentStep()} status={status} />
       </div>
 
@@ -475,8 +475,8 @@ export default function DealDetailsPageInfluenceur() {
 const ProgressRibbon = ({ currentStep = 1, status }: { currentStep: number; status: string }) => {
   if (status === "Refusé") {
     return (
-      <div className="w-full bg-red-500 rounded-lg p-3 text-center">
-        <span className="text-white font-bold">Candidature Refusée</span>
+      <div className="w-full bg-red-500 rounded-lg p-2 text-center">
+        <span className="text-white text-sm font-bold">Refusé</span>
       </div>
     );
   }
@@ -484,13 +484,13 @@ const ProgressRibbon = ({ currentStep = 1, status }: { currentStep: number; stat
   const steps = ["Envoyé", "Accepté", "Approbation", "Terminé"];
   return (
     <div className="w-full bg-[#1A2C24] rounded-lg p-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between w-full">
         {steps.map((step, index) => (
-          <div key={index} className="flex items-center">
-            <span className={`text-[#FF6B2E] ${index < currentStep ? "font-bold" : "opacity-70"}`}>{step}</span>
+          <div key={index} className="flex items-center flex-1">
+            <span className={`text-[#FF6B2E] text-sm whitespace-nowrap ${index < currentStep ? "font-bold" : "opacity-70"}`}>{step}</span>
             {index < steps.length - 1 && (
               <div className="flex-1 mx-2 flex items-center">
-                <div className={`h-0.5 ${index < currentStep - 1 ? "bg-[#FF6B2E]" : "bg-[#FF6B2E] opacity-30"} w-12`}></div>
+                <div className={`h-0.5 ${index < currentStep - 1 ? "bg-[#FF6B2E]" : "bg-[#FF6B2E] opacity-30"} w-full`}></div>
               </div>
             )}
           </div>
