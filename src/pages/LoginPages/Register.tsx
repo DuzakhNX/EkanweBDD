@@ -45,8 +45,10 @@ export default function Register() {
           inscription: "Non Terminé",
         });
       }
-
-      navigate("/registrationstepone");
+      const interval = setInterval(() => {
+        window.location.href = "/registrationstepone";
+      }, 500);
+      clearInterval(interval);
     } catch (error) {
       console.error("Erreur Google Sign In :", error);
       alert(`Erreur Google Sign In : ${error}`);
@@ -162,8 +164,8 @@ export default function Register() {
           </button>
           <button
             className={`px-6 py-2 rounded-lg text-sm font-semibold ${loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#FF6B2E] text-white"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#FF6B2E] text-white"
               }`}
             onClick={handleSubmit}
             disabled={loading}
