@@ -113,7 +113,7 @@ export default function DiscussionPageInfluenceur() {
                 </div>
                 <button
                     onClick={() => setAddMode((prev) => !prev)}
-                    className="bg-[#FF6B2E] text-white px-4 py-2 rounded-lg text-sm"
+                    className="bg-[#14210F] text-white px-4 py-2 rounded-lg text-sm"
                 >
                     {addMode ? "Annuler" : "Ajouter"}
                 </button>
