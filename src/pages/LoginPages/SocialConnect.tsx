@@ -42,7 +42,8 @@ export default function SocialConnectStep() {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, {
         tiktok: formData.tiktok,
-        instagram: formData.instagram
+        instagram: formData.instagram,
+        inscription: "4"
       });
       navigate("/portfoliostep");
     } catch (error) {

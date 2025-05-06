@@ -48,7 +48,7 @@ export default function Register() {
           photoURL: user.photoURL || null,
           role: userData?.role || null,
           dateCreation: new Date(),
-          inscription: "Non Terminé",
+          inscription: "1",
         });
       }
   
@@ -87,7 +87,7 @@ export default function Register() {
         email: email,
         role: userData?.role || null,
         dateCreation: new Date(),
-        inscription: "Non Terminé"
+        inscription: "1"
       });
 
       navigate("/validateinscription");

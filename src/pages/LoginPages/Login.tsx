@@ -76,20 +76,43 @@ export default function LoginPage() {
       if (userSnap.exists()) {
         const data = userSnap.data();
         const role = data.role;
+        const inscription = data.inscription;
+
         if (role !== userData?.role) {
           alert('Vous n\'êtes pas un ' + role);
-        } else if (data.inscription === "Non Terminé") {
-          navigate("/register");
-        } else if (role === "commerçant") {
-          navigate("/dealscommercant");
-        } else if (role === "influenceur") {
-          navigate("/dealsinfluenceur");
-        } else {
-          setError("Rôle inconnu. Veuillez contacter l'administrateur.");
+          return;
         }
+
+        switch (inscription) {
+          case "1":
+            navigate("/registrationstepone");
+            break;
+          case "2":
+            navigate("/intereststep");
+            break;
+          case "3":
+            navigate("/socialconnectstep");
+            break;
+          case "4":
+            navigate("/portfoliostep");
+            break;
+          case "terminé":
+            if (role === "commerçant") {
+              navigate("/dealscommercant");
+            } else if (role === "influenceur") {
+              navigate("/dealsinfluenceur");
+            } else {
+              setError("Rôle inconnu. Veuillez contacter l'administrateur.");
+            }
+            break;
+          default:
+            navigate("/loginorsignup");
+        }
+
       } else {
         setError("Compte introuvable dans la base de données.");
       }
+
     } catch (err: any) {
       console.error(err);
       setError("Email ou mot de passe invalide.");
@@ -97,6 +120,7 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div

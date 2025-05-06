@@ -76,7 +76,8 @@ export default function InterestsStep() {
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, {
-        interets: selectedTags
+        interets: selectedTags,
+        inscription: "3"
       });
       navigate("/socialconnectstep");
     } catch (err) {

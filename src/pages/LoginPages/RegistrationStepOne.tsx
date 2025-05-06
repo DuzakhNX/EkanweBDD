@@ -78,7 +78,7 @@ export default function RegistrationStepOne() {
         dateNaissance: formData.naissance,
         pseudonyme: formData.pseudo,
         phone: formData.telephone,
-        statutInscription: "en_attente"
+        inscription: "2"
       });
       navigate("/intereststep");
     } catch (err) {
