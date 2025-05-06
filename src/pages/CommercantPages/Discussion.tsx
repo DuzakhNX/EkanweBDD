@@ -73,6 +73,7 @@ export default function DiscussionPageInfluenceur() {
         state: {
           pseudonyme: chat.user?.pseudonyme,
           photoURL: chat.user?.photoURL,
+          role: "commercant"
         },
       });
     } catch (error) {
@@ -112,91 +113,96 @@ export default function DiscussionPageInfluenceur() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-32 pt-5">
+    <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-3xl font-bold">Discussions</h1>
-        <div className="flex items-center space-x-4">
-          <button onClick={handleSignClick}>
+      <div className="sticky top-0 z-10 bg-[#F5F5E7] px-4 py-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Discussions</h1>
+          <button 
+            onClick={handleSignClick}
+            className="p-2 hover:bg-black/5 rounded-full transition-colors"
+          >
             <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Barre de recherche + bouton ajout */}
+        <div className="mt-4 flex items-center gap-2">
+          <div className="flex items-center bg-white rounded-lg px-3 py-2.5 flex-1 shadow-sm">
+            <img src={loupe} alt="loupe" className="w-5 h-5 mr-2 opacity-50" />
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Rechercher une conversation"
+              className="flex-grow bg-white/10 text-sm outline-none placeholder:text-gray-400"
+            />
+            <img src={menu} alt="Menu" className="w-5 h-5 ml-2 opacity-50" />
+          </div>
+          <button
+            onClick={() => setAddMode(!addMode)}
+            className="bg-[#14210F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#FF6B2E]/90 transition-colors"
+          >
+            {addMode ? "Annuler" : "Ajouter"}
           </button>
         </div>
       </div>
 
-      {/* Barre de recherche + bouton ajout */}
-      <div className="px-4 mb-4 flex items-center gap-2">
-        <div className="flex items-center bg-white/10 border border-black rounded-lg px-3 py-2 flex-1">
-          <img src={loupe} alt="loupe" className="w-6 h-6 mr-2" />
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Rechercher une conversation"
-            className="flex-grow bg-transparent text-2xs outline-none"
-          />
-          <img src={menu} alt="Menu" className="w-6 h-6 ml-2" />
-        </div>
-        <button
-          onClick={() => setAddMode(!addMode)}
-          className="bg-[#FF6B2E] text-white px-4 py-2 rounded-lg text-sm"
-        >
-          {addMode ? "Annuler" : "Ajouter"}
-        </button>
-      </div>
-
       {/* Contenu principal */}
-      <div className="px-4">
+      <div className="px-4 mt-4">
         {addMode ? (
           <AddUser onUserAdded={handleUserAdded} />
         ) : filteredChats.length > 0 ? (
-          filteredChats.map((chat) => (
-            <div
-              key={chat.chatId}
-              onClick={() => handleSelect(chat)}
-              className="bg-[#F5F5E7] p-4 rounded-lg shadow-lg mb-4 border border-gray-200 cursor-pointer"
-            >
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden mr-4">
-                  <img
-                    src={chat.user?.photoURL || profile}
-                    alt={chat.user?.pseudonyme}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-semibold">
-                      {chat.user?.pseudonyme || "Utilisateur"}
-                    </h3>
-                    <span className="text-xs text-gray-500">
-                      {new Date(chat.updatedAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+          <div className="space-y-3">
+            {filteredChats.map((chat) => (
+              <div
+                key={chat.chatId}
+                onClick={() => handleSelect(chat)}
+                className="bg-white p-2 rounded-xl shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-4 ring-2 ring-gray-100">
+                    <img
+                      src={chat.user?.photoURL || profile}
+                      alt={chat.user?.pseudonyme}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="flex justify-between items-center">
-                    <p
-                      className={`text-sm truncate ${
-                        chat.read ? "text-gray-600" : "text-black font-bold"
-                      }`}
-                    >
-                      {chat.lastMessage || "Commencez la conversation..."}
-                    </p>
-                    {!chat.read && (
-                      <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-2">
-                        1
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="font-semibold truncate">
+                        {chat.user?.pseudonyme || "Utilisateur"}
+                      </h3>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {new Date(chat.updatedAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
-                    )}
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p
+                        className={`text-sm truncate ${
+                          chat.read ? "text-gray-500" : "text-black font-medium"
+                        }`}
+                      >
+                        {chat.lastMessage || "Commencez la conversation..."}
+                      </p>
+                      {!chat.read && (
+                        <span className="bg-[#FF6B2E] text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center ml-2 shrink-0">
+                          1
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <div className="bg-[#F5F5E7] mt-20 p-2 rounded-lg shadow-lg mb-4">
-            <p className="text-sm text-center text-gray-600">
-              Aucune conversation
+          <div className="flex flex-col items-center justify-center h-[60vh]">
+            <p className="text-gray-500 text-center">
+              Aucune conversation pour le moment
             </p>
           </div>
         )}

@@ -61,7 +61,7 @@ export default function ChatPage() {
     const chatRef = doc(db, "chats", chatId);
 
     const senderId = auth.currentUser.uid;
-    const receiverId = location.state?.receiverId; // Passe bien receiverId dans le navigate
+    const receiverId = location.state?.receiverId;
 
     const newMsg = {
       senderId,
@@ -145,34 +145,50 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-[#F5F5E7] text-[#14210F] flex flex-col">
       {/* HEADER */}
-      <div className="flex items-center justify-between px-4 py-4 bg-white/10 border-b border-gray-200">
-        <div className="flex items-center">
+      <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-2 bg-white shadow-sm">
+        <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate(-1)}
-            className="mr-4"
+            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden mr-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-200">
               <img src={photoURL || profile} alt="Avatar" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-xl font-semibold">{pseudonyme || "Utilisateur"}</h1>
+            <h1 className="text-base font-semibold">{pseudonyme || "Utilisateur"}</h1>
           </div>
         </div>
-        <img src={sign} alt="Ekanwe Sign" className="w-6 h-6" onClick={ () => navigate((location.state.role === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant"))}/>
+        <button 
+          onClick={() => navigate((location.state.role === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant"))}
+          className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <img src={sign} alt="Ekanwe Sign" className="w-5 h-5" />
+        </button>
       </div>
 
       {/* MESSAGES */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
         {messages.map((message, index) => (
           <div key={index} className={`flex ${message.senderId === auth.currentUser?.uid ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[70%] p-3 rounded-lg ${message.senderId === auth.currentUser?.uid ? 'bg-[#1A2C24] text-white rounded-br-none' : 'bg-white rounded-bl-none'}`}>
-              {message.img && <img src={message.img} alt="Envoyé" className="mb-2 rounded-lg max-h-60 object-cover" />}
-              <p className="text-sm">{message.text}</p>
-              <p className={`text-xs ${message.senderId === auth.currentUser?.uid ? 'text-gray-300' : 'text-gray-500'} text-right`}>
+            <div 
+              className={`max-w-[75%] p-2.5 rounded-xl shadow-sm
+                ${message.senderId === auth.currentUser?.uid 
+                  ? 'bg-[#1A2C24] text-white rounded-br-none' 
+                  : 'bg-white rounded-bl-none'}`}
+            >
+              {message.img && (
+                <img 
+                  src={message.img} 
+                  alt="Message" 
+                  className="mb-1.5 rounded-lg max-h-60 w-full object-cover" 
+                />
+              )}
+              <p className="text-sm leading-relaxed">{message.text}</p>
+              <p className={`text-[10px] mt-1 ${message.senderId === auth.currentUser?.uid ? 'text-gray-300' : 'text-gray-500'} text-right`}>
                 {format(message.createdAt)}
               </p>
             </div>
@@ -183,19 +199,25 @@ export default function ChatPage() {
 
       {/* IMAGE PREVIEW */}
       {imagePreview && (
-        <div className="px-4 mb-2">
+        <div className="px-3 pb-2">
           <div className="relative w-32">
-            <img src={imagePreview} alt="Aperçu" className="rounded-lg shadow-lg" />
-            <button onClick={cancelImage} className="absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-full">✖</button>
+            <img src={imagePreview} alt="Aperçu" className="rounded-lg shadow-md" />
+            <button 
+              onClick={cancelImage} 
+              className="absolute -top-1.5 -right-1.5 bg-red-500 text-white p-1 rounded-full shadow-md hover:bg-red-600 transition-colors"
+            >
+              ✖
+            </button>
           </div>
         </div>
       )}
 
       {/* ENVOI */}
-      <div className="p-4 bg-white/10 border-t border-gray-200">
+      <div className="sticky bottom-0 p-3 bg-white border-t border-gray-100 shadow-md">
         <div className="flex items-center space-x-2">
-          <label className="cursor-pointer">📎
-            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
+          <label className="p-1.5 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0">
+            <span className="text-lg">📎</span>
+            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
           </label>
 
           <input
@@ -204,17 +226,26 @@ export default function ChatPage() {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Écrivez votre message..."
-            className="flex-1 bg-white/10 border border-black rounded-lg px-4 py-2 outline-none"
+            className="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-full px-3 py-2 text-sm focus:outline-none focus:border-[#1A2C24] transition-colors"
           />
 
-          <button onClick={() => setShowEmojiPicker(prev => !prev)} className="text-2xl">😊</button>
+          <button 
+            onClick={() => setShowEmojiPicker(prev => !prev)} 
+            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+          >
+            <span className="text-lg">😊</span>
+          </button>
 
-          <button onClick={handleSend} className="bg-[#1A2C24] text-white px-4 py-2 rounded-lg">
-            Envoyer
+          <button 
+            onClick={handleSend} 
+            className="bg-[#1A2C24] text-white px-3 py-2 rounded-full hover:bg-[#2A3C34] transition-colors whitespace-nowrap shrink-0 text-sm"
+          >
+            <span className="hidden sm:inline">Envoyer</span>
+            <span className="sm:hidden">↑</span>
           </button>
         </div>
 
-        <div className={`transition-all duration-300 ${showEmojiPicker ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+        <div className={`transition-all duration-300 ${showEmojiPicker ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0 overflow-hidden'}`}>
           {showEmojiPicker && (
             <EmojiPicker onEmojiClick={handleEmojiClick} />
           )}
