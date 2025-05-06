@@ -96,7 +96,7 @@ export default function DealCandidatesPageCommercant() {
 
   const renderStars = (rating: number) => {
     return Array(5).fill(null).map((_, i) => (
-      <span key={i} className={`text-lg ${i < rating ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
+      <span key={i} className={`text-lg ${i < rating ? 'text-orange' : 'text-gray-300'}`}>★</span>
     ));
   };
 
@@ -278,7 +278,7 @@ export default function DealCandidatesPageCommercant() {
                             <p className="font-medium text-[#1A2C24]">
                               {cand.userInfo?.pseudonyme || "Utilisateur"}
                             </p>
-                            <div className="flex mt-1">{renderStars(Math.round(averageRatings[cand.influenceurId] || 0))}</div>
+                            <div className="flex mt-1">{renderStars(Math.round(averageRatings[cand.userInfo?.uid] || 0))}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
