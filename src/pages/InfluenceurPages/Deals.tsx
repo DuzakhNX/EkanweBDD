@@ -272,10 +272,10 @@ function DealCard({ deal, saved, onSave }: any) {
               disabled
               className={`w-full py-3 text-base font-semibold rounded-lg ${
                 status === "Terminé"
-                  ? "bg-green-600 text-white"
+                  ? "bg-green-700 text-white"
                   : status === "Approbation"
-                  ? "bg-yellow-500 text-white"
-                  : "bg-gray-400 text-white"
+                  ? "bg-white/50 text-white"
+                  : "bg-white/10 text-white"
               }`}
             >
               {status}
