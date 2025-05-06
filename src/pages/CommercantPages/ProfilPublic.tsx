@@ -248,7 +248,7 @@ export default function ProfilPublicInfluenceur() {
                         ))}
                     </div>
 
-                    <p className="font-bold text-[#14210F] text-xl mb-4">{averageRatings[userId!]} {dealsApplied} deals réalisés</p>
+                    <p className="font-bold text-[#14210F] text-xl mb-4">{dealsApplied} deals réalisés</p>
 
                     {currentUser?.role === "commercant" && currentUser.uid !== userId && (
                         <button
