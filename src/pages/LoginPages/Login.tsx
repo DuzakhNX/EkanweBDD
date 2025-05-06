@@ -6,7 +6,7 @@ import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useUserData } from "../../context/UserContext";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { Mail } from "lucide-react";
+//import { Mail } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
