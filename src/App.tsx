@@ -38,6 +38,7 @@ import ReviewPageInfluenceur from './pages/InfluenceurPages/Review';
 import SaveDealsPageInfluenceur from './pages/InfluenceurPages/SaveDealsPage';
 import SuivisDealsPageInfluenceur from './pages/InfluenceurPages/SuivisDeals';
 import ReviewPageCommercant from './pages/CommercantPages/Review';
+import ForgotPassword from './pages/LoginPages/ForgotPassword';
 
 function App() {
   return (
@@ -81,7 +82,7 @@ function App() {
         <Route path="/reviewinfluenceur/:dealId" element={<ReviewPageInfluenceur />} />
         <Route path="/savedealsinfluenceur" element={<SaveDealsPageInfluenceur />} />
         <Route path="/suivisdealsinfluenceur" element={<SuivisDealsPageInfluenceur />} />
-        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );

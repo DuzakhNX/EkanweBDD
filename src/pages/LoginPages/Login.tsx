@@ -157,13 +157,25 @@ export default function LoginPage() {
           >
             {loading ? "Connexion..." : "CONNEXION"}
           </button>
+        </div>
+
+        <div className="mt-8">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-[#1A2C24] text-gray-400">Ou continuer avec</span>
+            </div>
+          </div>
+
           <button
-            className="px-6 py-2 rounded-lg text-sm font-semibold bg-white text-gray-800"
+            className="w-full mt-4 flex items-center justify-center gap-2 bg-white text-gray-800 px-6 py-3 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors duration-200"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
-            <Mail className="w-5 h-5 mr-2 text-red-500" />
-            {loading ? "Connexion..." : "CONNEXION AVEC GOOGLE"}
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+            {loading ? "Connexion..." : "Continuer avec Google"}
           </button>
         </div>
       </div>
