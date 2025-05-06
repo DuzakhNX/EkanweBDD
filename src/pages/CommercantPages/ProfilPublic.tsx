@@ -29,12 +29,9 @@ export default function ProfilPublicInfluenceur() {
     function calculateAverageRatings(deals: any[]) {
         const ratingMap: Record<string, { total: number; count: number }> = {};
     
-        console.log("Calcul des moyennes lancé", deals);
-    
         deals.forEach((deal) => {
-            console.log("Candidatures dans le deal :", deal.candidatures);
             deal.candidatures?.forEach((cand: any) => {
-                const uid = cand.influenceurId; // corriger ici
+                const uid = cand.influenceurId;
                 const rating = cand.influreview?.rating;
     
                 if (uid && typeof rating === "number") {
@@ -50,9 +47,7 @@ export default function ProfilPublicInfluenceur() {
     
         const averageMap: Record<string, number> = {};
         for (const uid in ratingMap) {
-            alert("here");
             averageMap[uid] = ratingMap[uid].total / ratingMap[uid].count;
-            console.log("Average for", uid, ":", averageMap[uid]);
         }
         return averageMap;
     }
@@ -251,6 +246,7 @@ export default function ProfilPublicInfluenceur() {
                         {[...Array(5)].map((_, index) => (
                             <span key={index} className={`text-2xl ${Math.round(averageRatings[userData.uid] || 0) ? 'text-orange-500' : 'text-gray-300'}`}>★</span>
                         ))}
+                        {averageRatings[userData.uid]}
                     </div>
 
                     <p className="font-bold text-[#14210F] text-xl mb-4">{dealsApplied} deals réalisés</p>
