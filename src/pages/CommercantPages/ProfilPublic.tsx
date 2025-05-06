@@ -44,6 +44,7 @@ export default function ProfilPublicInfluenceur() {
         });
         const averageMap: Record<string, number> = {};
         for (const uid in ratingMap) {
+            alert("here");
             averageMap[uid] = ratingMap[uid].total / ratingMap[uid].count;
             console.log(ratingMap[uid].total / ratingMap[uid].count);
         }
