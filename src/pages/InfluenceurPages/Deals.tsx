@@ -135,14 +135,10 @@ export default function DealsPageInfluenceur() {
 function Section({ title, refProp, deals, savedDeals, toggleSave }: any) {
   return (
     <>
-      <div className="flex items-center px-4 justify-between mb-2">
+      <div className="flex items-center px-4 justify-between mb-4">
         <h2 className="text-2xl font-bold">{title}</h2>
-        <div className="flex space-x-4 text-2xl">
-          <button onClick={() => refProp.current?.scrollBy({ left: -370, behavior: "smooth" })}>←</button>
-          <button onClick={() => refProp.current?.scrollBy({ left: 370, behavior: "smooth" })}>→</button>
-        </div>
       </div>
-      <div ref={refProp} className="px-4 mb-6 flex space-x-4 overflow-x-auto scrollbar-hide">
+      <div ref={refProp} className="px-4 mb-6 space-y-4">
         {deals.length > 0 ? (
           deals.map((deal: any) => (
             <DealCard key={deal.id} deal={deal} saved={savedDeals.includes(deal.id)} onSave={toggleSave} />
@@ -256,25 +252,25 @@ function DealCard({ deal, saved, onSave }: any) {
   };
 
   return (
-    <div className="w-[90%] sm:w-[45%] md:w-[30%] lg:w-[23%] bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
-      <div className="relative aspect-[4/3] w-full">
+    <div className="w-full bg-[#1A2C24] rounded-xl overflow-hidden shadow-lg">
+      <div className="relative aspect-[16/9] w-full">
         <img
           src={deal.imageUrl || profile}
           alt={deal.title}
           className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
         />
-        <button className="absolute bottom-2 right-2" onClick={() => onSave(deal.id)}>
-          <img src={saved ? fullsave : save} alt="Save" className="w-5 h-5" />
+        <button className="absolute bottom-4 right-4" onClick={() => onSave(deal.id)}>
+          <img src={saved ? fullsave : save} alt="Save" className="w-6 h-6" />
         </button>
       </div>
-      <div className="p-3">
-        <h3 className="text-base text-white font-bold mb-1">{deal.title || "Titre du Deal"}</h3>
-        <p className="text-xs text-white mb-2 line-clamp-2">{deal.description || "Description indisponible."}</p>
+      <div className="p-6">
+        <h3 className="text-xl text-white font-bold mb-3">{deal.title || "Titre du Deal"}</h3>
+        <p className="text-base text-white mb-6 line-clamp-2">{deal.description || "Description indisponible."}</p>
         <div className="mt-4">
           {status ? (
             <button
               disabled
-              className={`w-full py-1.5 text-xs font-semibold rounded-lg ${
+              className={`w-full py-3 text-base font-semibold rounded-lg ${
                 status === "Terminé"
                   ? "bg-green-600 text-white"
                   : status === "Approbation"
@@ -285,16 +281,16 @@ function DealCard({ deal, saved, onSave }: any) {
               {status}
             </button>
           ) : (
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
               <button
-                className="text-white border border-white rounded-lg px-3 py-1.5 text-xs"
+                className="text-white border border-white rounded-lg px-6 py-3 text-base font-medium"
                 onClick={handleNavigation}
               >
                 Voir plus
               </button>
               <button
                 disabled={loading}
-                className="bg-[#FF6B2E] border border-white text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
+                className="bg-[#FF6B2E] border border-white text-white px-6 py-3 rounded-lg text-base font-semibold"
                 onClick={handleApplyToDeal}
               >
                 {loading ? "Envoi..." : "Dealer"}
