@@ -96,7 +96,7 @@ export default function DealCandidatesPageCommercant() {
 
   const renderStars = (rating: number) => {
     return Array(5).fill(null).map((_, i) => (
-      <span key={i} className={`text-lg ${i < rating ? 'text-orange' : 'text-gray-300'}`}>★</span>
+      <span key={i} className={`text-lg ${i < rating ? 'text-orange-500' : 'text-gray-300'}`}>★</span>
     ));
   };
 
