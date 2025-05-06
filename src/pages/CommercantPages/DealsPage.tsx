@@ -35,7 +35,6 @@ export default function DealsPageCommercant() {
   const calculateAverageRating = (candidatures: any[]) => {
     const ratings = candidatures
       ?.map((c: any) => {
-        console.log("Candidature review:", c.review);
         return typeof c.review?.rating === 'number' ? c.review.rating : parseInt(c.review?.rating);
       })
       .filter((rating: number) => !isNaN(rating));
@@ -80,7 +79,6 @@ export default function DealsPageCommercant() {
 
     const unsubscribeDeals = onSnapshot(dealsQuery, (snapshot) => {
       const dealsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log("Deals data:", dealsData);
       setDeals(dealsData);
       setLoading(false);
     });
