@@ -263,7 +263,7 @@ function DealCard({ deal, saved, onSave }: any) {
           alt={deal.title}
           className="absolute inset-0 w-full h-full object-cover object-center rounded-t-xl"
         />
-        <button className="absolute bg-[#1A2C24]/90 p-1 rounded-full shadow-lg hover:bg-[#1A2C24] transition-colors duration-200 bottom-2 right-2" onClick={() => onSave(deal.id)}>
+        <button className="absolute bottom-2 right-2" onClick={() => onSave(deal.id)}>
           <img src={saved ? fullsave : save} alt="Save" className="w-5 h-5" />
         </button>
       </div>
