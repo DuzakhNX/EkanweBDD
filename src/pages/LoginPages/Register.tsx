@@ -46,7 +46,7 @@ export default function Register() {
         });
       }
 
-      navigate("/registerstepone");
+      navigate("/registrationstepone");
     } catch (error) {
       console.error("Erreur Google Sign In :", error);
       alert(`Erreur Google Sign In : ${error}`);
