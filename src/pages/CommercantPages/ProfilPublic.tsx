@@ -30,7 +30,7 @@ export default function ProfilPublicInfluenceur() {
         const ratingMap: Record<string, { total: number; count: number }> = {};
         deals.forEach((deal) => {
             deal.candidatures?.forEach((cand: any) => {
-                const uid = cand.userId;
+                const uid = cand.influenceurId;
                 const rating = cand.influreview?.rating;
                 if (uid && typeof rating === "number") {
                     if (!ratingMap[uid]) {
@@ -240,7 +240,7 @@ export default function ProfilPublicInfluenceur() {
 
                     <div className="flex space-x-2 mb-2">
                         {[...Array(5)].map((_, index) => (
-                            <span key={index} className={`text-2xl ${Math.round(averageRatings[userData.uid] || 0) ? 'text-orange-500' : 'text-gray-300'}`}>★</span>
+                            <span key={index} className={`text-lg ${index < averageRatings[userId!] ? 'text-[#FF6B2E]' : 'text-gray-300'}`}>★</span>
                         ))}
                     </div>
 

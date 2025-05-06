@@ -32,6 +32,19 @@ export default function DealsPageCommercant() {
     }
   };
 
+  const calculateAverageRating = (candidatures: any[]) => {
+    const ratings = candidatures
+      ?.map((c: any) => {
+        return typeof c.review?.rating === 'number' ? c.review.rating : parseInt(c.review?.rating);
+      })
+      .filter((rating: number) => !isNaN(rating));
+
+    if (ratings.length === 0) return 0;
+
+    const total = ratings.reduce((acc: number, curr: number) => acc + curr, 0);
+    return Math.round(total / ratings.length);
+  };
+
   const toggleSave = (index: number) => {
     setSavedItems(prev => ({
       ...prev,
@@ -175,7 +188,7 @@ export default function DealsPageCommercant() {
                         <span className="font-bold">Description :</span> {deal.description || "-"}
                       </p>
                       <div className="flex mt-auto">
-                        {renderStars(deal.rating || 0)}
+                        {renderStars(calculateAverageRating(deal.candidatures || []))}
                       </div>
                     </div>
                   </div>

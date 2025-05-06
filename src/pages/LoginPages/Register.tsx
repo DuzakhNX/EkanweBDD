@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/ekanwe-logo.png";
-import { Facebook, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import { useUserData } from "../../context/UserContext";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -22,6 +23,39 @@ export default function Register() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleGoogleSignUp = async () => {
+    const provider = new GoogleAuthProvider();
+
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Vérifie si c'est un nouveau compte
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          role: userData?.role || null,
+          dateCreation: new Date(),
+          inscription: "Non Terminé",
+        });
+      }
+      const interval = setInterval(() => {
+        window.location.href = "/registrationstepone";
+      }, 500);
+      clearInterval(interval);
+    } catch (error) {
+      console.error("Erreur Google Sign In :", error);
+      alert(`Erreur Google Sign In : ${error}`);
+      setError("Erreur lors de la connexion avec Google.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -78,18 +112,13 @@ export default function Register() {
         <div className="flex flex-col gap-4 mb-8">
           <button
             className="flex items-center justify-center bg-white text-gray-800 px-4 py-2.5 rounded-md text-sm font-medium w-full"
-            disabled
+            onClick={handleGoogleSignUp}
+            disabled={loading}
           >
             <Mail className="w-5 h-5 mr-2 text-red-500" />
-            Continuer avec Google
+            {loading ? "Connexion..." : "Continuer avec Google"}
           </button>
-          <button
-            className="flex items-center justify-center bg-[#1877F2] text-white px-4 py-2.5 rounded-md text-sm font-medium w-full"
-            disabled
-          >
-            <Facebook className="w-5 h-5 mr-2" />
-            Continuer avec Facebook
-          </button>
+
         </div>
 
         <div className="flex items-center mb-6">
@@ -134,11 +163,10 @@ export default function Register() {
             RETOUR
           </button>
           <button
-            className={`px-6 py-2 rounded-lg text-sm font-semibold ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#FF6B2E] text-white"
-            }`}
+            className={`px-6 py-2 rounded-lg text-sm font-semibold ${loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#FF6B2E] text-white"
+              }`}
             onClick={handleSubmit}
             disabled={loading}
           >
