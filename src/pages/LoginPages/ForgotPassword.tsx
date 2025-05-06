@@ -1,46 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/ekanwe-logo.png";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../firebase/firebase";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSendResetEmail = () => {
+  const handleSendResetEmail = async () => {
     setLoading(true);
-    // Simuler un délai d'envoi
-    setTimeout(() => {
-      setLoading(false);
-      setStep(2);
-    }, 1000);
-  };
+    setError("");
 
-  const handleVerifyCode = () => {
-    setLoading(true);
-    // Simuler une vérification
-    setTimeout(() => {
-      setLoading(false);
-      setStep(3);
-    }, 1000);
-  };
-
-  const handleResetPassword = () => {
-    if (newPassword !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
-      return;
-    }
-    setLoading(true);
-    // Simuler une réinitialisation
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Un lien de réinitialisation a été envoyé à votre adresse email.");
       navigate("/login");
-    }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === "auth/user-not-found") {
+        alert("Aucun compte n'est associé à cet email.");
+      } else if (err.code === "auth/invalid-email") {
+        alert("L'email fourni n'est pas valide.");
+      } else {
+        alert("Une erreur s'est produite. Veuillez réessayer.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,7 +47,6 @@ export default function ForgotPassword() {
           <p className="text-red-400 text-sm mt-4 text-center">{error}</p>
         )}
 
-        {step === 1 && (
           <div className="flex flex-col gap-8">
             <input
               type="email"
@@ -83,68 +71,6 @@ export default function ForgotPassword() {
               </button>
             </div>
           </div>
-        )}
-
-        {step === 2 && (
-          <div className="flex flex-col gap-8">
-            <input
-              type="text"
-              placeholder="Code de vérification"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className="bg-transparent border border-white rounded-md px-4 py-2.5 text-sm"
-            />
-            <div className="flex justify-between mt-6">
-              <button
-                className="bg-transparent border border-white text-white px-6 py-2 rounded-lg text-sm"
-                onClick={() => setStep(1)}
-              >
-                RETOUR
-              </button>
-              <button
-                className="bg-[#FF6B2E] text-white px-6 py-2 rounded-lg text-sm font-semibold"
-                onClick={handleVerifyCode}
-                disabled={loading}
-              >
-                {loading ? "Vérification..." : "VÉRIFIER"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="flex flex-col gap-8">
-            <input
-              type="password"
-              placeholder="Nouveau mot de passe"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="bg-transparent border border-white rounded-md px-4 py-2.5 text-sm"
-            />
-            <input
-              type="password"
-              placeholder="Confirmer le mot de passe"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-transparent border border-white rounded-md px-4 py-2.5 text-sm"
-            />
-            <div className="flex justify-between mt-6">
-              <button
-                className="bg-transparent border border-white text-white px-6 py-2 rounded-lg text-sm"
-                onClick={() => setStep(2)}
-              >
-                RETOUR
-              </button>
-              <button
-                className="bg-[#FF6B2E] text-white px-6 py-2 rounded-lg text-sm font-semibold"
-                onClick={handleResetPassword}
-                disabled={loading}
-              >
-                {loading ? "Réinitialisation..." : "RÉINITIALISER"}
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
