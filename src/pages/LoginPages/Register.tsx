@@ -27,24 +27,31 @@ export default function Register() {
 
   const handleGoogleSignUp = async () => {
     const provider = new GoogleAuthProvider();
-
+  
     try {
       setLoading(true);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
+  
+      const fullName = user.displayName || "";
+      const [firstName, ...rest] = fullName.split(" ");
+      const lastName = rest.join(" ");
+  
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
-
+  
       if (!userSnap.exists()) {
         await setDoc(userRef, {
           email: user.email,
+          nom: lastName || null,
+          prenoms: firstName || null,
+          photoURL: user.photoURL || null,
           role: userData?.role || null,
           dateCreation: new Date(),
           inscription: "Non Terminé",
         });
       }
-
+  
       navigate("/registrationstepone");
     } catch (error) {
       console.error("Erreur Google Sign In :", error);
@@ -54,6 +61,7 @@ export default function Register() {
       setLoading(false);
     }
   };
+  
 
   const handleSubmit = async () => {
     const { email, password, confirmation } = formData;

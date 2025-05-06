@@ -23,18 +23,20 @@ export default function RegistrationStepOne() {
     const q = query(collection(db, "users"), where("pseudonyme", "==", pseudo));
     const querySnapshot = await getDocs(q);
     const isTaken = !querySnapshot.empty;
-  
+
     if (isTaken) {
       setPseudoError("Ce pseudonyme est déjà utilisé. Veuillez en choisir un autre.");
     } else {
       setPseudoError("");
     }
-  
+
     setIsCheckingPseudo(false);
   };
 
   useEffect(() => {
-    const allFieldsFilled = Object.values(formData).every((val) => val.trim() !== "");
+    const allFieldsFilled = Object.values(formData).every(
+      (val) => typeof val === "string" && val.trim() !== ""
+    );
     const noErrors = !pseudoError;
     setIsFormValid(allFieldsFilled && noErrors);
   }, [formData, pseudoError]);
@@ -50,11 +52,11 @@ export default function RegistrationStepOne() {
           const data = docSnap.data();
           setFormData((prev) => ({
             ...prev,
-            nom: data.nom,
-            prenoms: data.prenom,
-            naissance: data.dateNaissance,
-            pseudo: data.pseudonyme,
-            telephone: data.phone
+            nom: data.nom || "",
+            prenoms: data.prenom || "",
+            naissance: data.dateNaissance || "",
+            pseudo: data.pseudonyme || "",
+            telephone: data.phone || "",
           }));
         }
       } catch (error) {
@@ -67,7 +69,7 @@ export default function RegistrationStepOne() {
   const handleSubmit = async () => {
     const user = auth.currentUser;
     if (!user) return alert("Utilisateur non connecté");
-  
+
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, {
@@ -85,7 +87,7 @@ export default function RegistrationStepOne() {
     }
   };
 
-  const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (name === "pseudo") {
@@ -120,7 +122,7 @@ export default function RegistrationStepOne() {
 
         <div className="flex justify-between mt-6">
           <button className="bg-transparent border border-white text-white px-6 py-2 rounded-lg text-sm"
-          onClick={() => navigate("/loginorsignup")}
+            onClick={() => navigate("/loginorsignup")}
           >
             RETOUR
           </button>
