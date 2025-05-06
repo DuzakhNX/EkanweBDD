@@ -9,12 +9,18 @@ import BottomNavbar from "./BottomNavbar";
 import AddUser from "../EkanwePages/AddUser";
 import profile from "../../assets/profile.png";
 
+interface Message {
+    text: string;
+    createdAt: Date;
+}
+
 interface ChatItem {
     chatId: string;
     lastMessage: string;
     receiverId: string;
     updatedAt: number;
     read: boolean;
+    messages?: Message[];
     user?: {
         pseudonyme: string;
         photoURL?: string;
@@ -41,6 +47,7 @@ export default function DiscussionPageInfluenceur() {
             const items = data.chats as ChatItem[];
 
             const promises = items.map(async (item) => {
+                // Get user info
                 const userDoc = await getDoc(doc(db, "users", item.receiverId));
                 let user = null;
                 if (userDoc.exists()) {
@@ -52,7 +59,17 @@ export default function DiscussionPageInfluenceur() {
                         };
                     }
                 }
-                return { ...item, user };
+
+                // Get chat messages
+                const chatDoc = await getDoc(doc(db, "chats", item.chatId));
+                const messages = chatDoc.exists() ? chatDoc.data()?.messages || [] : [];
+                const lastMessage = messages.length > 0 ? messages[messages.length - 1].text : "";
+
+                return { 
+                    ...item, 
+                    user,
+                    lastMessage
+                };
             });
 
             const chatData = await Promise.all(promises);
@@ -79,6 +96,7 @@ export default function DiscussionPageInfluenceur() {
                 state: {
                     pseudonyme: chat.user?.pseudonyme,
                     photoURL: chat.user?.photoURL,
+                    role: "influenceur"
                 },
             });
         } catch (err) {
@@ -138,7 +156,7 @@ export default function DiscussionPageInfluenceur() {
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center">
                                         <h3 className="font-semibold">{chat.user?.pseudonyme || "Utilisateur"}</h3>
                                         <span className="text-xs text-gray-500">
@@ -150,8 +168,7 @@ export default function DiscussionPageInfluenceur() {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <p
-                                            className={`text-sm truncate ${chat.read ? "text-gray-600" : "text-black font-bold"
-                                                }`}
+                                            className={`text-sm truncate max-w-[80%] ${chat.read ? "text-gray-600" : "text-black font-bold"}`}
                                         >
                                             {chat.lastMessage || "Commencez la conversation..."}
                                         </p>

@@ -175,7 +175,7 @@ export default function ChatPage() {
         {messages.map((message, index) => (
           <div key={index} className={`flex ${message.senderId === auth.currentUser?.uid ? 'justify-end' : 'justify-start'}`}>
             <div 
-              className={`max-w-[75%] p-2.5 rounded-xl shadow-sm
+              className={`max-w-[75%] p-2.5 rounded-xl shadow-sm break-words
                 ${message.senderId === auth.currentUser?.uid 
                   ? 'bg-[#1A2C24] text-white rounded-br-none' 
                   : 'bg-white rounded-bl-none'}`}
@@ -187,7 +187,7 @@ export default function ChatPage() {
                   className="mb-1.5 rounded-lg max-h-60 w-full object-cover" 
                 />
               )}
-              <p className="text-sm leading-relaxed">{message.text}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
               <p className={`text-[10px] mt-1 ${message.senderId === auth.currentUser?.uid ? 'text-gray-300' : 'text-gray-500'} text-right`}>
                 {format(message.createdAt)}
               </p>

@@ -9,12 +9,18 @@ import AddUser from "../EkanwePages/AddUser";
 import Navbar from "./Navbar";
 import profile from "../../assets/profile.png";
 
+interface Message {
+  text: string;
+  createdAt: Date;
+}
+
 interface ChatItem {
   chatId: string;
   lastMessage: string;
   receiverId: string;
   updatedAt: number;
   read: boolean;
+  messages?: Message[];
   user?: {
     pseudonyme: string;
     photoURL?: string;
@@ -46,7 +52,13 @@ export default function DiscussionPageInfluenceur() {
       const promises = items.map(async (item: ChatItem) => {
         const userDoc = await getDoc(doc(db, "users", item.receiverId));
         const user = userDoc.exists() ? userDoc.data() : null;
-        return { ...item, user };
+        
+        // Get chat messages
+        const chatDoc = await getDoc(doc(db, "chats", item.chatId));
+        const messages = chatDoc.exists() ? chatDoc.data()?.messages : [];
+        const lastMessage = messages?.length > 0 ? messages[messages.length - 1].text : "";
+        
+        return { ...item, user, lastMessage };
       });
 
       const chatData = await Promise.all(promises);
@@ -182,9 +194,10 @@ export default function DiscussionPageInfluenceur() {
                     </div>
                     <div className="flex justify-between items-center">
                       <p
-                        className={`text-sm truncate ${
+                        className={`text-sm truncate max-w-[200px] ${
                           chat.read ? "text-gray-500" : "text-black font-medium"
                         }`}
+                        title={chat.lastMessage}
                       >
                         {chat.lastMessage || "Commencez la conversation..."}
                       </p>
