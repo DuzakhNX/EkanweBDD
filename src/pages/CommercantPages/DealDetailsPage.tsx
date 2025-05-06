@@ -135,10 +135,10 @@ export default function DealDetailPageCommercant() {
       </div>
 
       <div className="px-4 py-2">
-        <div className="flex justify-between mb-1 text-[#1A2C24] items-center text-2xl font-semibold">
+        <div className="flex justify-between mb-2 text-[#1A2C24] items-center text-2xl font-semibold">
           <span>{deal.title}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-2">
+        <div className="flex items-center gap-2 text-sm text-[#FF6B2E] mb-5">
           <MapPin className="w-4 h-4" />
           {deal.locationCoords && (
             <a
@@ -158,12 +158,12 @@ export default function DealDetailPageCommercant() {
             </a>
           )}
         </div>
-        <div className="text-sm text-gray-600 mb-2">
-          <h3 className="font-semibold text-[#1A2C24] text-lg">Description</h3>
+        <div className="text-sm text-gray-600 mb-5">
+          <h3 className="font-semibold text-[#1A2C24] text-lg mb-2">Description</h3>
           <p>{deal.description}</p>
         </div>
         <div className="text-sm text-gray-600 mb-4">
-          <h3 className="font-semibold text-[#1A2C24] text-lg">Intérêts</h3>
+          <h3 className="font-semibold text-[#1A2C24] text-lg mb-2">Intérêts</h3>
           <div className="flex flex-wrap gap-2">
             {(deal.interests || []).map((item: string, idx: number) => (
               <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
@@ -171,7 +171,7 @@ export default function DealDetailPageCommercant() {
           </div>
         </div>
         <div className="text-sm text-gray-600 mb-4">
-          <h3 className="font-semibold text-[#1A2C24] text-lg">Type de contenu</h3>
+          <h3 className="font-semibold text-[#1A2C24] text-lg mb-2">Type de contenu</h3>
           <div className="flex flex-wrap gap-2">
             {(deal.typeOfContent || []).map((item: string, idx: number) => (
               <span key={idx} className="px-3 py-1 border border-black rounded-full text-sm">{item}</span>
@@ -257,14 +257,14 @@ const ProgressRibbon = ({ currentStatus }: { currentStatus: string }) => {
   }[currentStatus] || 1;
 
   return (
-    <div className="w-full bg-[#1A2C24] rounded-lg p-3 mb-4">
-      <div className="flex items-center justify-between">
+    <div className="w-full bg-[#1A2C24] rounded-lg p-3 mb-4 overflow-x-hidden">
+      <div className="flex items-center justify-between w-full">
         {steps.map((step, index) => (
-          <div key={index} className="flex items-center">
-            <span className={`text-[#FF6B2E] ${index < currentStep ? "font-bold" : "opacity-50"}`}>{step}</span>
+          <div key={index} className="flex items-center flex-shrink-0">
+            <span className={`text-[#FF6B2E] text-xs sm:text-sm ${index < currentStep ? "font-bold" : "opacity-50"}`}>{step}</span>
             {index < steps.length - 1 && (
-              <div className="flex-1 mx-2 flex items-center">
-                <div className={`h-0.5 w-12 ${index < currentStep - 1 ? "bg-[#FF6B2E]" : "bg-gray-400"}`}></div>
+              <div className="flex-shrink mx-1 sm:mx-2 flex items-center">
+                <div className={`h-0.5 w-4 sm:w-8 ${index < currentStep - 1 ? "bg-[#FF6B2E]" : "bg-gray-400"}`}></div>
               </div>
             )}
           </div>
