@@ -231,7 +231,6 @@ export default function MerchantDetailPageCommercant() {
           />
         </div>
 
-        {/* Map */}
         <div className="space-y-2">
           <p className="text-[#1A2C24] font-semibold text-lg">Localisation</p>
           <div className="h-64 border-2  border-gray-400 rounded-lg overflow-hidden">
