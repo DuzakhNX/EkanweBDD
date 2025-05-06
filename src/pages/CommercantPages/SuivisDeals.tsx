@@ -106,9 +106,9 @@ export default function SuivisDealsPageCommercant() {
 
   const getProgressColor = (status: string) => {
     switch (status) {
-      case "Approbation": return "bg-yellow-500";
-      case "Terminé": return "bg-green-600";
-      case "Accepté": return "bg-blue-600";
+      case "Approbation": return "bg-gray-500";
+      case "Terminé": return "bg-[#1A2C24]";
+      case "Accepté": return "bg-blue-900";
       default: return "bg-gray-500";
     }
   };
@@ -177,7 +177,7 @@ export default function SuivisDealsPageCommercant() {
                     {candidature.status === "Envoyé" ? (
                       <>
                         <button className="bg-[#1A2C24] text-white px-2 py-1 rounded text-xs disabled:opacity-50" onClick={() => handleStatusChange(candidature.dealId, candidature.candidatureIndex, "Accepté")} disabled={loadingIndex === candidature.candidatureIndex}>{loadingIndex === candidature.candidatureIndex ? "..." : "Accepter"}</button>
-                        <button className="bg-red-500 text-white px-2 py-1 rounded text-xs disabled:opacity-50" onClick={() => handleStatusChange(candidature.dealId, candidature.candidatureIndex, "Refusé")} disabled={loadingIndex === candidature.candidatureIndex}>{loadingIndex === candidature.candidatureIndex ? "..." : "Refuser"}</button>
+                        <button className="bg-red-700 text-white px-2 py-1 rounded text-xs disabled:opacity-50" onClick={() => handleStatusChange(candidature.dealId, candidature.candidatureIndex, "Refusé")} disabled={loadingIndex === candidature.candidatureIndex}>{loadingIndex === candidature.candidatureIndex ? "..." : "Refuser"}</button>
                       </>
                     ) : (
                       <span className={`text-white text-xs font-semibold px-3 py-1 rounded-full ${getProgressColor(candidature.status)}`}>{getProgressLabel(candidature.status)}</span>
