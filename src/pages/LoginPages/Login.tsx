@@ -5,6 +5,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useUserData } from "../../context/UserContext";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { Mail } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,13 +16,53 @@ export default function LoginPage() {
   });
   const [error, setError] = useState("");
   const { userData } = useUserData();
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        const { role, inscription } = data;
+
+        if (inscription === "Non Terminé") {
+          setError("Inscription non terminée.");
+          return;
+        }
+
+        if (role === "commerçant") {
+          navigate("/dealscommercant");
+        } else if (role === "influenceur") {
+          navigate("/dealsinfluenceur");
+        } else {
+          setError("Rôle inconnu. Veuillez contacter l'administrateur.");
+        }
+      } else {
+        setError("Compte inexistant. Veuillez vous inscrire d'abord.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError("Erreur de connexion avec Google.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleLogin = async () => {
     try {
+      setLoading(true);
       const userCredential = await signInWithEmailAndPassword(
         auth,
         loginData.mail,
@@ -51,6 +93,8 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error(err);
       setError("Email ou mot de passe invalide.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,8 +153,17 @@ export default function LoginPage() {
           <button
             className="bg-[#FF6B2E] text-white px-6 py-2 rounded-lg text-sm font-semibold"
             onClick={handleLogin}
+            disabled={loading}
           >
-            CONNEXION
+            {loading ? "Connexion..." : "CONNEXION"}
+          </button>
+          <button
+            className="px-6 py-2 rounded-lg text-sm font-semibold bg-white text-gray-800"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+          >
+            <Mail className="w-5 h-5 mr-2 text-red-500" />
+            {loading ? "Connexion..." : "CONNEXION AVEC GOOGLE"}
           </button>
         </div>
       </div>

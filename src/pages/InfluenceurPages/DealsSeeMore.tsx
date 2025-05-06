@@ -1,13 +1,11 @@
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import fillplus from "../../assets/fillplus.png";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
 import sign from "../../assets/ekanwesign.png";
-import saved from "../../assets/saved.png";
 import fullsave from "../../assets/fullsave.png";
 import save from "../../assets/save.png";
 
