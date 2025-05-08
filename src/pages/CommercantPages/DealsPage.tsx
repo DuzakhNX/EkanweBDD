@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, onSnapshot, query, where, getDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, query, where, getDoc, doc, getDocs } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
@@ -11,14 +11,44 @@ import fullsave from "../../assets/fullsave.png";
 import plus from "../../assets/plus.png";
 import Navbar from "./Navbar";
 import profile from "../../assets/profile.png";
+import { MapPin } from "lucide-react";
+import { getCurrentPosition, configureStatusBar } from "../../utils/capacitorUtils";
+
+interface Deal {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  status: string;
+  candidatures?: Array<{
+    influenceurId: string;
+    status: string;
+    review?: {
+      rating: number | string;
+    };
+  }>;
+  merchantId: string;
+}
+
+interface Influencer {
+  id: string;
+  username: string;
+  pseudonyme: string;
+  photoURL: string;
+}
 
 export default function DealsPageCommercant() {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("Deals");
   const [savedItems, setSavedItems] = useState<Record<number, boolean>>({});
-  const [deals, setDeals] = useState<any[]>([]);
-  const [influencers, setInfluencers] = useState<any[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const propositionRef = useRef<HTMLDivElement>(null);
   const influencerRef = useRef<HTMLDivElement>(null);
@@ -71,28 +101,76 @@ export default function DealsPageCommercant() {
   };
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return navigate("/login");
-
-    const dealsQuery = query(collection(db, "deals"), where("merchantId", "==", user.uid));
-    const influencersQuery = query(collection(db, "users"), where("role", "==", "influenceur"));
-
-    const unsubscribeDeals = onSnapshot(dealsQuery, (snapshot) => {
-      const dealsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setDeals(dealsData);
-      setLoading(false);
-    });
-
-    const unsubscribeInfluencers = onSnapshot(influencersQuery, (snapshot) => {
-      const influencersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setInfluencers(influencersData);
-    });
-
-    return () => {
-      unsubscribeDeals();
-      unsubscribeInfluencers();
-    };
+    configureStatusBar();
+    fetchUserLocation();
+    fetchDeals();
   }, []);
+
+  const fetchUserLocation = async () => {
+    try {
+      const position = await getCurrentPosition();
+      setUserLocation(position);
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la position:", error);
+    }
+  };
+
+  const fetchDeals = async () => {
+    try {
+      const dealsRef = collection(db, "deals");
+      const q = query(dealsRef, where("status", "==", "active"));
+      const querySnapshot = await getDocs(q);
+      
+      const dealsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Deal[];
+
+      // Trier les deals par distance si la position est disponible
+      if (userLocation) {
+        dealsData.sort((a, b) => {
+          const distanceA = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            a.location.latitude,
+            a.location.longitude
+          );
+          const distanceB = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            b.location.latitude,
+            b.location.longitude
+          );
+          return distanceA - distanceB;
+        });
+      }
+
+      setDeals(dealsData);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des deals:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  const formatDistance = (distance: number) => {
+    if (distance < 1) {
+      return `${Math.round(distance * 1000)}m`;
+    }
+    return `${distance.toFixed(1)}km`;
+  };
 
   if (loading) {
     return (

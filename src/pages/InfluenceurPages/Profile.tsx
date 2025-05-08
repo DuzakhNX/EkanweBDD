@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Camera } from "lucide-react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -6,9 +6,9 @@ import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import sign from "../../assets/ekanwesign.png";
 import BottomNavbar from "./BottomNavbar";
+import { takePicture, pickImage, configureStatusBar } from "../../utils/capacitorUtils";
 
-export default function ProfilePageCommercant() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export default function ProfilePageInfluenceur() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [pseudonyme, setPseudonyme] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -24,6 +24,7 @@ export default function ProfilePageCommercant() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    configureStatusBar();
     const fetchUserInfo = async () => {
       const user = auth.currentUser;
       if (!user) return;
@@ -49,18 +50,27 @@ export default function ProfilePageCommercant() {
     fetchUserInfo();
   }, []);
 
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
+  const handleImageClick = async () => {
+    try {
+      const imagePath = await takePicture();
+      if (imagePath) {
+        setProfileImage(imagePath);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la prise de photo:", error);
+      setMessage("Erreur lors de la prise de photo");
+    }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleGalleryClick = async () => {
+    try {
+      const imagePath = await pickImage();
+      if (imagePath) {
+        setProfileImage(imagePath);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la sélection de l'image:", error);
+      setMessage("Erreur lors de la sélection de l'image");
     }
   };
 
@@ -113,7 +123,10 @@ export default function ProfilePageCommercant() {
           alt="Ekanwe"
           className="w-8 h-8"
           onClick={async () => {
-            navigate("/dealsinfluenceur");
+            const userRef = doc(db, "users", auth.currentUser?.uid || "");
+            const snap = await getDoc(userRef);
+            const role = snap.data()?.role;
+            navigate(role === "influenceur" ? "/dealsinfluenceur" : "/dealscommercant");
           }}
         />
       </div>
@@ -121,8 +134,8 @@ export default function ProfilePageCommercant() {
       <div className="pt-16 pb-20 px-4 bg-[#F5F5E7] min-h-screen">
         <div className="bg-white rounded-2xl p-4 mb-4">
           <div className="flex flex-col items-center mb-6">
-            <div className="relative" onClick={handleImageClick}>
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#FF6B2E]">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#FF6B2E] relative">
                 {profileImage ? (
                   <img src={profileImage} alt="Profil" className="w-full h-full object-cover" />
                 ) : (
@@ -130,18 +143,22 @@ export default function ProfilePageCommercant() {
                     <Camera className="text-[#FF6B2E]" size={30} />
                   </div>
                 )}
-              </div>
-              <div className="absolute bottom-0 right-0 bg-[#FF6B2E] rounded-full p-1">
-                <Camera className="text-white" size={16} />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                  <button
+                    onClick={handleImageClick}
+                    className="bg-[#FF6B2E] text-white p-2 rounded-full hover:bg-[#FF6B2E]/90 transition-colors"
+                  >
+                    <Camera size={20} />
+                  </button>
+                  <button
+                    onClick={handleGalleryClick}
+                    className="bg-[#1A2C24] text-white p-2 rounded-full hover:bg-[#1A2C24]/90 transition-colors"
+                  >
+                    <Camera size={20} />
+                  </button>
+                </div>
               </div>
             </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-            />
           </div>
 
           <div className="space-y-3">
