@@ -246,7 +246,7 @@ export default function ProfilPublicInfluenceur() {
 
                     <p className="font-bold text-[#14210F] text-xl mb-4">{dealsApplied} deals réalisés</p>
 
-                    {currentUser?.role === "commercant" && currentUser.uid !== userId && (
+                    {currentUser?.role === "commerçant" && currentUser.uid !== userId && (
                         <button
                             onClick={handleContact}
                             disabled={loadingContact}

@@ -85,7 +85,7 @@ export default function DiscussionPageInfluenceur() {
         state: {
           pseudonyme: chat.user?.pseudonyme,
           photoURL: chat.user?.photoURL,
-          role: "commercant"
+          role: "commerçant"
         },
       });
     } catch (error) {
