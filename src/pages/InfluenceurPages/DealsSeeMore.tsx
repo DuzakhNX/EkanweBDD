@@ -150,8 +150,8 @@ export default function DealsSeeMorePageInfluenceur() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-10">
-      <header className="bg-gray-50 px-4 py-3 flex items-center gap-4 shadow-sm">
+    <div className="min-h-screen bg-[#F5F5E7] pt-10">
+      <header className="bg-white px-4 py-3 flex items-center gap-4 shadow-sm">
         <button onClick={() => navigate(-1)}>
           <ArrowLeft className="w-8 h-8 text-[#FF6B2E]" />
         </button>
@@ -160,7 +160,7 @@ export default function DealsSeeMorePageInfluenceur() {
 
       <main className="p-4">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="relative aspect-[16/9] w-full">
+          <div className="relative aspect-[16/9] w-full overflow-hidden">
             <img
               src={deal.imageUrl || profile}
               alt={deal.title}
@@ -205,8 +205,12 @@ export default function DealsSeeMorePageInfluenceur() {
 
             <h3 className="text-xl text-[#1A2C24] font-bold mb-3">Intérêts</h3>
             <div className="flex gap-2 mb-6 flex-wrap">
-              {deal.interests ? (
-                <span className="px-4 py-2 text-[#1A2C24] text-lg border border-black/20 rounded-lg bg-gray-50">{deal.interest}</span>
+              {deal.interests && deal.interests.length > 0 ? (
+                deal.interests.map((interest: string, index: number) => (
+                  <span key={index} className="px-4 py-2 text-[#1A2C24] text-sm border border-black/20 rounded-lg bg-gray-50">
+                    {interest}
+                  </span>
+                ))
               ) : (
                 <span className="text-gray-400 text-sm">Aucun intérêt défini</span>
               )}

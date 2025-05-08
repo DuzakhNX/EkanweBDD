@@ -105,75 +105,82 @@ export default function ProfilePageCommercant() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5E7] flex flex-col">
-      <div className="flex items-center bg-white justify-between px-4 py-6">
-        <h1 className="text-3xl text-[#1A2C24] font-bold">Mon Profil</h1>
+    <div className="min-h-screen bg-[#F5F5E7]">
+      <div className="bg-white px-4 py-3 flex justify-between items-center fixed top-0 left-0 right-0 z-10">
+        <h1 className="text-2xl font-semibold text-[#1A2C24]">Mon Profil</h1>
         <img
           src={sign}
           alt="Ekanwe"
-          className="w-6 h-6 cursor-pointer"
+          className="w-8 h-8"
           onClick={async () => {
             navigate("/dealsinfluenceur");
           }}
         />
       </div>
 
-      <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6 mt-auto space-y-6 flex-1">
-        <div className="flex flex-col items-center">
-          <div className="relative cursor-pointer" onClick={handleImageClick}>
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-300">
-              {profileImage ? (
-                <img src={profileImage} alt="Profil" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gray-300" />
-              )}
+      <div className="pt-16 pb-20 px-4 bg-[#F5F5E7] min-h-screen">
+        <div className="bg-white rounded-2xl p-4 mb-4">
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative" onClick={handleImageClick}>
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#FF6B2E]">
+                {profileImage ? (
+                  <img src={profileImage} alt="Profil" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#FF6B2E]/10 flex items-center justify-center">
+                    <Camera className="text-[#FF6B2E]" size={30} />
+                  </div>
+                )}
+              </div>
+              <div className="absolute bottom-0 right-0 bg-[#FF6B2E] rounded-full p-1">
+                <Camera className="text-white" size={16} />
+              </div>
             </div>
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full opacity-0 hover:opacity-100 transition">
-              <Camera className="text-white" size={24} />
-            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            accept="image/*"
-            className="hidden"
-          />
-        </div>
 
-        <div className="space-y-4 text-black">
-          <InputField label="Pseudonyme" value={pseudonyme} onChange={setPseudonyme} />
-          <InputField label="Prénom" value={prenom} onChange={setPrenom} />
-          <InputField label="Nom" value={nom} onChange={setNom} />
-          <InputField label="Date de Naissance" value={dateNaissance} onChange={setDateNaissance} type="date" />
-          <InputField label="Téléphone" value={phone} onChange={setPhone} />
-          <InputField label="Instagram" value={instagram} onChange={setInstagram} icon="/instagram.svg" />
-          <InputField label="TikTok" value={tiktok} onChange={setTiktok} icon="/tiktok.svg" />
-          <InputField label="Lien de Portfolio" value={portfolioLink} onChange={setPortfolioLink} />
-          <TextAreaField label="Bio" value={bio} onChange={setBio} />
-        </div>
+          <div className="space-y-3">
+            <InputField label="Pseudonyme" value={pseudonyme} onChange={setPseudonyme} />
+            <InputField label="Prénom" value={prenom} onChange={setPrenom} />
+            <InputField label="Nom" value={nom} onChange={setNom} />
+            <InputField label="Date de Naissance" value={dateNaissance} onChange={setDateNaissance} type="date" />
+            <InputField label="Téléphone" value={phone} onChange={setPhone} />
+            <InputField label="Instagram" value={instagram} onChange={setInstagram} icon="/instagram.svg" />
+            <InputField label="TikTok" value={tiktok} onChange={setTiktok} icon="/tiktok.svg" />
+            <InputField label="Lien de Portfolio" value={portfolioLink} onChange={setPortfolioLink} />
+            <TextAreaField label="Bio" value={bio} onChange={setBio} />
+          </div>
 
-        {message && (
-          <p className={`text-sm mt-2 text-center ${message.includes("succès") ? "text-green-600" : "text-red-500"}`}>
-            {message}
-          </p>
-        )}
+          {message && (
+            <div className={`mt-4 p-3 rounded-lg text-center text-sm ${
+              message.includes("succès") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            }`}>
+              {message}
+            </div>
+          )}
 
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className={`w-full py-3 rounded-lg font-bold text-lg mt-6 ${loading ? "bg-gray-400 text-white" : "bg-[#1A2C24] text-white"
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className={`w-full py-3 rounded-xl text-white font-medium mt-6 ${
+              loading ? "bg-gray-400" : "bg-[#FF6B2E]"
             }`}
-        >
-          {loading ? "Sauvegarde..." : "Sauvegarder"}
-        </button>
+          >
+            {loading ? "Sauvegarde..." : "Sauvegarder"}
+          </button>
 
-        <button
-          onClick={handleLogout}
-          className="w-full bg-red-500 text-white py-3 rounded-lg font-bold text-lg mt-4"
-        >
-          Déconnexion
-        </button>
+          <button
+            onClick={handleLogout}
+            className="w-full mt-3 py-3 rounded-xl border-2 border-[#1A2C24] text-[#1A2C24] font-medium hover:bg-red-50"
+          >
+            Déconnexion
+          </button>
+        </div>
       </div>
 
       <BottomNavbar />
@@ -192,14 +199,14 @@ interface InputProps {
 function InputField({ label, value, onChange, type = "text", icon }: InputProps) {
   return (
     <div>
-      <label className="text-[#1A2C24] font-medium">{label}</label>
-      <div className="flex items-center mt-1">
-        {icon && <img src={icon} alt="icon" className="w-5 h-5 mr-2" />}
+      <label className="text-sm text-gray-600 mb-1 block">{label}</label>
+      <div className="flex items-center">
+        {icon && <img src={icon} alt="icon" className="w-4 h-4 mr-2" />}
         <input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white"
+          className="w-full px-3 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B2E] text-black"
         />
       </div>
     </div>
@@ -209,12 +216,12 @@ function InputField({ label, value, onChange, type = "text", icon }: InputProps)
 function TextAreaField({ label, value, onChange }: InputProps) {
   return (
     <div>
-      <label className="text-[#1A2C24] font-medium">{label}</label>
+      <label className="text-sm text-gray-600 mb-1 block">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white mt-1"
+        className="w-full px-3 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B2E] text-black"
       />
     </div>
   );
