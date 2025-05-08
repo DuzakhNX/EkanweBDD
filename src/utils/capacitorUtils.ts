@@ -1,6 +1,6 @@
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Geolocation } from '@capacitor/geolocation';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 // Fonction pour prendre une photo
 export const takePicture = async () => {
@@ -52,7 +52,7 @@ export const getCurrentPosition = async () => {
 export const configureStatusBar = async () => {
   try {
     await StatusBar.setBackgroundColor({ color: '#FF6B2E' });
-    await StatusBar.setStyle({ style: 'DARK' });
+    await StatusBar.setStyle({ style: Style.DARK });
   } catch (error) {
     console.error('Erreur lors de la configuration de la barre de statut:', error);
   }

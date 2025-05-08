@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, onSnapshot, query, where, getDoc, doc, getDocs } from "firebase/firestore";
+import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebase";
 import cloche from "../../assets/clochenotification.png";
 import sign from "../../assets/ekanwesign.png";
@@ -11,7 +11,7 @@ import fullsave from "../../assets/fullsave.png";
 import plus from "../../assets/plus.png";
 import Navbar from "./Navbar";
 import profile from "../../assets/profile.png";
-import { MapPin } from "lucide-react";
+// import { MapPin } from "lucide-react";
 import { getCurrentPosition, configureStatusBar } from "../../utils/capacitorUtils";
 
 interface Deal {
@@ -46,7 +46,7 @@ export default function DealsPageCommercant() {
   const [selectedFilter, setSelectedFilter] = useState("Deals");
   const [savedItems, setSavedItems] = useState<Record<number, boolean>>({});
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [influencers, setInfluencers] = useState<Influencer[]>([]);
+  const [influencers] = useState<Influencer[]>([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
@@ -165,12 +165,12 @@ export default function DealsPageCommercant() {
     return R * c;
   };
 
-  const formatDistance = (distance: number) => {
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
-    }
-    return `${distance.toFixed(1)}km`;
-  };
+  // const formatDistance = (distance: number) => {
+  //   if (distance < 1) {
+  //     return `${Math.round(distance * 1000)}m`;
+  //   }
+  //   return `${distance.toFixed(1)}km`;
+  // };
 
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   collection,
-  onSnapshot,
+  // onSnapshot,
   query,
   doc,
   updateDoc,
@@ -22,7 +22,7 @@ import fullsave from "../../assets/fullsave.png";
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
-import { MapPin } from "lucide-react";
+// import { MapPin } from "lucide-react";
 import { getCurrentPosition, configureStatusBar } from "../../utils/capacitorUtils";
 
 interface Deal {
@@ -137,12 +137,12 @@ export default function DealsPageInfluenceur() {
     return R * c;
   };
 
-  const formatDistance = (distance: number) => {
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
-    }
-    return `${distance.toFixed(1)}km`;
-  };
+  // const formatDistance = (distance: number) => {
+  //   if (distance < 1) {
+  //     return `${Math.round(distance * 1000)}m`;
+  //   }
+  //   return `${distance.toFixed(1)}km`;
+  // };
 
   useEffect(() => {
     if (!user) return;

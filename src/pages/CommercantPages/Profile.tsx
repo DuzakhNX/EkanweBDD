@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Camera } from "lucide-react";
 import { auth, db } from "../../firebase/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -9,7 +9,7 @@ import Navbar from "./Navbar";
 import { takePicture, pickImage, configureStatusBar } from "../../utils/capacitorUtils";
 
 export default function ProfilePageCommercant() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [pseudonyme, setPseudonyme] = useState("");
   const [prenom, setPrenom] = useState("");
