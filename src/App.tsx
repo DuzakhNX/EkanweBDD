@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { configureStatusBar } from './utils/capacitorUtils';
 import Splash from './pages/Splash';
 import 'leaflet/dist/leaflet.css';
 import Connection from './pages/LoginPages/Connection'
@@ -41,6 +44,19 @@ import ReviewPageCommercant from './pages/CommercantPages/Review';
 import ForgotPassword from './pages/LoginPages/ForgotPassword';
 
 function App() {
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        await configureStatusBar();
+        await SplashScreen.hide();
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
+      }
+    };
+
+    initializeApp();
+  }, []);
+
   return (
     <Router>
       <Routes>

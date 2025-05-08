@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import {
   collection,
-  onSnapshot,
+  // onSnapshot,
   query,
   doc,
   updateDoc,
   setDoc,
   arrayUnion,
   getDoc,
+  getDocs,
+  where,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db, auth } from "../../firebase/firebase";
@@ -20,27 +22,127 @@ import fullsave from "../../assets/fullsave.png";
 import BottomNavbar from "./BottomNavbar";
 import { sendNotification } from "../../hooks/sendNotifications";
 import profile from "../../assets/profile.png";
+// import { MapPin } from "lucide-react";
+import { getCurrentPosition, configureStatusBar } from "../../utils/capacitorUtils";
+
+interface Deal {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  status: string;
+  candidatures?: Array<{
+    influenceurId: string;
+    status: string;
+    review?: {
+      rating: number | string;
+    };
+  }>;
+  merchantId: string;
+  interest?: string;
+}
+
+interface SectionProps {
+  title: string;
+  refProp: React.RefObject<HTMLDivElement>;
+  deals: Deal[];
+  savedDeals: string[];
+  toggleSave: (dealId: string) => void;
+}
+
+interface DealCardProps {
+  deal: Deal;
+  saved: boolean;
+  onSave: (dealId: string) => void;
+}
 
 export default function DealsPageInfluenceur() {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [deals, setDeals] = useState<any[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [savedDeals, setSavedDeals] = useState<string[]>([]);
   const [loadingPage, setLoadingPage] = useState(true);
   const popularRef = useRef<HTMLDivElement>(null);
   const otherRef = useRef<HTMLDivElement>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const user = auth.currentUser;
 
   useEffect(() => {
-    const q = query(collection(db, "deals"));
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      const allDeals = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setDeals(allDeals);
-      setLoadingPage(false);
-    });
-    return () => unsubscribe();
+    configureStatusBar();
+    fetchUserLocation();
+    fetchDeals();
   }, []);
+
+  const fetchUserLocation = async () => {
+    try {
+      const position = await getCurrentPosition();
+      setUserLocation(position);
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la position:", error);
+    }
+  };
+
+  const fetchDeals = async () => {
+    try {
+      const dealsRef = collection(db, "deals");
+      const q = query(dealsRef, where("status", "==", "active"));
+      const querySnapshot = await getDocs(q);
+      
+      const dealsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Deal[];
+
+      // Trier les deals par distance si la position est disponible
+      if (userLocation) {
+        dealsData.sort((a, b) => {
+          const distanceA = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            a.location.latitude,
+            a.location.longitude
+          );
+          const distanceB = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            b.location.latitude,
+            b.location.longitude
+          );
+          return distanceA - distanceB;
+        });
+      }
+
+      setDeals(dealsData);
+      setLoadingPage(false);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des deals:", error);
+      setLoadingPage(false);
+    }
+  };
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // const formatDistance = (distance: number) => {
+  //   if (distance < 1) {
+  //     return `${Math.round(distance * 1000)}m`;
+  //   }
+  //   return `${distance.toFixed(1)}km`;
+  // };
 
   useEffect(() => {
     if (!user) return;
@@ -72,7 +174,7 @@ export default function DealsPageInfluenceur() {
     }
   };
 
-  const filters = ["All", ...Array.from(new Set(deals.map((d) => d.interest).filter(Boolean)))];
+  const filters = ["All", ...Array.from(new Set(deals.map((d) => d.interest).filter((interest): interest is string => interest !== undefined)))];
   const filteredDeals = selectedFilter === "All" ? deals : deals.filter((d) => d.interest === selectedFilter);
   const sortedByPopularity = [...filteredDeals].sort((a, b) => (b.candidatures?.length || 0) - (a.candidatures?.length || 0));
   const popularDeals = sortedByPopularity.slice(0, 5);
@@ -132,7 +234,7 @@ export default function DealsPageInfluenceur() {
   );
 }
 
-function Section({ title, refProp, deals, savedDeals, toggleSave }: any) {
+function Section({ title, refProp, deals, savedDeals, toggleSave }: SectionProps) {
   return (
     <>
       <div className="flex items-center px-4 justify-between mb-4">
@@ -140,7 +242,7 @@ function Section({ title, refProp, deals, savedDeals, toggleSave }: any) {
       </div>
       <div ref={refProp} className="px-4 mb-6 space-y-4">
         {deals.length > 0 ? (
-          deals.map((deal: any) => (
+          deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} saved={savedDeals.includes(deal.id)} onSave={toggleSave} />
           ))
         ) : (
@@ -151,7 +253,7 @@ function Section({ title, refProp, deals, savedDeals, toggleSave }: any) {
   );
 }
 
-function DealCard({ deal, saved, onSave }: any) {
+function DealCard({ deal, saved, onSave }: DealCardProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);

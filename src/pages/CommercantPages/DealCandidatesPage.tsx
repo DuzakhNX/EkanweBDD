@@ -205,7 +205,7 @@ export default function DealCandidatesPageCommercant() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-[#F5F5E7]">
       <div className="bg-white py-3 px-4 flex items-center border-b justify-between">
         <button onClick={() => navigate(-1)} className="flex items-center text-[#FF6B2E]">
           <ArrowLeft className="h-6 w-6 mr-1" />
@@ -262,7 +262,7 @@ export default function DealCandidatesPageCommercant() {
                   {candidates.map((cand) => (
                     <div
                       key={cand.influenceurId}
-                      className="p-3 rounded-lg border border-black bg-gray-100 cursor-pointer"
+                      className="p-3 rounded-lg border border-black bg-white cursor-pointer"
                       onClick={() => navigate(`/profilpubliccommercant/${cand.influenceurId}`, { state: { userId: cand.influenceurId } })}
                     >
                       <div className="flex items-center justify-between">

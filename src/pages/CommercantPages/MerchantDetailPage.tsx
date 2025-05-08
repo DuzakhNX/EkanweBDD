@@ -142,9 +142,13 @@ export default function MerchantDetailPageCommercant() {
       </div>
 
       {/* Image Preview */}
-      <div className="relative">
-        <img src={imageBase64 || "https://via.placeholder.com/600x200"} className="w-full h-48 object-cover" />
-        <label className="absolute bottom-2 right-2 bg-white/10 p-1 rounded-full cursor-pointer">
+      <div className="relative w-full h-48">
+        <img 
+          src={imageBase64 || "https://via.placeholder.com/600x200"} 
+          className="w-full h-full object-cover" 
+          alt="Preview"
+        />
+        <label className="absolute bottom-2 right-2 bg-white/80 p-2 rounded-full cursor-pointer hover:bg-white/90 transition-all">
           <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
           📸
         </label>
@@ -233,7 +237,7 @@ export default function MerchantDetailPageCommercant() {
 
         <div className="space-y-2">
           <p className="text-[#1A2C24] font-semibold text-lg">Localisation</p>
-          <div className="h-64 border-2  border-gray-400 rounded-lg overflow-hidden">
+          <div className="h-64 w-full border-2 border-gray-400 rounded-lg overflow-hidden relative">
             <LocationSelector
               position={position}
               setPosition={setPosition}
