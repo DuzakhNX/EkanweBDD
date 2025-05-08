@@ -52,7 +52,7 @@ export const getCurrentPosition = async () => {
 export const configureStatusBar = async () => {
   try {
     await StatusBar.setBackgroundColor({ color: '#FF6B2E' });
-    await StatusBar.setStyle({ style: Style.DARK });
+    await StatusBar.setStyle({ style: Style.Dark });
   } catch (error) {
     console.error('Erreur lors de la configuration de la barre de statut:', error);
   }
